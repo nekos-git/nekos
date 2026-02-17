@@ -1,0 +1,165 @@
+{
+	"children": [
+		{
+			"child": {
+				"booksGenreId": "001006001",
+				"booksGenreName": "経済・財政",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006002",
+				"booksGenreName": "流通",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006003",
+				"booksGenreName": "IT・eコマース",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006004",
+				"booksGenreName": "マーケティング・セールス",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006005",
+				"booksGenreName": "投資・株・資産運用",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006006",
+				"booksGenreName": "マネープラン",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006007",
+				"booksGenreName": "マネジメント・人材管理",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006008",
+				"booksGenreName": "経理",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006009",
+				"booksGenreName": "自己啓発",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006010",
+				"booksGenreName": "就職・転職",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006011",
+				"booksGenreName": "MBA",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006013",
+				"booksGenreName": "証券アナリスト",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006014",
+				"booksGenreName": "税理士・公認会計士・ファイナンシャルプランナー",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006015",
+				"booksGenreName": "簿記検定",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006016",
+				"booksGenreName": "銀行・金融検定",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006018",
+				"booksGenreName": "経営",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006019",
+				"booksGenreName": "産業",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006021",
+				"booksGenreName": "その他",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006022",
+				"booksGenreName": "アフィリエイト",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006023",
+				"booksGenreName": "ビジネスマナー",
+				"genreLevel": 3
+			}
+		},
+		{
+			"child": {
+				"booksGenreId": "001006024",
+				"booksGenreName": "金融",
+				"genreLevel": 3
+			}
+		}
+	],
+	"current": {
+		"booksGenreId": "001006",
+		"booksGenreName": "ビジネス・経済・就職",
+		"genreLevel": 2
+	},
+	"parents": [
+		{
+			"parent": {
+				"booksGenreId": "001",
+				"booksGenreName": "本",
+				"genreLevel": 1
+			}
+		}
+	]
+}
