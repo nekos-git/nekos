@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>ひらがな パーティー！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(1200px 600px at 20% 0%, rgba(255,240,122,0.35), transparent 70%),
+                        radial-gradient(1200px 600px at 80% 0%, rgba(255,105,180,0.25), transparent 70%),
+                        linear-gradient(135deg, #ffeab3 0%, #ffd3dc 35%, #c8f3ff 70%, #eaffec 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: #1c1c1c;
+            user-select: none;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: clamp(12px, 4vw, 20px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 3.6em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow:
+                0 0 10px rgba(255,255,255,0.9),
+                0 0 20px rgba(255,215,0,0.9),
+                0 0 40px rgba(255,165,0,0.8),
+                0 0 60px rgba(255,105,180,0.6),
+                2px 2px 6px rgba(0,0,0,0.25);
+            -webkit-text-stroke: 1px rgba(255,255,255,0.35);
+            background: linear-gradient(45deg, #fff07a, #FFD700, #FFA500, #FF69B4, #00D0FF, #44E26B);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleShine 2.2s ease-in-out infinite;
+            position: relative;
+            filter: brightness(1.15) saturate(1.15);
+        }
+
+        @keyframes titleShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #555;
+            margin-top: -5px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .menu-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .settings {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 12px;
+        }
+
+        .count-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .count-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 20px;
+            font-size: 1em;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .count-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .count-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .count-btn.active:hover {
+            background: linear-gradient(135deg, #556bd9 0%, #653a91 100%);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin: 10px 0;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn.success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.6);
+        }
+
+        .btn.secondary {
+            background: #e0e0e0;
+            color: #555;
+        }
+
+        .btn.secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .room-code-display {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .room-code-label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .room-code {
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .player-card.ready {
+            border-color: #38ef7d;
+            background: rgba(56, 239, 125, 0.1);
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .player-status {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .game-screen {
+            text-align: center;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-info {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #f093fb;
+        }
+
+        .hiragana-display {
+            font-size: 15em;
+            font-weight: bold;
+            margin: 40px 0;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .typing-display {
+            font-size: 2.5em;
+            margin: 20px 0;
+            min-height: 1.5em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .correct-char {
+            color: #38ef7d;
+        }
+
+        .current-char {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        .pending-char {
+            color: #ccc;
+        }
+
+        .input-feedback {
+            font-size: 1.3em;
+            margin: 20px 0;
+            min-height: 1.5em;
+            color: #666;
+        }
+
+        .results-screen {
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ranking {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .rank-item.top1 {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+        }
+
+        .rank-item.top2 {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+            color: white;
+        }
+
+        .rank-item.top3 {
+            background: linear-gradient(135deg, #CD7F32 0%, #B8732A 100%);
+            color: white;
+        }
+
+        .player-rank {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .player-info {
+            flex: 1;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .player-score-display {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .overlay-content {
+            text-align: center;
+            color: white;
+        }
+
+        .countdown-number {
+            font-size: 15em;
+            font-weight: bold;
+            text-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5em;
+            }
+
+            .hiragana-display {
+                font-size: 10em;
+            }
+
+            .countdown-number {
+                font-size: 10em;
+            }
+
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">ひらがな パーティー！</h1>
+            <p class="subtitle">みんなで楽しくタイピング練習</p>
+        </div>
+
+        <!-- メニュー画面 -->
+        <div id="menu-screen" class="screen active">
+            <div class="settings">
+                <div class="setting-group">
+                    <label class="setting-label">問題数</label>
+                    <div class="count-buttons">
+                        <button class="count-btn active" onclick="party.setQuestionCount(20)" id="count-20">20問</button>
+                        <button class="count-btn" onclick="party.setQuestionCount(50)" id="count-50">50問</button>
+                        <button class="count-btn" onclick="party.setQuestionCount(100)" id="count-100">100問</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label">制限時間（秒/問）</label>
+                    <div class="count-buttons">
+                        <button class="count-btn active" onclick="party.setTimeLimit(10)" id="time-10">10秒</button>
+                        <button class="count-btn" onclick="party.setTimeLimit(20)" id="time-20">20秒</button>
+                        <button class="count-btn" onclick="party.setTimeLimit(0)" id="time-0">なし</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="menu-btn" onclick="party.startHost()">
+                🎮 ホストとしてゲームを作成
+            </button>
+
+            <button class="menu-btn" onclick="party.showJoin()">
+                👥 ゲームに参加
+            </button>
+
+            <button class="menu-btn" onclick="party.showPractice()">
+                📝 一人で練習
+            </button>
+        </div>
+
+        <!-- 参加画面 -->
+        <div id="join-screen" class="screen">
+            <div class="settings">
+                <input type="text" id="player-name" class="input-field" placeholder="ニックネームを入力" maxlength="12">
+                <input type="text" id="game-code" class="input-field" placeholder="ゲームコードを入力" maxlength="6" style="text-transform: uppercase;">
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn success" onclick="party.joinGame()">参加する</button>
+                <button class="btn secondary" onclick="party.showMenu()">戻る</button>
+            </div>
+        </div>
+
+        <!-- 練習画面 -->
+        <div id="practice-screen" class="screen">
+            <div class="settings">
+                <input type="text" id="practice-name" class="input-field" placeholder="ニックネームを入力（任意）" maxlength="12">
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn success" onclick="party.startPractice()">練習開始</button>
+                <button class="btn secondary" onclick="party.showMenu()">戻る</button>
+            </div>
+        </div>
+
+        <!-- 待機画面（ホスト） -->
+        <div id="lobby-screen" class="screen">
+            <div class="room-code-display">
+                <div class="room-code-label">ゲームコード</div>
+                <div class="room-code" id="room-code">------</div>
+            </div>
+
+            <div class="settings">
+                <h3>参加者 (<span id="player-count">0</span>/40)</h3>
+                <div class="players-grid" id="players-grid"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn success" onclick="party.startGame()" id="start-btn" disabled>ゲーム開始</button>
+                <button class="btn secondary" onclick="party.showMenu()">終了</button>
+            </div>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="score">スコア: <span id="score">0</span></div>
+                <div class="question-info">
+                    <span id="question-number">1</span> / <span id="total-questions">20</span>
+                </div>
+                <div class="timer" id="timer">10</div>
+            </div>
+
+            <div class="hiragana-display" id="hiragana-display">あ</div>
+            <div class="typing-display" id="typing-display"></div>
+            <div class="input-feedback" id="input-feedback"></div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="results-screen" class="screen">
+            <h2 class="results-title">ゲーム終了！</h2>
+
+            <div class="ranking" id="ranking"></div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="btn success" onclick="party.playAgain()">もう一度</button>
+                <button class="btn secondary" onclick="party.showMenu()">メニューに戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- カウントダウンオーバーレイ -->
+    <div id="countdown-overlay" class="overlay">
+        <div class="overlay-content">
+            <div class="countdown-number" id="countdown-number">3</div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocketサーバーのURL（デプロイ後に変更）
+        const WS_URL = 'ws://localhost:8000/ws'; // または 'wss://your-app.deno.dev/ws'
+
+        const hiraganaList = [
+            { hiragana: 'あ', romaji: 'a' }, { hiragana: 'い', romaji: 'i' }, { hiragana: 'う', romaji: 'u' }, { hiragana: 'え', romaji: 'e' }, { hiragana: 'お', romaji: 'o' },
+            { hiragana: 'か', romaji: 'ka' }, { hiragana: 'き', romaji: 'ki' }, { hiragana: 'く', romaji: 'ku' }, { hiragana: 'け', romaji: 'ke' }, { hiragana: 'こ', romaji: 'ko' },
+            { hiragana: 'さ', romaji: 'sa' }, { hiragana: 'し', romaji: 'shi,si' }, { hiragana: 'す', romaji: 'su' }, { hiragana: 'せ', romaji: 'se' }, { hiragana: 'そ', romaji: 'so' },
+            { hiragana: 'た', romaji: 'ta' }, { hiragana: 'ち', romaji: 'chi,ti' }, { hiragana: 'つ', romaji: 'tsu,tu' }, { hiragana: 'て', romaji: 'te' }, { hiragana: 'と', romaji: 'to' },
+            { hiragana: 'な', romaji: 'na' }, { hiragana: 'に', romaji: 'ni' }, { hiragana: 'ぬ', romaji: 'nu' }, { hiragana: 'ね', romaji: 'ne' }, { hiragana: 'の', romaji: 'no' },
+            { hiragana: 'は', romaji: 'ha' }, { hiragana: 'ひ', romaji: 'hi' }, { hiragana: 'ふ', romaji: 'hu,fu' }, { hiragana: 'へ', romaji: 'he' }, { hiragana: 'ほ', romaji: 'ho' },
+            { hiragana: 'ま', romaji: 'ma' }, { hiragana: 'み', romaji: 'mi' }, { hiragana: 'む', romaji: 'mu' }, { hiragana: 'め', romaji: 'me' }, { hiragana: 'も', romaji: 'mo' },
+            { hiragana: 'や', romaji: 'ya' }, { hiragana: 'ゆ', romaji: 'yu' }, { hiragana: 'よ', romaji: 'yo' },
+            { hiragana: 'ら', romaji: 'ra' }, { hiragana: 'り', romaji: 'ri' }, { hiragana: 'る', romaji: 'ru' }, { hiragana: 'れ', romaji: 're' }, { hiragana: 'ろ', romaji: 'ro' },
+            { hiragana: 'わ', romaji: 'wa' }, { hiragana: 'を', romaji: 'wo' }, { hiragana: 'ん', romaji: 'nn,n' }
+        ];
+
+        class HiraganaParty {
+            constructor() {
+                this.hiraganaList = hiraganaList;
+                this.totalQuestions = 20;
+                this.timeLimitSec = 10;
+                this.currentQuestion = 0;
+                this.myScore = 0;
+                this.myInput = '';
+                this.gameSequence = [];
+                this.players = new Map();
+                this.mode = 'menu';
+                this.gameActive = false;
+                this.timer = null;
+                this.currentHiragana = null;
+                this.targetRomaji = '';
+                this.targetRomajiVariants = [];
+                this._activeInputIndex = -1;
+
+                // WebSocket関連
+                this.ws = null;
+                this.clientId = crypto.randomUUID();
+                this.roomCode = null;
+                this.playerName = '';
+                this.isHost = false;
+                this.hostKey = null;
+                this.currentGameId = null;
+                this.serverTimeDrift = 0;
+
+                // ゲーム状態
+                this.phase = 'lobby';
+                this.questionIndex = 0;
+                this.countdownStartAt = null;
+                this.questionStartAt = null;
+                this.countdownDuration = 3000;
+                this.recapDuration = 3000;
+
+                this.initKeyboardListener();
+            }
+
+            // WebSocket接続
+            connectWS() {
+                return new Promise((resolve, reject) => {
+                    this.ws = new WebSocket(WS_URL);
+
+                    this.ws.onopen = () => {
+                        console.log('WebSocket connected');
+                        resolve();
+                    };
+
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleWSMessage(data);
+                    };
+
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        reject(error);
+                    };
+
+                    this.ws.onclose = () => {
+                        console.log('WebSocket closed');
+                        // 再接続ロジックをここに追加可能
+                    };
+                });
+            }
+
+            // WebSocketメッセージ処理
+            handleWSMessage(data) {
+                switch (data.type) {
+                    case 'created':
+                        this.roomCode = data.code;
+                        this.hostKey = data.hostKey;
+                        document.getElementById('room-code').textContent = this.roomCode;
+                        this.sendWS({ type: 'join', code: this.roomCode, name: this.playerName, clientId: this.clientId, isHost: true });
+                        break;
+
+                    case 'joined':
+                        this.showLobby();
+                        break;
+
+                    case 'players':
+                        this.updatePlayers(data.players);
+                        break;
+
+                    case 'state':
+                        this.updateServerDrift(data.serverTime);
+                        this.applyState(data);
+                        break;
+
+                    case 'started':
+                        this.currentGameId = data.gameId;
+                        break;
+
+                    case 'pong':
+                        this.updateServerDrift(data.serverTime);
+                        break;
+
+                    case 'error':
+                        alert(data.message);
+                        break;
+                }
+            }
+
+            // WebSocketメッセージ送信
+            sendWS(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                }
+            }
+
+            // サーバー時刻同期
+            updateServerDrift(serverTime) {
+                if (typeof serverTime === 'number') {
+                    this.serverTimeDrift = serverTime - Date.now();
+                }
+            }
+
+            getSyncedNow() {
+                return Date.now() + this.serverTimeDrift;
+            }
+
+            // プレイヤー情報更新
+            updatePlayers(players) {
+                this.players.clear();
+                players.forEach(p => {
+                    const isMe = p.id === this.clientId;
+                    this.players.set(p.id, {
+                        name: p.name,
+                        score: p.score,
+                        isReady: true,
+                        isMe,
+                        isHost: p.isHost
+                    });
+                    if (isMe) this.myScore = p.score;
+                });
+                this.updatePlayersDisplay();
+            }
+
+            // ゲーム状態適用
+            applyState(state) {
+                this.phase = state.phase;
+                this.questionIndex = state.questionIndex;
+                this.totalQuestions = state.totalQuestions;
+                this.gameSequence = state.sequence.map(i => this.hiraganaList[i]);
+                this.timeLimitSec = Math.max(0, Math.floor(state.timePerQuestion / 1000));
+                this.countdownStartAt = state.countdownStartAt;
+                this.questionStartAt = state.questionStartAt;
+                this.countdownDuration = state.countdownDuration;
+                this.recapDuration = state.recapDuration;
+
+                if (state.players) {
+                    this.updatePlayers(state.players);
+                }
+
+                if (this.mode !== 'game' && (this.phase === 'countdown' || this.phase === 'play' || this.phase === 'recap')) {
+                    this.showGame();
+                }
+
+                if (this.phase === 'countdown') {
+                    this.handleCountdownPhase();
+                } else if (this.phase === 'play') {
+                    this.handlePlayPhase();
+                } else if (this.phase === 'recap') {
+                    this.handleRecapPhase();
+                } else if (this.phase === 'results') {
+                    this.showResults();
+                }
+            }
+
+            // カウントダウンフェーズ
+            handleCountdownPhase() {
+                const entry = this.gameSequence[this.questionIndex];
+                if (entry) {
+                    this.currentHiragana = entry;
+                    this.targetRomajiVariants = this.getRomajiVariants(entry.hiragana, entry.romaji);
+                    this.targetRomaji = this.targetRomajiVariants[0];
+                    this.myInput = '';
+                    this._activeInputIndex = -1;
+                    this.currentQuestion = this.questionIndex + 1;
+
+                    document.getElementById('question-number').textContent = this.currentQuestion;
+                    document.getElementById('total-questions').textContent = this.totalQuestions;
+                    document.getElementById('hiragana-display').textContent = '';
+                    document.getElementById('timer').textContent = this.timeLimitSec > 0 ? this.timeLimitSec : '∞';
+                    this.updateTypingDisplay();
+                }
+
+                this.gameActive = false;
+
+                if (this.countdownStartAt) {
+                    const remaining = (this.countdownStartAt + this.countdownDuration) - this.getSyncedNow();
+                    if (remaining > 0) {
+                        this.showCountdown(remaining);
+                    }
+                }
+            }
+
+            // プレイフェーズ
+            handlePlayPhase() {
+                this.gameActive = true;
+                this.hideCountdown();
+
+                const entry = this.gameSequence[this.questionIndex];
+                if (entry) {
+                    document.getElementById('hiragana-display').textContent = entry.hiragana;
+                }
+
+                if (this.questionStartAt && this.timeLimitSec > 0) {
+                    this.startTimer();
+                }
+            }
+
+            // リキャップフェーズ
+            handleRecapPhase() {
+                this.gameActive = false;
+                // リキャップ表示（前の問題の結果など）
+            }
+
+            // ホスト開始
+            async startHost() {
+                this.isHost = true;
+                this.playerName = 'ホスト';
+
+                try {
+                    await this.connectWS();
+                    this.sendWS({ type: 'create', clientId: this.clientId });
+                } catch (error) {
+                    alert('サーバーに接続できませんでした');
+                }
+            }
+
+            // ゲーム参加
+            async joinGame() {
+                const playerName = document.getElementById('player-name').value.trim();
+                const gameCode = document.getElementById('game-code').value.trim().toUpperCase();
+
+                if (!playerName || !gameCode) {
+                    alert('ニックネームとゲームコードを入力してください');
+                    return;
+                }
+
+                this.playerName = playerName;
+                this.roomCode = gameCode;
+
+                try {
+                    await this.connectWS();
+                    this.sendWS({ type: 'join', code: this.roomCode, name: this.playerName, clientId: this.clientId, isHost: false });
+                } catch (error) {
+                    alert('サーバーに接続できませんでした');
+                }
+            }
+
+            // 練習開始
+            startPractice() {
+                const playerName = document.getElementById('practice-name').value.trim() ||
+                                 document.getElementById('player-name').value.trim() ||
+                                 'プレイヤー';
+
+                this.playerName = playerName;
+                this.mode = 'practice';
+                this.players.clear();
+                this.players.set(this.clientId, {
+                    name: this.playerName,
+                    score: 0,
+                    isReady: true,
+                    isMe: true
+                });
+
+                this.gameSequence = [];
+                for (let i = 0; i < this.totalQuestions; i++) {
+                    const randomIndex = Math.floor(Math.random() * this.hiraganaList.length);
+                    this.gameSequence.push(this.hiraganaList[randomIndex]);
+                }
+
+                this.questionIndex = 0;
+                this.myScore = 0;
+                this.showGame();
+                this.nextQuestion();
+            }
+
+            // ゲーム開始（ホスト）
+            startGame() {
+                if (!this.isHost) return;
+
+                const seqIdx = [];
+                for (let i = 0; i < this.totalQuestions; i++) {
+                    const randomIndex = Math.floor(Math.random() * this.hiraganaList.length);
+                    seqIdx.push(randomIndex);
+                }
+
+                this.sendWS({
+                    type: 'start',
+                    code: this.roomCode,
+                    hostKey: this.hostKey,
+                    totalQuestions: this.totalQuestions,
+                    sequence: seqIdx,
+                    timePerQuestion: Math.max(0, this.timeLimitSec) * 1000
+                });
+            }
+
+            // 次の問題（練習モードのみ）
+            nextQuestion() {
+                if (this.mode !== 'practice') return;
+
+                if (this.questionIndex >= this.totalQuestions) {
+                    this.showResults();
+                    return;
+                }
+
+                const entry = this.gameSequence[this.questionIndex];
+                this.currentHiragana = entry;
+                this.targetRomajiVariants = this.getRomajiVariants(entry.hiragana, entry.romaji);
+                this.targetRomaji = this.targetRomajiVariants[0];
+                this.myInput = '';
+                this._activeInputIndex = -1;
+                this.currentQuestion = this.questionIndex + 1;
+
+                document.getElementById('question-number').textContent = this.currentQuestion;
+                document.getElementById('total-questions').textContent = this.totalQuestions;
+                document.getElementById('score').textContent = this.myScore;
+                document.getElementById('hiragana-display').textContent = entry.hiragana;
+                document.getElementById('timer').textContent = this.timeLimitSec > 0 ? this.timeLimitSec : '∞';
+
+                this.updateTypingDisplay();
+                this.gameActive = true;
+
+                if (this.timeLimitSec > 0) {
+                    this.startTimer();
+                }
+            }
+
+            // タイマー開始
+            startTimer() {
+                if (this.timer) clearInterval(this.timer);
+
+                let timeLeft = this.timeLimitSec;
+                document.getElementById('timer').textContent = timeLeft;
+
+                this.timer = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').textContent = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+
+                        if (this.mode === 'practice') {
+                            this.questionIndex++;
+                            setTimeout(() => this.nextQuestion(), 500);
+                        }
+                    }
+                }, 1000);
+            }
+
+            // キーボード入力処理
+            initKeyboardListener() {
+                document.addEventListener('keydown', (e) => {
+                    if (!this.gameActive) return;
+
+                    const key = e.key.toLowerCase();
+
+                    if (key === 'backspace') {
+                        e.preventDefault();
+                        if (this.myInput.length > 0) {
+                            this.myInput = this.myInput.slice(0, -1);
+                            this._activeInputIndex = this.myInput.length;
+                            this.updateTypingDisplay();
+                        }
+                        return;
+                    }
+
+                    if (key.length === 1 && key.match(/[a-z]/)) {
+                        e.preventDefault();
+                        this.myInput += key;
+                        this.checkInput();
+                    }
+                });
+            }
+
+            // 入力チェック
+            checkInput() {
+                const correct = this.targetRomajiVariants.some(variant => {
+                    return variant.startsWith(this.myInput);
+                });
+
+                if (!correct) {
+                    this.myInput = this.myInput.slice(0, -1);
+                    this.updateTypingDisplay();
+                    return;
+                }
+
+                this._activeInputIndex = this.myInput.length;
+                this.updateTypingDisplay();
+
+                const complete = this.targetRomajiVariants.some(variant => variant === this.myInput);
+
+                if (complete) {
+                    this.myScore++;
+                    document.getElementById('score').textContent = this.myScore;
+
+                    if (this.mode === 'practice') {
+                        this.questionIndex++;
+                        this.gameActive = false;
+
+                        if (this.timer) {
+                            clearInterval(this.timer);
+                            this.timer = null;
+                        }
+
+                        setTimeout(() => this.nextQuestion(), 200);
+                    } else {
+                        // オンラインモード：サーバーに通知
+                        this.sendWS({
+                            type: 'complete',
+                            code: this.roomCode,
+                            playerId: this.clientId,
+                            questionIndex: this.questionIndex
+                        });
+
+                        this.gameActive = false;
+                        document.getElementById('input-feedback').textContent = '正解！次の問題を待っています...';
+                    }
+                }
+            }
+
+            // タイピング表示更新
+            updateTypingDisplay() {
+                const display = document.getElementById('typing-display');
+                const target = this.targetRomaji;
+                let html = '';
+
+                for (let i = 0; i < target.length; i++) {
+                    if (i < this.myInput.length) {
+                        html += `<span class="correct-char">${target[i]}</span>`;
+                    } else if (i === this._activeInputIndex) {
+                        html += `<span class="current-char">${target[i]}</span>`;
+                    } else {
+                        html += `<span class="pending-char">${target[i]}</span>`;
+                    }
+                }
+
+                display.innerHTML = html;
+            }
+
+            // ローマ字バリアント取得
+            getRomajiVariants(hiragana, romajiStr) {
+                return romajiStr.split(',').map(r => r.trim());
+            }
+
+            // プレイヤー表示更新
+            updatePlayersDisplay() {
+                const playersGrid = document.getElementById('players-grid');
+                const playerCount = document.getElementById('player-count');
+
+                if (playersGrid) {
+                    playersGrid.innerHTML = '';
+
+                    this.players.forEach(player => {
+                        const playerCard = document.createElement('div');
+                        playerCard.className = `player-card ${player.isReady ? 'ready' : ''}`;
+                        playerCard.innerHTML = `
+                            <div class="player-name">${player.name} ${player.isMe ? '(あなた)' : ''}</div>
+                            <div class="player-status">${player.isReady ? '準備OK' : '準備中...'}</div>
+                        `;
+                        playersGrid.appendChild(playerCard);
+                    });
+                }
+
+                if (playerCount) {
+                    playerCount.textContent = this.players.size;
+                }
+
+                const startBtn = document.getElementById('start-btn');
+                if (startBtn && this.isHost) {
+                    startBtn.disabled = this.players.size < 1;
+                }
+            }
+
+            // カウントダウン表示
+            showCountdown(duration) {
+                const overlay = document.getElementById('countdown-overlay');
+                const number = document.getElementById('countdown-number');
+                overlay.classList.add('active');
+
+                let remaining = Math.ceil(duration / 1000);
+                number.textContent = remaining;
+
+                const interval = setInterval(() => {
+                    remaining--;
+                    if (remaining > 0) {
+                        number.textContent = remaining;
+                    } else {
+                        clearInterval(interval);
+                        this.hideCountdown();
+                    }
+                }, 1000);
+            }
+
+            hideCountdown() {
+                document.getElementById('countdown-overlay').classList.remove('active');
+            }
+
+            // 結果表示
+            showResults() {
+                this.mode = 'results';
+                this.gameActive = false;
+
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('results-screen').classList.add('active');
+
+                const ranking = document.getElementById('ranking');
+                ranking.innerHTML = '';
+
+                const sortedPlayers = Array.from(this.players.values())
+                    .sort((a, b) => b.score - a.score);
+
+                sortedPlayers.forEach((player, index) => {
+                    const rankItem = document.createElement('div');
+                    const rankClass = index === 0 ? 'top1' : index === 1 ? 'top2' : index === 2 ? 'top3' : '';
+                    rankItem.className = `rank-item ${rankClass}`;
+
+                    const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}位`;
+
+                    rankItem.innerHTML = `
+                        <div class="player-rank">${rankIcon}</div>
+                        <div class="player-info">${player.name} ${player.isMe ? '(あなた)' : ''}</div>
+                        <div class="player-score-display">${player.score}点</div>
+                    `;
+
+                    ranking.appendChild(rankItem);
+                });
+            }
+
+            // 画面切り替え
+            showMenu() {
+                this.mode = 'menu';
+                this.gameActive = false;
+
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('menu-screen').classList.add('active');
+            }
+
+            showJoin() {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('join-screen').classList.add('active');
+            }
+
+            showPractice() {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('practice-screen').classList.add('active');
+            }
+
+            showLobby() {
+                this.mode = 'lobby';
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('lobby-screen').classList.add('active');
+                this.updatePlayersDisplay();
+            }
+
+            showGame() {
+                this.mode = 'game';
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('game-screen').classList.add('active');
+                document.getElementById('score').textContent = this.myScore;
+            }
+
+            // 設定
+            setQuestionCount(count) {
+                this.totalQuestions = count;
+                document.querySelectorAll('[id^="count-"]').forEach(btn => btn.classList.remove('active'));
+                const btn = document.getElementById(`count-${count}`);
+                if (btn) btn.classList.add('active');
+            }
+
+            setTimeLimit(seconds) {
+                this.timeLimitSec = seconds;
+                document.querySelectorAll('[id^="time-"]').forEach(btn => btn.classList.remove('active'));
+                const btn = document.getElementById(`time-${seconds}`);
+                if (btn) btn.classList.add('active');
+            }
+
+            // もう一度
+            playAgain() {
+                if (this.isHost) {
+                    this.showLobby();
+                } else if (this.mode === 'practice') {
+                    this.startPractice();
+                } else {
+                    this.showMenu();
+                }
+            }
+        }
+
+        const party = new HiraganaParty();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>ひらがな パーティー！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent-warm: #ffb871;
+            --accent-pink: #ff7fb6;
+            --accent-deep: #e56f92;
+            --accent-mint: #7fdcd5;
+            --text-primary: #533527;
+            --text-secondary: #7b5b68;
+            --surface-glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(1200px 600px at 20% 0%, rgba(255,240,122,0.35), transparent 70%),
+                        radial-gradient(1200px 600px at 80% 0%, rgba(255,105,180,0.25), transparent 70%),
+                        linear-gradient(135deg, #ffeab3 0%, #ffd3dc 35%, #c8f3ff 70%, #eaffec 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: var(--text-primary);
+            user-select: none;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: clamp(12px, 4vw, 20px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 3.6em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow:
+                0 0 10px rgba(255,255,255,0.9),
+                0 0 20px rgba(255,215,0,0.9),
+                0 0 40px rgba(255,165,0,0.8),
+                0 0 60px rgba(255,105,180,0.6),
+                2px 2px 6px rgba(0,0,0,0.25);
+            -webkit-text-stroke: 1px rgba(255,255,255,0.35);
+            background: linear-gradient(45deg, #fff07a, #FFD700, #FFA500, #FF69B4, #00D0FF, #44E26B);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleShine 2.2s ease-in-out infinite;
+            position: relative;
+            filter: brightness(1.15) saturate(1.15);
+        }
+
+        @keyframes titleShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-top: -5px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 1.4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, rgba(255, 233, 199, 0.95) 0%, rgba(255, 201, 223, 0.95) 100%);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 160, 196, 0.35);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(255, 160, 196, 0.45);
+        }
+
+        .menu-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(255, 160, 196, 0.35);
+        }
+
+        .settings {
+            background: var(--surface-glass);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 18px 32px rgba(255, 160, 196, 0.15);
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .count-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .count-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 20px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.78);
+            border: 2px solid rgba(255, 184, 120, 0.35);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .count-btn.active {
+            background: linear-gradient(135deg, rgba(255, 208, 170, 0.95) 0%, rgba(255, 174, 214, 0.95) 100%);
+            color: var(--text-primary);
+            border-color: rgba(255, 174, 214, 0.7);
+        }
+
+        .count-btn:hover {
+            background: rgba(255, 241, 227, 0.9);
+        }
+
+        .count-btn.active:hover {
+            background: linear-gradient(135deg, rgba(255, 198, 152, 0.95) 0%, rgba(255, 157, 204, 0.95) 100%);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid rgba(255, 184, 120, 0.35);
+            border-radius: 10px;
+            margin: 10px 0;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 0 3px rgba(255, 174, 214, 0.25);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, rgba(255, 208, 170, 0.95) 0%, rgba(255, 174, 214, 0.95) 100%);
+            color: var(--text-primary);
+            box-shadow: 0 8px 22px rgba(255, 160, 196, 0.35);
+        }
+
+        .btn.success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 26px rgba(255, 160, 196, 0.45);
+        }
+
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 184, 120, 0.35);
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 241, 227, 0.9);
+        }
+
+        .room-code-display {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 222, 192, 0.95) 0%, rgba(255, 182, 213, 0.95) 100%);
+            border-radius: 15px;
+            color: var(--text-primary);
+            box-shadow: 0 14px 28px rgba(255, 160, 196, 0.3);
+        }
+
+        .room-code-label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .room-code {
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.4);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, rgba(255, 248, 235, 0.95) 0%, rgba(255, 232, 246, 0.95) 100%);
+            border: 1px solid rgba(255, 174, 214, 0.45);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            color: var(--text-primary);
+            box-shadow: 0 10px 24px rgba(255, 174, 214, 0.18);
+        }
+
+        .player-card.ready {
+            border-color: rgba(255, 184, 120, 0.6);
+            background: linear-gradient(135deg, rgba(255, 244, 228, 0.96) 0%, rgba(255, 230, 242, 0.96) 100%);
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .player-status {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .game-screen {
+            text-align: center;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--surface-glass);
+            border-radius: 15px;
+            box-shadow: 0 14px 28px rgba(255, 160, 196, 0.18);
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-deep);
+        }
+
+        .question-info {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+        }
+
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-warm);
+        }
+
+        .hiragana-display {
+            font-size: 15em;
+            font-weight: bold;
+            margin: 40px 0;
+            text-shadow: 0 0 30px rgba(255, 174, 214, 0.45);
+            background: linear-gradient(135deg, #ffb871 0%, #ff7fb6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .typing-display {
+            font-size: 2.5em;
+            margin: 20px 0;
+            min-height: 1.5em;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.2em;
+            text-align: center;
+        }
+
+        .typing-display span {
+            display: inline-block;
+        }
+
+        .recap-overlay {
+            background: rgba(86, 44, 74, 0.88);
+        }
+
+        .recap-content {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: clamp(20px, 5vw, 32px);
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 208, 170, 0.22), rgba(255, 174, 214, 0.22));
+            box-shadow: 0 20px 48px rgba(20, 10, 16, 0.45);
+            border: 1px solid rgba(255, 228, 244, 0.35);
+            min-width: clamp(260px, 70vw, 420px);
+            color: #ffeef7;
+        }
+
+        .recap-title {
+            font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.08em;
+        }
+
+        .recap-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .recap-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 228, 244, 0.2);
+            border-radius: 14px;
+            padding: 14px 18px;
+            box-shadow: 0 12px 28px rgba(10, 5, 8, 0.25);
+            font-size: clamp(1rem, 3.2vw, 1.4rem);
+            color: #ffeef7;
+        }
+
+        .recap-entry .rank {
+            font-weight: 700;
+            width: 34px;
+            text-align: center;
+        }
+
+        .recap-entry .name {
+            flex: 1;
+            padding: 0 12px;
+        }
+
+        .recap-entry .score {
+            font-weight: 600;
+        }
+
+        .recap-entry.me {
+            border: 2px solid rgba(255, 208, 170, 0.75);
+            background: rgba(255, 208, 170, 0.28);
+        }
+
+        .clear-overlay {
+            background: rgba(84, 39, 63, 0.88);
+        }
+
+        .clear-content {
+            color: #ffeef7;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: clamp(24px, 6vw, 48px);
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(255, 208, 170, 0.18), rgba(255, 174, 214, 0.28));
+            box-shadow: 0 22px 48px rgba(14, 6, 10, 0.45);
+            border: 1px solid rgba(255, 228, 244, 0.35);
+        }
+
+        .clear-title {
+            font-size: clamp(2.2rem, 6vw, 3rem);
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #fff5fb;
+        }
+
+        .clear-subtitle {
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            font-weight: 600;
+            color: #ffe1ef;
+        }
+
+        .clear-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+
+        .correct-char {
+            color: var(--accent-pink);
+        }
+
+        .current-char {
+            color: var(--accent-warm);
+            text-decoration: underline;
+        }
+
+        .pending-char {
+            color: rgba(83, 53, 39, 0.3);
+        }
+
+        .input-feedback {
+            font-size: 1.3em;
+            margin: 20px 0;
+            min-height: 1.5em;
+            color: var(--text-secondary);
+        }
+
+        .results-screen {
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffb871 0%, #ff7fb6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ranking {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .rank-item.top1 {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+        }
+
+        .rank-item.top2 {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+            color: white;
+        }
+
+        .rank-item.top3 {
+            background: linear-gradient(135deg, #CD7F32 0%, #B8732A 100%);
+            color: white;
+        }
+
+        .player-rank {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .player-info {
+            flex: 1;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .player-score-display {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(84, 39, 63, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .overlay-content {
+            text-align: center;
+            color: white;
+        }
+
+        .countdown-number {
+            font-size: 15em;
+            font-weight: bold;
+            text-shadow: 0 0 50px rgba(255, 174, 214, 0.65);
+        }
+
+        .typing-display.shake {
+            animation: shake 0.25s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        .player-score {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .mobile-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            height: 0;
+            width: 0;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(255, 248, 235, 0.95) 0%, rgba(255, 232, 246, 0.95) 100%);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 24px rgba(255, 174, 214, 0.18);
+            color: var(--text-primary);
+        }
+
+        .ranking-item .rank {
+            font-weight: bold;
+            width: 32px;
+        }
+
+        .ranking-item .name {
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .ranking-item .score {
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5em;
+            }
+
+            .hiragana-display {
+                font-size: 10em;
+            }
+
+            .countdown-number {
+                font-size: 10em;
+            }
+
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">ひらがな パーティー！</h1>
+            <p class="subtitle">みんなで楽しくタイピング練習</p>
+        </div>
+
+        <!-- メニュー画面 -->
+        <div id="menu-screen" class="screen active">
+            <div class="settings">
+                <div class="setting-group">
+                    <label class="setting-label">問題数</label>
+                    <div class="count-buttons">
+                        <button class="count-btn active" onclick="party.setQuestionCount(20)" id="count-20">20問</button>
+                        <button class="count-btn" onclick="party.setQuestionCount(50)" id="count-50">50問</button>
+                        <button class="count-btn" onclick="party.setQuestionCount(100)" id="count-100">100問</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label">制限時間（秒/問）</label>
+                    <div class="count-buttons">
+                        <button class="count-btn active" onclick="party.setTimeLimit(10)" id="time-10">10秒</button>
+                        <button class="count-btn" onclick="party.setTimeLimit(20)" id="time-20">20秒</button>
+                        <button class="count-btn" onclick="party.setTimeLimit(0)" id="time-0">なし</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="menu-btn" onclick="party.startHost()">
+                🎮 ホストとしてゲームを作成
+            </button>
+
+            <button class="menu-btn" onclick="party.showJoin()">
+                👥 ゲームに参加
+            </button>
+
+            <button class="menu-btn" onclick="party.showPractice()">
+                📝 一人で練習
+            </button>
+        </div>
+
+        <!-- 参加画面 -->
+        <div id="join-screen" class="screen">
+            <div class="settings">
+                <input type="text" id="player-name" class="input-field" placeholder="ニックネームを入力" maxlength="12">
+                <input type="text" id="game-code" class="input-field" placeholder="ゲームコード(数字6桁)を入力" maxlength="6" inputmode="numeric" pattern="\d*">
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn success" onclick="party.joinGame()">参加する</button>
+                <button class="btn secondary" onclick="party.showMenu()">戻る</button>
+            </div>
+        </div>
+
+        <!-- 練習画面 -->
+        <div id="practice-screen" class="screen">
+            <div class="settings">
+                <input type="text" id="practice-name" class="input-field" placeholder="ニックネームを入力（任意）" maxlength="12">
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn success" onclick="party.startPractice()">練習開始</button>
+                <button class="btn secondary" onclick="party.showMenu()">戻る</button>
+            </div>
+        </div>
+
+        <!-- 待機画面（ホスト） -->
+        <div id="lobby-screen" class="screen">
+            <div class="room-code-display">
+                <div class="room-code-label">ゲームコード</div>
+                <div class="room-code" id="room-code">------</div>
+            </div>
+
+            <div class="settings">
+                <h3>参加者 (<span id="player-count">0</span>/40)</h3>
+                <div class="players-grid" id="players-grid"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn success" onclick="party.startGame()" id="start-btn" disabled>ゲーム開始</button>
+                <button class="btn secondary" onclick="party.showMenu()">終了</button>
+            </div>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="score">スコア: <span id="score">0</span></div>
+                <div class="question-info">
+                    <span id="question-number">1</span> / <span id="total-questions">20</span>
+                </div>
+                <div class="timer" id="timer">10</div>
+            </div>
+
+            <div class="hiragana-display" id="hiragana-display">あ</div>
+            <div class="typing-display" id="typing-display"></div>
+            <input type="text" id="mobile-input" class="mobile-input" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <div class="input-feedback" id="input-feedback"></div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="results-screen" class="screen">
+            <h2 class="results-title">ゲーム終了！</h2>
+
+            <div class="ranking" id="ranking"></div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="btn success" onclick="party.playAgain()">もう一度</button>
+                <button class="btn secondary" onclick="party.showMenu()">メニューに戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- カウントダウンオーバーレイ -->
+    <div id="countdown-overlay" class="overlay">
+        <div class="overlay-content">
+            <div class="countdown-number" id="countdown-number">3</div>
+        </div>
+    </div>
+
+    <div id="recap-overlay" class="overlay recap-overlay">
+        <div class="overlay-content recap-content">
+            <div class="recap-title" id="recap-title">トップ3</div>
+            <div class="recap-list" id="recap-list"></div>
+        </div>
+    </div>
+
+    <div id="clear-overlay" class="overlay clear-overlay">
+        <div class="overlay-content clear-content">
+            <div class="clear-title" id="clear-title">クリア！</div>
+            <div class="clear-subtitle" id="clear-subtitle">みんながんばったね！</div>
+            <div class="clear-buttons">
+                <button class="btn success" onclick="party.playAgain()">もう一度あそぶ</button>
+                <button class="btn secondary" onclick="party.showMenu()">メニューへ</button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    const WS_URL = 'wss://hiragana-party-m0pegsd44t1m.abejunichi.deno.net/ws';
+
+    class HiraganaParty {
+        constructor() {
+            this.hiraganaList = [
+                { hiragana: 'あ', romaji: 'a' }, { hiragana: 'い', romaji: 'i' }, { hiragana: 'う', romaji: 'u' }, { hiragana: 'え', romaji: 'e' }, { hiragana: 'お', romaji: 'o' },
+                { hiragana: 'か', romaji: 'ka' }, { hiragana: 'き', romaji: 'ki' }, { hiragana: 'く', romaji: 'ku' }, { hiragana: 'け', romaji: 'ke' }, { hiragana: 'こ', romaji: 'ko' },
+                { hiragana: 'さ', romaji: 'sa' }, { hiragana: 'し', romaji: 'si,shi' }, { hiragana: 'す', romaji: 'su' }, { hiragana: 'せ', romaji: 'se' }, { hiragana: 'そ', romaji: 'so' },
+                { hiragana: 'た', romaji: 'ta' }, { hiragana: 'ち', romaji: 'ti,chi' }, { hiragana: 'つ', romaji: 'tu,tsu' }, { hiragana: 'て', romaji: 'te' }, { hiragana: 'と', romaji: 'to' },
+                { hiragana: 'な', romaji: 'na' }, { hiragana: 'に', romaji: 'ni' }, { hiragana: 'ぬ', romaji: 'nu' }, { hiragana: 'ね', romaji: 'ne' }, { hiragana: 'の', romaji: 'no' },
+                { hiragana: 'は', romaji: 'ha' }, { hiragana: 'ひ', romaji: 'hi' }, { hiragana: 'ふ', romaji: 'hu,fu' }, { hiragana: 'へ', romaji: 'he' }, { hiragana: 'ほ', romaji: 'ho' },
+                { hiragana: 'ま', romaji: 'ma' }, { hiragana: 'み', romaji: 'mi' }, { hiragana: 'む', romaji: 'mu' }, { hiragana: 'め', romaji: 'me' }, { hiragana: 'も', romaji: 'mo' },
+                { hiragana: 'や', romaji: 'ya' }, { hiragana: 'ゆ', romaji: 'yu' }, { hiragana: 'よ', romaji: 'yo' },
+                { hiragana: 'ら', romaji: 'ra' }, { hiragana: 'り', romaji: 'ri' }, { hiragana: 'る', romaji: 'ru' }, { hiragana: 'れ', romaji: 're' }, { hiragana: 'ろ', romaji: 'ro' },
+                { hiragana: 'わ', romaji: 'wa' }, { hiragana: 'を', romaji: 'wo' }, { hiragana: 'ん', romaji: 'nn,n' }
+            ];
+            this.totalQuestions = 20;
+            this.timeLimitSec = 10;
+            this.mode = 'menu';
+            this.phase = 'lobby';
+            this.players = new Map();
+            this.gameSequence = [];
+            this.questionIndex = 0;
+            this.currentQuestion = 0;
+            this.currentHiragana = null;
+            this.targetRomajiVariants = [];
+            this.targetRomaji = '';
+            this.myInput = '';
+            this.myScore = 0;
+            this.gameActive = false;
+            this.sentCompletionForQuestion = false;
+            this.ws = null;
+            this.wsReady = false;
+            this.pendingMessages = [];
+            this.pingInterval = null;
+            this.timerInterval = null;
+            this.countdownInterval = null;
+            this.serverTimeDrift = 0;
+            this.questionStartAt = null;
+            this.countdownStartAt = null;
+            this.countdownDuration = 3000;
+            this.recapDuration = 3000;
+            this.timePerQuestionMs = 0;
+            this.clientId = this.generateClientId();
+            this.roomCode = '';
+            this.hostKey = null;
+            this.isHost = false;
+            this.playerName = '';
+            this.mobileInput = null;
+
+            this.initKeyboardListener();
+            this.setupMobileInput();
+            this.bindFocusHandlers();
+            this.updatePlayersDisplay();
+        }
+
+        generateClientId() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            return 'cid-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        }
+
+        initKeyboardListener() {
+            document.addEventListener('keydown', (event) => {
+                if (!this.gameActive) return;
+                const key = event.key;
+                if (key === 'Backspace') {
+                    event.preventDefault();
+                    this.handleBackspace();
+                    return;
+                }
+                if (key.length === 1 && /[a-z]/i.test(key)) {
+                    event.preventDefault();
+                    this.processCharacter(key.toLowerCase());
+                }
+            });
+        }
+
+        setupMobileInput() {
+            const input = document.getElementById('mobile-input');
+            if (!input) return;
+            this.mobileInput = input;
+            input.value = '';
+            input.addEventListener('input', () => {
+                const value = (input.value || '').toLowerCase();
+                input.value = '';
+                for (const ch of value) {
+                    if (/[a-z]/.test(ch)) {
+                        this.processCharacter(ch);
+                    }
+                }
+            });
+        }
+
+        bindFocusHandlers() {
+            const gameScreen = document.getElementById('game-screen');
+            if (!gameScreen) return;
+            const handler = () => this.focusForInput();
+            gameScreen.addEventListener('click', handler);
+            gameScreen.addEventListener('touchstart', handler, { passive: true });
+        }
+
+        focusForInput() {
+            if (this.mobileInput && typeof this.mobileInput.focus === 'function') {
+                this.mobileInput.focus({ preventScroll: true });
+            }
+        }
+
+        connectWS() {
+            if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+                return Promise.resolve();
+            }
+            this.disconnectWS();
+            return new Promise((resolve, reject) => {
+                try {
+                    this.ws = new WebSocket(WS_URL);
+                } catch (error) {
+                    reject(error);
+                    return;
+                }
+
+                this.wsReady = false;
+                this.ws.onopen = () => {
+                    this.wsReady = true;
+                    this.flushPendingMessages();
+                    this.startPing();
+                    resolve();
+                };
+
+                this.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.handleWSMessage(data);
+                    } catch (error) {
+                        console.error('WebSocket parse error', error);
+                    }
+                };
+
+                this.ws.onerror = () => {
+                    if (!this.wsReady) {
+                        this.pendingMessages = [];
+                        reject(new Error('WebSocket connection failed'));
+                    }
+                };
+
+                this.ws.onclose = () => {
+                    this.wsReady = false;
+                    this.stopPing();
+                    this.ws = null;
+                    if (this.mode === 'online') {
+                        this.updateStatus('接続が切断されました。メニューに戻って再接続してください。');
+                        this.gameActive = false;
+                    }
+                };
+            });
+        }
+
+        disconnectWS() {
+            this.stopPing();
+            if (this.ws) {
+                try {
+                    this.ws.close();
+                } catch (_) {}
+            }
+            this.ws = null;
+            this.wsReady = false;
+            this.pendingMessages = [];
+        }
+
+        startPing() {
+            this.stopPing();
+            this.pingInterval = setInterval(() => {
+                this.sendWS({ type: 'ping' });
+            }, 10000);
+        }
+
+        stopPing() {
+            if (this.pingInterval) {
+                clearInterval(this.pingInterval);
+                this.pingInterval = null;
+            }
+        }
+
+        flushPendingMessages() {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+            while (this.pendingMessages.length) {
+                this.ws.send(this.pendingMessages.shift());
+            }
+        }
+
+        sendWS(data) {
+            const payload = JSON.stringify(data);
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(payload);
+            } else {
+                this.pendingMessages.push(payload);
+            }
+        }
+
+        handleWSMessage(data) {
+            switch (data.type) {
+                case 'created':
+                    this.roomCode = this.sanitizeRoomCode(data.code);
+                    this.hostKey = data.hostKey;
+                    this.isHost = true;
+                    this.playerName = this.playerName || 'ホスト';
+                    this.players.clear();
+                    this.players.set(this.clientId, {
+                        id: this.clientId,
+                        name: this.playerName,
+                        score: 0,
+                        isHost: true,
+                        isMe: true
+                    });
+                    this.updatePlayersDisplay();
+                    this.showLobby();
+                    this.sendWS({ type: 'join', code: this.roomCode, name: this.playerName, clientId: this.clientId, isHost: true });
+                    break;
+                case 'joined':
+                    if (data.code) {
+                        this.roomCode = this.sanitizeRoomCode(data.code);
+                    }
+                    this.mode = 'online';
+                    this.updateStatus('');
+                    this.showLobby();
+                    break;
+                case 'players':
+                    this.syncPlayers(data.players);
+                    break;
+                case 'state':
+                    this.updateServerDrift(data.serverTime);
+                    this.applyState(data);
+                    break;
+                case 'pong':
+                    this.updateServerDrift(data.serverTime);
+                    break;
+                case 'error':
+                    alert(data.message || 'エラーが発生しました');
+                    break;
+            }
+        }
+
+        updateServerDrift(serverTime) {
+            if (typeof serverTime === 'number') {
+                this.serverTimeDrift = serverTime - Date.now();
+            }
+        }
+
+        syncPlayers(playersPayload) {
+            if (!Array.isArray(playersPayload)) return;
+            this.players.clear();
+            playersPayload.forEach((player) => {
+                const isMe = player.id === this.clientId;
+                this.players.set(player.id, {
+                    id: player.id,
+                    name: player.name,
+                    score: player.score,
+                    isHost: Boolean(player.isHost),
+                    isMe
+                });
+                if (isMe) {
+                    this.myScore = player.score;
+                    this.isHost = Boolean(player.isHost);
+                }
+            });
+            const scoreEl = document.getElementById('score');
+            if (scoreEl) scoreEl.textContent = String(this.myScore);
+            this.updatePlayersDisplay();
+        }
+
+        applyState(state) {
+            this.phase = state.phase || 'lobby';
+            this.questionIndex = typeof state.questionIndex === 'number' ? state.questionIndex : 0;
+            this.totalQuestions = typeof state.totalQuestions === 'number' ? state.totalQuestions : this.totalQuestions;
+            this.timePerQuestionMs = typeof state.timePerQuestion === 'number' ? state.timePerQuestion : 0;
+            this.timeLimitSec = this.timePerQuestionMs > 0 ? Math.round(this.timePerQuestionMs / 1000) : 0;
+            this.countdownStartAt = typeof state.countdownStartAt === 'number' ? state.countdownStartAt : null;
+            this.questionStartAt = typeof state.questionStartAt === 'number' ? state.questionStartAt : null;
+            this.countdownDuration = typeof state.countdownDuration === 'number' ? state.countdownDuration : 3000;
+            this.recapDuration = typeof state.recapDuration === 'number' ? state.recapDuration : 3000;
+
+            if (Array.isArray(state.players)) {
+                this.syncPlayers(state.players);
+            }
+
+            if (Array.isArray(state.sequence)) {
+                this.gameSequence = state.sequence.map((index) => this.hiraganaList[index]).filter(Boolean);
+            }
+
+            if (this.phase === 'lobby') {
+                this.gameActive = false;
+                this.showLobby();
+                return;
+            }
+
+            if (this.phase === 'results') {
+                this.gameActive = false;
+                this.showResults();
+                return;
+            }
+
+            this.showGame();
+
+            if (this.phase === 'countdown') {
+                this.handleCountdownPhase();
+            } else if (this.phase === 'play') {
+                this.handlePlayPhase();
+            } else if (this.phase === 'recap') {
+                this.handleRecapPhase();
+            }
+        }
+
+        handleCountdownPhase() {
+            this.gameActive = false;
+            this.hideRecapOverlay();
+            this.prepareQuestion(this.questionIndex);
+            const hd = document.getElementById('hiragana-display');
+            if (hd) hd.textContent = '';
+            this.updateStatus('もうすぐゲーム開始！');
+            this.startCountdownTicker();
+        }
+
+        handlePlayPhase() {
+            this.hideCountdown();
+            this.hideRecapOverlay();
+            const alreadyCleared = this.sentCompletionForQuestion;
+            this.prepareQuestion(this.questionIndex);
+            this.startQuestionTimer();
+            if (!alreadyCleared) {
+                this.gameActive = true;
+                this.updateStatus('');
+                this.focusForInput();
+            } else {
+                this.gameActive = false;
+            }
+        }
+
+        handleRecapPhase() {
+            this.gameActive = false;
+            this.hideCountdown();
+            this.clearTimer();
+            this.showRecapOverlay();
+            this.updateStatus('');
+        }
+
+        prepareQuestion(index) {
+            const upcomingNumber = index + 1;
+            const isNewQuestion = this.currentQuestion !== upcomingNumber;
+            if (!this.sentCompletionForQuestion || isNewQuestion) {
+                this.hideClearOverlay();
+            }
+            const entry = this.gameSequence[index];
+            if (!entry) return;
+            this.currentHiragana = entry;
+            this.targetRomajiVariants = this.getRomajiVariants(entry.romaji);
+            this.targetRomaji = this.targetRomajiVariants[0] || '';
+            if (isNewQuestion) {
+                this.myInput = '';
+                this.sentCompletionForQuestion = false;
+            }
+            this.currentQuestion = upcomingNumber;
+
+            const qn = document.getElementById('question-number');
+            const tq = document.getElementById('total-questions');
+            const hd = document.getElementById('hiragana-display');
+            if (qn) qn.textContent = String(this.currentQuestion);
+            if (tq) tq.textContent = String(this.totalQuestions);
+            if (hd && this.phase !== 'countdown') hd.textContent = entry.hiragana;
+
+            this.updateStatus('');
+            this.updateTypingDisplay();
+            this.updateTimerDisplay(this.timeLimitSec > 0 ? this.timeLimitSec : '∞');
+        }
+
+        startCountdownTicker() {
+            this.hideCountdown();
+            if (!this.countdownStartAt) return;
+            const overlay = document.getElementById('countdown-overlay');
+            const number = document.getElementById('countdown-number');
+            if (!overlay || !number) return;
+            overlay.classList.add('active');
+            const tick = () => {
+                const endAt = this.countdownStartAt + this.countdownDuration;
+                const remainingMs = endAt - this.getSyncedNow();
+                if (remainingMs <= 0) {
+                    number.textContent = 'せーの！';
+                    setTimeout(() => this.hideCountdown(), 400);
+                    return;
+                }
+                const seconds = Math.max(1, Math.ceil(remainingMs / 1000));
+                if (seconds > 3) {
+                    number.textContent = 'よーい…';
+                } else if (seconds === 3) {
+                    number.textContent = '3';
+                } else if (seconds === 2) {
+                    number.textContent = '2';
+                } else if (seconds === 1) {
+                    number.textContent = '1';
+                }
+            };
+            tick();
+            this.countdownInterval = setInterval(tick, 200);
+        }
+
+        hideCountdown() {
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+            }
+            const overlay = document.getElementById('countdown-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        showRecapOverlay() {
+            const overlay = document.getElementById('recap-overlay');
+            const list = document.getElementById('recap-list');
+            const title = document.getElementById('recap-title');
+            if (!overlay || !list) return;
+            const players = Array.from(this.players.values())
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
+                .slice(0, 3);
+            list.innerHTML = '';
+            if (title) {
+                title.textContent = '現在のトップ3';
+            }
+            if (players.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'recap-entry';
+                empty.innerHTML = '<span class="rank">-</span><span class="name">まだスコアがありません</span><span class="score">0pt</span>';
+                list.appendChild(empty);
+            } else {
+                players.forEach((player, index) => {
+                    const entry = document.createElement('div');
+                    entry.className = 'recap-entry' + (player.isMe ? ' me' : '');
+                    const meLabel = player.isMe ? ' (あなた)' : '';
+                    entry.innerHTML = `<span class="rank">${index + 1}</span>` +
+                        `<span class="name">${player.name}${meLabel}</span>` +
+                        `<span class="score">${player.score || 0}pt</span>`;
+                    list.appendChild(entry);
+                });
+            }
+            overlay.classList.add('active');
+        }
+
+        hideRecapOverlay() {
+            const overlay = document.getElementById('recap-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        showClearOverlay(titleText = 'クリア！', subtitleText = 'みんながんばったね！') {
+            const overlay = document.getElementById('clear-overlay');
+            const title = document.getElementById('clear-title');
+            const subtitle = document.getElementById('clear-subtitle');
+            if (title) title.textContent = titleText;
+            if (subtitle) subtitle.textContent = subtitleText;
+            if (overlay) overlay.classList.add('active');
+        }
+
+        hideClearOverlay() {
+            const overlay = document.getElementById('clear-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        startQuestionTimer() {
+            this.clearTimer();
+            if (!this.questionStartAt || this.timeLimitSec <= 0) {
+                this.updateTimerDisplay(this.timeLimitSec > 0 ? this.timeLimitSec : '∞');
+                return;
+            }
+            const endAt = this.questionStartAt + this.timeLimitSec * 1000;
+            const tick = () => {
+                const remainingMs = endAt - this.getSyncedNow();
+                if (remainingMs <= 0) {
+                    this.updateTimerDisplay(0);
+                    this.clearTimer();
+                    this.gameActive = false;
+                    return;
+                }
+                const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
+                this.updateTimerDisplay(seconds);
+            };
+            tick();
+            this.timerInterval = setInterval(tick, 200);
+        }
+
+        clearTimer() {
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+        }
+
+        getSyncedNow() {
+            return Date.now() + this.serverTimeDrift;
+        }
+
+        handleBackspace() {
+            if (!this.myInput.length) return;
+            this.myInput = this.myInput.slice(0, -1);
+            this.updateTypingDisplay();
+        }
+
+        processCharacter(ch) {
+            if (!this.gameActive) return;
+            if (this.sentCompletionForQuestion) return;
+            if (!this.targetRomajiVariants.length) return;
+            const nextInput = this.myInput + ch;
+            const matchesPrefix = this.targetRomajiVariants.some((variant) => variant.startsWith(nextInput));
+            if (!matchesPrefix) {
+                this.triggerMissFeedback();
+                return;
+            }
+            this.myInput = nextInput;
+            this.updateTypingDisplay();
+            const completed = this.targetRomajiVariants.some((variant) => variant === this.myInput);
+            if (completed) {
+                this.onAnswerComplete();
+            }
+        }
+
+        triggerMissFeedback() {
+            const feedback = document.getElementById('input-feedback');
+            if (feedback) {
+                feedback.textContent = 'まちがい！';
+                setTimeout(() => {
+                    if (feedback.textContent === 'まちがい！') {
+                        feedback.textContent = '';
+                    }
+                }, 600);
+            }
+            this.shakeTypingDisplay();
+        }
+
+        shakeTypingDisplay() {
+            const display = document.getElementById('typing-display');
+            if (!display) return;
+            display.classList.remove('shake');
+            void display.offsetWidth;
+            display.classList.add('shake');
+            setTimeout(() => display.classList.remove('shake'), 250);
+        }
+
+        onAnswerComplete() {
+            if (this.sentCompletionForQuestion) return;
+            this.sentCompletionForQuestion = true;
+            this.gameActive = false;
+            if (this.mode === 'practice') {
+                this.myScore += 1;
+                const me = this.players.get(this.clientId);
+                if (me) me.score = this.myScore;
+                const scoreEl = document.getElementById('score');
+                if (scoreEl) scoreEl.textContent = String(this.myScore);
+                this.updatePlayersDisplay();
+                this.updateStatus('クリア！ 1問正解！ 次の問題を待ってね！');
+                this.showClearOverlay('クリア！', '1問正解！');
+                this.clearTimer();
+                setTimeout(() => this.advancePractice(), 1200);
+                return;
+            }
+            this.updateStatus('クリア！ 1問正解！ 次の問題を待っています…');
+            this.showClearOverlay('クリア！', '1問正解！');
+            this.sendWS({
+                type: 'complete',
+                code: this.roomCode,
+                playerId: this.clientId,
+                questionIndex: this.questionIndex
+            });
+        }
+
+        advancePractice() {
+            this.hideClearOverlay();
+            this.questionIndex += 1;
+            if (this.questionIndex >= this.totalQuestions) {
+                this.showResults();
+                return;
+            }
+            this.prepareQuestion(this.questionIndex);
+            this.gameActive = true;
+            this.startPracticeTimer();
+        }
+
+        startPracticeTimer() {
+            this.clearTimer();
+            if (this.timeLimitSec <= 0) {
+                this.updateTimerDisplay('∞');
+                return;
+            }
+            const start = Date.now();
+            const duration = this.timeLimitSec * 1000;
+            const tick = () => {
+                const elapsed = Date.now() - start;
+                const remainingMs = duration - elapsed;
+                if (remainingMs <= 0) {
+                    this.updateTimerDisplay(0);
+                    this.clearTimer();
+                    this.gameActive = false;
+                    this.advancePractice();
+                    return;
+                }
+                this.updateTimerDisplay(Math.max(0, Math.ceil(remainingMs / 1000)));
+            };
+            tick();
+            this.timerInterval = setInterval(tick, 200);
+        }
+
+        getRomajiVariants(romaji) {
+            if (typeof romaji !== 'string') return [];
+            return romaji.split(',').map((v) => v.trim()).filter(Boolean);
+        }
+
+        updateTypingDisplay() {
+            const display = document.getElementById('typing-display');
+            if (!display) return;
+            if (!this.targetRomaji) {
+                display.textContent = '';
+                return;
+            }
+            const chars = this.targetRomaji.split('');
+            const typedLength = this.myInput.length;
+            let html = '';
+            for (let i = 0; i < chars.length; i++) {
+                if (i < typedLength) {
+                    html += '<span class="correct-char">' + chars[i] + '</span>';
+                } else if (i === typedLength) {
+                    html += '<span class="current-char">' + chars[i] + '</span>';
+                } else {
+                    html += '<span class="pending-char">' + chars[i] + '</span>';
+                }
+            }
+            display.innerHTML = html;
+        }
+
+        updateTimerDisplay(value) {
+            const timer = document.getElementById('timer');
+            if (!timer) return;
+            if (value === '∞') {
+                timer.textContent = '∞';
+            } else {
+                timer.textContent = String(value);
+            }
+        }
+
+        updateStatus(message) {
+            const feedback = document.getElementById('input-feedback');
+            if (!feedback) return;
+            feedback.textContent = message || '';
+        }
+
+        sanitizeRoomCode(code) {
+            if (typeof code !== 'string' && typeof code !== 'number') return '';
+            const trimmed = String(code).trim();
+            return /^\d{6}$/.test(trimmed) ? trimmed : '';
+        }
+
+        setQuestionCount(count) {
+            this.totalQuestions = count;
+            document.querySelectorAll('[id^="count-"]').forEach((btn) => btn.classList.remove('active'));
+            const active = document.getElementById(`count-${count}`);
+            if (active) active.classList.add('active');
+        }
+
+        setTimeLimit(seconds) {
+            this.timeLimitSec = seconds;
+            document.querySelectorAll('[id^="time-"]').forEach((btn) => btn.classList.remove('active'));
+            const active = document.getElementById(`time-${seconds}`);
+            if (active) active.classList.add('active');
+            if (!this.gameActive) {
+                this.updateTimerDisplay(seconds > 0 ? seconds : '∞');
+            }
+        }
+
+        startHost() {
+            this.playerName = 'ホスト';
+            this.mode = 'online';
+            this.isHost = true;
+            this.players.clear();
+            this.updatePlayersDisplay();
+            this.showLobby();
+            this.connectWS()
+                .then(() => {
+                    this.sendWS({ type: 'create', clientId: this.clientId });
+                })
+                .catch(() => {
+                    alert('サーバーに接続できませんでした');
+                    this.showMenu();
+                });
+        }
+
+        joinGame() {
+            const nameInput = document.getElementById('player-name');
+            const codeInput = document.getElementById('game-code');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const rawCode = codeInput ? codeInput.value : '';
+            const code = this.sanitizeRoomCode(rawCode);
+            if (codeInput) codeInput.value = code;
+
+            if (!name || code.length !== 6) {
+                alert('ニックネームと6桁のゲームコードを入力してください');
+                return;
+            }
+
+            this.playerName = name;
+            this.roomCode = code;
+            this.isHost = false;
+            this.mode = 'online';
+
+            this.hideAllScreens();
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen) gameScreen.classList.add('active');
+            const hd = document.getElementById('hiragana-display');
+            if (hd) hd.textContent = '';
+            this.updateStatus('接続中…');
+
+            this.connectWS()
+                .then(() => {
+                    this.sendWS({ type: 'join', code: this.roomCode, name: this.playerName, clientId: this.clientId, isHost: false });
+                })
+                .catch(() => {
+                    alert('サーバーに接続できませんでした');
+                    this.showMenu();
+                });
+        }
+
+        startPractice() {
+            this.hideClearOverlay();
+            const practiceName = document.getElementById('practice-name');
+            const joinName = document.getElementById('player-name');
+            const name = (practiceName && practiceName.value.trim()) || (joinName && joinName.value.trim()) || 'プレイヤー';
+            this.mode = 'practice';
+            this.isHost = true;
+            this.playerName = name;
+            this.hideRecapOverlay();
+            this.disconnectWS();
+            this.players.clear();
+            this.myScore = 0;
+            this.players.set(this.clientId, {
+                id: this.clientId,
+                name,
+                score: this.myScore,
+                isHost: true,
+                isMe: true
+            });
+            this.generatePracticeSequence();
+            this.questionIndex = 0;
+            this.gameActive = true;
+            this.sentCompletionForQuestion = false;
+            this.showGame();
+            const scoreEl = document.getElementById('score');
+            if (scoreEl) scoreEl.textContent = '0';
+            this.prepareQuestion(0);
+            this.startPracticeTimer();
+            this.updatePlayersDisplay();
+        }
+
+        generatePracticeSequence() {
+            this.gameSequence = [];
+            for (let i = 0; i < this.totalQuestions; i++) {
+                const index = Math.floor(Math.random() * this.hiraganaList.length);
+                this.gameSequence.push(this.hiraganaList[index]);
+            }
+        }
+
+        startGame() {
+            if (!this.isHost) return;
+            if (!this.roomCode || !this.hostKey) {
+                alert('部屋情報が取得できていません');
+                return;
+            }
+            const sequence = [];
+            for (let i = 0; i < this.totalQuestions; i++) {
+                sequence.push(Math.floor(Math.random() * this.hiraganaList.length));
+            }
+            this.sendWS({
+                type: 'start',
+                code: this.roomCode,
+                hostKey: this.hostKey,
+                totalQuestions: this.totalQuestions,
+                sequence,
+                timePerQuestion: Math.max(0, this.timeLimitSec) * 1000
+            });
+        }
+
+        showJoin() {
+            this.hideRecapOverlay();
+            this.hideAllScreens();
+            const join = document.getElementById('join-screen');
+            if (join) join.classList.add('active');
+        }
+
+        showPractice() {
+            this.hideRecapOverlay();
+            this.hideAllScreens();
+            const practice = document.getElementById('practice-screen');
+            if (practice) practice.classList.add('active');
+            const input = document.getElementById('practice-name');
+            if (input) input.focus();
+        }
+
+        playAgain() {
+            if (this.mode === 'practice') {
+                this.startPractice();
+                return;
+            }
+            this.showLobby();
+        }
+
+        showLobby() {
+            this.hideRecapOverlay();
+            this.hideClearOverlay();
+            this.hideAllScreens();
+            const lobby = document.getElementById('lobby-screen');
+            if (lobby) lobby.classList.add('active');
+            const codeEl = document.getElementById('room-code');
+            if (codeEl) codeEl.textContent = this.roomCode || '------';
+            this.updatePlayersDisplay();
+        }
+
+        showGame() {
+            this.hideRecapOverlay();
+            this.hideClearOverlay();
+            this.hideAllScreens();
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen) gameScreen.classList.add('active');
+            const scoreEl = document.getElementById('score');
+            if (scoreEl) scoreEl.textContent = String(this.myScore);
+        }
+
+        showResults() {
+            this.hideRecapOverlay();
+            this.hideClearOverlay();
+            this.hideAllScreens();
+            this.renderRanking();
+            const results = document.getElementById('results-screen');
+            if (results) results.classList.add('active');
+            this.showClearOverlay('クリア！', 'すべての問題をクリアしたよ！');
+        }
+
+        renderRanking() {
+            const ranking = document.getElementById('ranking');
+            if (!ranking) return;
+            ranking.innerHTML = '';
+            const list = Array.from(this.players.values());
+            if (!list.length && this.mode === 'practice') {
+                list.push({ name: this.playerName, score: this.myScore, isMe: true });
+            }
+            list.sort((a, b) => (b.score || 0) - (a.score || 0));
+            list.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'ranking-item';
+                const meLabel = player.isMe ? ' (あなた)' : '';
+                item.innerHTML = '<span class="rank">' + (index + 1) + '</span>' +
+                    '<span class="name">' + player.name + meLabel + '</span>' +
+                    '<span class="score">' + (player.score || 0) + 'pt</span>';
+                ranking.appendChild(item);
+            });
+        }
+
+        updatePlayersDisplay() {
+            const playersGrid = document.getElementById('players-grid');
+            const playerCount = document.getElementById('player-count');
+            const players = Array.from(this.players.values());
+
+            if (playerCount) playerCount.textContent = String(players.length);
+
+            if (playersGrid) {
+                playersGrid.innerHTML = '';
+                players.forEach((player) => {
+                    const card = document.createElement('div');
+                    card.className = 'player-card ready';
+                    const hostBadge = player.isHost ? ' ⭐' : '';
+                    const meBadge = player.isMe ? ' (あなた)' : '';
+                    const scoreLine = typeof player.score === 'number' ? '<div class="player-score">スコア: ' + player.score + '</div>' : '';
+                    card.innerHTML = '<div class="player-name">' + player.name + meBadge + hostBadge + '</div>' + scoreLine;
+                    playersGrid.appendChild(card);
+                });
+            }
+
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.disabled = !(this.isHost && players.length >= 1);
+            }
+        }
+
+        hideAllScreens() {
+            document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
+        }
+
+        showMenu() {
+            this.hideRecapOverlay();
+            this.hideClearOverlay();
+            this.mode = 'menu';
+            this.isHost = false;
+            this.roomCode = '';
+            this.hostKey = null;
+            this.gameActive = false;
+            this.players.clear();
+            this.updatePlayersDisplay();
+            this.clearTimer();
+            this.hideCountdown();
+            this.disconnectWS();
+            this.hideAllScreens();
+            const menu = document.getElementById('menu-screen');
+            if (menu) menu.classList.add('active');
+        }
+    }
+
+    window.party = new HiraganaParty();
+</script>
+</body>
+</html>
