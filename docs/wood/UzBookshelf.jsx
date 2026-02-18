@@ -128,9 +128,9 @@ function UzBookshelf() {
   // --- 楽天データ ---
   React.useEffect(() => {
     Promise.all([
-      fetch('001005genre.json').then(r => r.json()),
-      fetch('001006genre.json').then(r => r.json()),
-      fetch('001010genre.json').then(r => r.json()),
+      fetch('../001005genre.json').then(r => r.json()),
+      fetch('../001006genre.json').then(r => r.json()),
+      fetch('../001010genre.json').then(r => r.json()),
     ]).then(([g5, g6, g10]) => {
       const map = {};
       [g5, g6, g10].forEach(g => {
@@ -144,9 +144,9 @@ function UzBookshelf() {
   React.useEffect(() => {
     if (Object.keys(genreMap).length === 0) return;
     Promise.all([
-      fetch('001005.json').then(r => r.json()),
-      fetch('001006.json').then(r => r.json()),
-      fetch('001010.json').then(r => r.json()),
+      fetch('../001005.json').then(r => r.json()),
+      fetch('../001006.json').then(r => r.json()),
+      fetch('../001010.json').then(r => r.json()),
     ]).then(([j5, j6, j10]) => {
       const grouped = { tech: [], biz: [], culture: [] };
       const allBooks = [];
@@ -180,7 +180,19 @@ function UzBookshelf() {
 
   // --- uzデータ ---
   React.useEffect(() => {
-    fetch('uz-shelf-data.json').then(r => r.json()).then(data => setUzData(data)).catch(e => console.error('uz data:', e));
+    fetch('../uz-shelf-data.json').then(r => r.json()).then(data => {
+      // coverUrlの相対パスを親ディレクトリ基準に補正
+      if (data.shelves) {
+        data.shelves.forEach(s => {
+          s.items.forEach(item => {
+            if (item.coverUrl && !item.coverUrl.startsWith('http')) {
+              item.coverUrl = '../' + item.coverUrl;
+            }
+          });
+        });
+      }
+      setUzData(data);
+    }).catch(e => console.error('uz data:', e));
   }, []);
 
   // --- 棚データ構築 ---
