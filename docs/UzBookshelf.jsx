@@ -1,6 +1,7 @@
 // ============================================================
-// UZ Bookshelf — 統合UI v2
-// 美術的品質向上: 表紙3D, 判型反映, 光沢/陰影, 背表紙グラデ
+// UZ Bookshelf — 統合UI v3
+// v2 + 検索, ジャンルフィルタ, キーボード操作, ローディング,
+//      お気に入り(localStorage)
 // ============================================================
 
 // ---- ユーティリティ ----
@@ -95,6 +96,21 @@ function getBookDimensions(item) {
   };
 }
 
+// ---- お気に入りヘルパー ----
+function loadFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem('uz-favorites') || '[]');
+  } catch { return []; }
+}
+
+function saveFavorites(favs) {
+  localStorage.setItem('uz-favorites', JSON.stringify(favs));
+}
+
+function favKey(item) {
+  return item.isbn || item.id || (item.source + '_' + (item.fullTitle || item.title));
+}
+
 // ============================================================
 // メインコンポーネント
 // ============================================================
@@ -111,6 +127,26 @@ function UzBookshelf() {
   const [highlightArticle, setHighlightArticle] = React.useState(null);
   const [shelfIndex, setShelfIndex] = React.useState(0);
   const tooltipTimeoutRef = React.useRef(null);
+
+  // --- 新機能: 検索、ジャンルフィルタ、ローディング、お気に入り ---
+  const [bookSearch, setBookSearch] = React.useState('');
+  const [selectedGenre, setSelectedGenre] = React.useState(null);
+  const [loadError, setLoadError] = React.useState(null);
+  const [favorites, setFavorites] = React.useState(loadFavorites);
+  const [showFavorites, setShowFavorites] = React.useState(false);
+
+  // お気に入り永続化
+  React.useEffect(() => { saveFavorites(favorites); }, [favorites]);
+
+  const toggleFavorite = (item) => {
+    const key = favKey(item);
+    setFavorites(prev => {
+      if (prev.includes(key)) return prev.filter(k => k !== key);
+      return [...prev, key];
+    });
+  };
+
+  const isFavorite = (item) => favorites.includes(favKey(item));
 
   const handleMouseEnter = (e, item) => {
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
@@ -136,7 +172,7 @@ function UzBookshelf() {
         g.children.forEach(c => { map[c.child.booksGenreId] = c.child.booksGenreName; });
       });
       setGenreMap(map);
-    }).catch(e => console.error('Genre load error:', e));
+    }).catch(e => { console.error('Genre load error:', e); setLoadError('ジャンルデータの読み込みに失敗しました'); });
   }, []);
 
   React.useEffect(() => {
@@ -147,7 +183,6 @@ function UzBookshelf() {
       fetch('001010.json').then(r => r.json()),
     ]).then(([j5, j6, j10]) => {
       const grouped = { tech: [], biz: [], culture: [] };
-      const allBooks = [];
       [{ json: j5, shelf: 'tech' }, { json: j6, shelf: 'biz' }, { json: j10, shelf: 'culture' }]
         .forEach(({ json, shelf }) => {
           json.Items.forEach(item => {
@@ -164,7 +199,6 @@ function UzBookshelf() {
               format: detectFormat(b.title),
             };
             grouped[shelf].push(bookData);
-            allBooks.push(bookData);
           });
         });
 
@@ -173,12 +207,13 @@ function UzBookshelf() {
         { id: 'biz', title: 'ビジネス', books: grouped.biz },
         { id: 'culture', title: 'カルチャー', books: grouped.culture },
       ]);
-    }).catch(e => console.error('Book load error:', e));
+    }).catch(e => { console.error('Book load error:', e); setLoadError('書籍データの読み込みに失敗しました'); });
   }, [genreMap]);
 
   // --- uzデータ ---
   React.useEffect(() => {
-    fetch('uz-shelf-data.json').then(r => r.json()).then(data => setUzData(data)).catch(e => console.error('uz data:', e));
+    fetch('uz-shelf-data.json').then(r => r.json()).then(data => setUzData(data))
+      .catch(e => { console.error('uz data:', e); setLoadError('本棚データの読み込みに失敗しました'); });
   }, []);
 
   // --- 棚データ構築 ---
@@ -229,6 +264,7 @@ function UzBookshelf() {
 
   const goToShelf = (idx) => {
     setShelfIndex(idx);
+    setSelectedGenre(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const prevShelf = () => goToShelf(Math.max(0, shelfIndex - 1));
@@ -239,6 +275,9 @@ function UzBookshelf() {
     setMode(newMode);
     setShelfIndex(0);
     setShowArticles(false);
+    setShowFavorites(false);
+    setBookSearch('');
+    setSelectedGenre(null);
   };
 
   const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); };
@@ -249,6 +288,30 @@ function UzBookshelf() {
   };
 
   const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', biz: '💼', culture: '🌍' };
+
+  // --- キーボードナビゲーション (A3) ---
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        if (modal) { closeModal(); return; }
+      }
+      // 検索入力中はキーボードナビ無効
+      if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+      if (e.key === 'ArrowLeft' && !showArticles && !showFavorites) { prevShelf(); e.preventDefault(); }
+      if (e.key === 'ArrowRight' && !showArticles && !showFavorites) { nextShelf(); e.preventDefault(); }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [modal, shelfIndex, allShelves.length, showArticles, showFavorites]);
+
+  // --- ジャンルフィルタ用: 現在の棚のジャンル一覧 (A2) ---
+  const currentGenres = React.useMemo(() => {
+    if (mode !== 'rakuten' || !currentShelf) return [];
+    const books = currentShelf.mixedBooks || [];
+    const ids = new Set();
+    books.forEach(b => { if (b.genreId) ids.add(b.genreId); });
+    return [...ids].map(id => ({ id, name: genreMap[id] || id })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [mode, currentShelf, genreMap]);
 
   // ============================================================
   // 表紙コンポーネント — 美術的3D
@@ -293,6 +356,8 @@ function UzBookshelf() {
           {item.reviewAverage && item.reviewAverage !== '0' && (
             <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
           )}
+          {/* お気に入りバッジ */}
+          {isFavorite(item) && <div className="uz-book__favBadge">♥</div>}
         </div>
         {/* 影 */}
         <div className="uz-book__shadow" />
@@ -336,8 +401,66 @@ function UzBookshelf() {
   // --- 棚の本リスト（UZ/楽天で統一） ---
   const currentItems = React.useMemo(() => {
     if (!currentShelf) return [];
-    return currentShelf.mixedItems || currentShelf.mixedBooks || [];
-  }, [currentShelf]);
+    let items = currentShelf.mixedItems || currentShelf.mixedBooks || [];
+
+    // ジャンルフィルタ (A2)
+    if (selectedGenre && mode === 'rakuten') {
+      items = items.filter(b => b.genreId === selectedGenre);
+    }
+
+    return items;
+  }, [currentShelf, selectedGenre, mode]);
+
+  // --- 検索結果 (A1): 全棚横断検索 ---
+  const searchResults = React.useMemo(() => {
+    if (!bookSearch.trim()) return null;
+    const q = bookSearch.toLowerCase();
+    const allItems = [];
+
+    if (mode === 'uz') {
+      uzShelves.forEach(s => {
+        (s.mixedItems || []).forEach(item => {
+          if (
+            (item.fullTitle || item.title || '').toLowerCase().includes(q) ||
+            (item.fullAuthor || item.author || '').toLowerCase().includes(q)
+          ) allItems.push(item);
+        });
+      });
+    } else {
+      rakutenShelves.forEach(s => {
+        (s.mixedBooks || []).forEach(item => {
+          if (
+            (item.fullTitle || item.title || '').toLowerCase().includes(q) ||
+            (item.fullAuthor || item.author || '').toLowerCase().includes(q)
+          ) allItems.push(item);
+        });
+      });
+    }
+
+    return allItems;
+  }, [bookSearch, mode, uzShelves, rakutenShelves]);
+
+  // --- お気に入りリスト (A6) ---
+  const favoriteItems = React.useMemo(() => {
+    if (!showFavorites) return null;
+    const all = [];
+
+    uzShelves.forEach(s => {
+      (s.mixedItems || []).forEach(item => {
+        if (isFavorite(item)) all.push(item);
+      });
+    });
+    rakutenShelves.forEach(s => {
+      (s.mixedBooks || []).forEach(item => {
+        if (isFavorite(item)) all.push(item);
+      });
+    });
+
+    return all;
+  }, [showFavorites, favorites, uzShelves, rakutenShelves]);
+
+  // --- ローディング判定 (A4) ---
+  const isLoading = !uzData && !loadError;
 
   // ============================================================
   // RENDER
@@ -350,16 +473,38 @@ function UzBookshelf() {
           <h1 className="uz-title">UZ Bookshelf</h1>
         </div>
         <div className="uz-headerActions">
-          <button className={`uz-tabBtn ${mode === 'uz' ? 'active' : ''}`} onClick={() => switchMode('uz')}>UZ セレクション</button>
-          <button className={`uz-tabBtn ${mode === 'rakuten' ? 'active' : ''}`} onClick={() => switchMode('rakuten')}>楽天Books</button>
+          <button className={`uz-tabBtn ${mode === 'uz' && !showArticles && !showFavorites ? 'active' : ''}`} onClick={() => { switchMode('uz'); }}>UZ セレクション</button>
+          <button className={`uz-tabBtn ${mode === 'rakuten' && !showArticles && !showFavorites ? 'active' : ''}`} onClick={() => { switchMode('rakuten'); }}>楽天Books</button>
           {mode === 'uz' && (
-            <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => setShowArticles(!showArticles)}>記事一覧</button>
+            <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => { setShowArticles(!showArticles); setShowFavorites(false); }}>記事一覧</button>
           )}
+          <button
+            className={`uz-tabBtn ${showFavorites ? 'active' : ''}`}
+            onClick={() => { setShowFavorites(!showFavorites); setShowArticles(false); }}
+          >
+            ♥ お気に入り{favorites.length > 0 && <span className="uz-favCount">{favorites.length}</span>}
+          </button>
         </div>
       </header>
 
-      {/* 棚セレクター */}
-      {!showArticles && allShelves.length > 0 && (
+      {/* 検索バー (A1) — 記事/お気に入り以外で表示 */}
+      {!showArticles && !showFavorites && (
+        <div className="uz-bookSearchBar">
+          <input
+            className="uz-bookSearchInput"
+            type="text"
+            placeholder={mode === 'uz' ? 'タイトル・著者で検索...' : '楽天書籍を検索...'}
+            value={bookSearch}
+            onChange={e => setBookSearch(e.target.value)}
+          />
+          {bookSearch && (
+            <button className="uz-bookSearchClear" onClick={() => setBookSearch('')}>✕</button>
+          )}
+        </div>
+      )}
+
+      {/* 棚セレクター — 検索中は非表示 */}
+      {!showArticles && !showFavorites && !searchResults && allShelves.length > 0 && (
         <nav className="uz-shelfNav">
           {allShelves.map((s, i) => (
             <button
@@ -372,6 +517,40 @@ function UzBookshelf() {
             </button>
           ))}
         </nav>
+      )}
+
+      {/* ジャンルフィルタ (A2) — 楽天モード・棚表示中 */}
+      {!showArticles && !showFavorites && !searchResults && mode === 'rakuten' && currentGenres.length > 1 && (
+        <div className="uz-genreFilter">
+          <button
+            className={`uz-genreBtn ${!selectedGenre ? 'active' : ''}`}
+            onClick={() => setSelectedGenre(null)}
+          >すべて</button>
+          {currentGenres.map(g => (
+            <button
+              key={g.id}
+              className={`uz-genreBtn ${selectedGenre === g.id ? 'active' : ''}`}
+              onClick={() => setSelectedGenre(g.id)}
+            >{g.name}</button>
+          ))}
+        </div>
+      )}
+
+      {/* ローディング状態 (A4) */}
+      {isLoading && (
+        <div className="uz-loading">
+          <div className="uz-loading__spinner" />
+          <div className="uz-loading__text">本棚を読み込み中...</div>
+        </div>
+      )}
+
+      {/* エラー状態 (A4) */}
+      {loadError && (
+        <div className="uz-error">
+          <div className="uz-error__icon">!</div>
+          <div className="uz-error__text">{loadError}</div>
+          <button className="uz-error__retry" onClick={() => { setLoadError(null); location.reload(); }}>再読み込み</button>
+        </div>
       )}
 
       {/* 記事一覧パネル */}
@@ -406,8 +585,85 @@ function UzBookshelf() {
         </div>
       )}
 
-      {/* === 1ページ1棚 === */}
-      {!showArticles && currentShelf && (
+      {/* お気に入りパネル (A6) */}
+      {showFavorites && (
+        <div className="uz-singleShelf">
+          <section className="uz-shelf">
+            <div className="uz-shelfHead">
+              <h2 className="uz-shelfTitle">
+                <span className="uz-shelfIcon">♥</span>
+                お気に入り
+              </h2>
+              <div className="uz-shelfMeta">{favoriteItems ? favoriteItems.length : 0} items</div>
+            </div>
+            {favoriteItems && favoriteItems.length > 0 ? (
+              <div className="uz-rack">
+                <div className="uz-plank" aria-hidden="true" />
+                <div className="uz-mixedRow">
+                  {favoriteItems.map((item, idx) => {
+                    const handlers = {
+                      onClick: e => openModal(item, e),
+                      onMouseEnter: e => handleMouseEnter(e, item),
+                      onMouseLeave: handleMouseLeave,
+                    };
+                    if (item.type === 'featured') {
+                      return <BookFace key={`fav-${favKey(item)}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                    }
+                    return <BookSpine key={`fav-${favKey(item)}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="uz-emptyState">
+                <div className="uz-emptyState__icon">♥</div>
+                <div className="uz-emptyState__text">お気に入りはまだありません</div>
+                <div className="uz-emptyState__hint">本をクリックして ♥ ボタンで追加できます</div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* === 検索結果表示 (A1) === */}
+      {!showArticles && !showFavorites && searchResults && (
+        <div className="uz-singleShelf">
+          <section className="uz-shelf">
+            <div className="uz-shelfHead">
+              <h2 className="uz-shelfTitle">
+                <span className="uz-shelfIcon">🔍</span>
+                「{bookSearch}」の検索結果
+              </h2>
+              <div className="uz-shelfMeta">{searchResults.length} items</div>
+            </div>
+            {searchResults.length > 0 ? (
+              <div className="uz-rack">
+                <div className="uz-plank" aria-hidden="true" />
+                <div className="uz-mixedRow">
+                  {searchResults.map((item, idx) => {
+                    const handlers = {
+                      onClick: e => openModal(item, e),
+                      onMouseEnter: e => handleMouseEnter(e, item),
+                      onMouseLeave: handleMouseLeave,
+                    };
+                    if (item.type === 'featured') {
+                      return <BookFace key={`sr-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                    }
+                    return <BookSpine key={`sr-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="uz-emptyState">
+                <div className="uz-emptyState__icon">🔍</div>
+                <div className="uz-emptyState__text">該当する本が見つかりませんでした</div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* === 1ページ1棚（通常表示） === */}
+      {!showArticles && !showFavorites && !searchResults && currentShelf && !isLoading && (
         <div className="uz-singleShelf">
           <section className={`uz-shelf uz-shelf--${currentShelf.id}`}>
             <div className="uz-shelfHead">
@@ -475,7 +731,7 @@ function UzBookshelf() {
 
       {/* モーダル */}
       {modal && (
-        <div className="uz-modalOverlay" onClick={closeModal}>
+        <div className="uz-modalOverlay" onClick={closeModal} role="dialog" aria-label="書籍詳細">
           <div className="uz-modal" onClick={e => e.stopPropagation()}>
             <button className="uz-modal__close" onClick={closeModal}>✕</button>
             <div className="uz-modal__inner">
@@ -512,6 +768,13 @@ function UzBookshelf() {
                   </div>
                 )}
                 <div className="uz-modal__actions">
+                  {/* お気に入りボタン (A6) */}
+                  <button
+                    className={`uz-modal__btn uz-modal__btn--fav ${isFavorite(modal) ? 'active' : ''}`}
+                    onClick={() => toggleFavorite(modal)}
+                  >
+                    {isFavorite(modal) ? '♥ お気に入り済み' : '♡ お気に入りに追加'}
+                  </button>
                   {(modal.affiliateUrl || modal.url) && <a href={modal.affiliateUrl || modal.url} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">楽天で購入</a>}
                   {modal.amazonUrl && <a href={modal.amazonUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--amazon">Amazonで見る</a>}
                   {modal.rakutenUrl && !modal.affiliateUrl && <a href={modal.rakutenUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">楽天で見る</a>}

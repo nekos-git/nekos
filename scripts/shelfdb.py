@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS rakuten_books (
     review_average TEXT DEFAULT '',
     review_count INTEGER DEFAULT 0,
     availability TEXT DEFAULT '',
+    affiliate_url TEXT DEFAULT '',
     sort_order INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now','localtime')),
     updated_at TEXT DEFAULT (datetime('now','localtime'))
@@ -112,6 +113,7 @@ MIGRATIONS = [
     ("shelf_items", "updated_at", "TEXT DEFAULT (datetime('now','localtime'))"),
     ("rakuten_books", "created_at", "TEXT DEFAULT (datetime('now','localtime'))"),
     ("rakuten_books", "updated_at", "TEXT DEFAULT (datetime('now','localtime'))"),
+    ("rakuten_books", "affiliate_url", "TEXT DEFAULT ''"),
 ]
 
 
@@ -370,6 +372,7 @@ class ShelfDB:
                 review_average=item.get("reviewAverage", ""),
                 review_count=item.get("reviewCount", 0),
                 availability=item.get("availability", ""),
+                affiliate_url=item.get("affiliateUrl", ""),
                 sort_order=i,
             )
             count += 1
@@ -458,7 +461,7 @@ class ShelfDB:
         items = [
             {
                 "Item": {
-                    "affiliateUrl": "", "artistName": "",
+                    "affiliateUrl": b["affiliate_url"] or "", "artistName": "",
                     "author": b["author"] or "",
                     "availability": b["availability"] or "",
                     "booksGenreId": b["books_genre_id"] or "",

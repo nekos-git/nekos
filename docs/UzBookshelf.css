@@ -554,6 +554,118 @@ body {
 .uz-articlesList::-webkit-scrollbar-track, .uz-modal::-webkit-scrollbar-track { background: transparent; }
 .uz-articlesList::-webkit-scrollbar-thumb, .uz-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
 
+/* ============================================================
+   検索バー (A1)
+   ============================================================ */
+.uz-bookSearchBar {
+  position: relative; margin-top: 14px;
+}
+.uz-bookSearchInput {
+  width: 100%; padding: 10px 40px 10px 16px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  color: var(--text); border-radius: 14px;
+  font-size: 14px; outline: none; transition: border-color .15s;
+}
+.uz-bookSearchInput:focus { border-color: var(--accent); }
+.uz-bookSearchInput::placeholder { color: var(--muted); }
+.uz-bookSearchClear {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.1); border: none; color: var(--muted);
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+  font-size: 12px; display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.uz-bookSearchClear:hover { background: rgba(255,255,255,.2); color: var(--text); }
+
+/* ============================================================
+   ジャンルフィルタ (A2)
+   ============================================================ */
+.uz-genreFilter {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+  padding: 8px; background: rgba(255,255,255,.02);
+  border: 1px solid var(--line); border-radius: 12px;
+}
+.uz-genreBtn {
+  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  color: var(--muted); padding: 4px 12px; border-radius: 14px;
+  font-size: 11px; cursor: pointer; transition: all .12s;
+  white-space: nowrap;
+}
+.uz-genreBtn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.uz-genreBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ============================================================
+   ローディング / エラー (A4)
+   ============================================================ */
+.uz-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; gap: 16px;
+}
+.uz-loading__spinner {
+  width: 40px; height: 40px; border: 3px solid var(--line);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: uzSpin 1s linear infinite;
+}
+@keyframes uzSpin { to { transform: rotate(360deg); } }
+.uz-loading__text { font-size: 14px; color: var(--muted); }
+
+.uz-error {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 12px;
+}
+.uz-error__icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,107,74,.15); color: var(--accent2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700;
+}
+.uz-error__text { font-size: 14px; color: var(--muted); }
+.uz-error__retry {
+  background: var(--accent); color: #fff; border: none;
+  padding: 8px 20px; border-radius: 10px; font-size: 13px;
+  cursor: pointer; transition: background .12s;
+}
+.uz-error__retry:hover { background: #3a8aee; }
+
+/* ============================================================
+   お気に入り (A6)
+   ============================================================ */
+.uz-favCount {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent2); color: #fff;
+  font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+  border-radius: 9px; margin-left: 6px; padding: 0 5px;
+}
+
+.uz-book__favBadge {
+  position: absolute; bottom: 4px; left: 4px;
+  background: rgba(255,107,74,.85); color: #fff;
+  font-size: 10px; padding: 1px 4px; border-radius: 6px;
+  z-index: 2;
+}
+
+.uz-modal__btn--fav {
+  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  cursor: pointer; transition: all .15s;
+}
+.uz-modal__btn--fav:hover {
+  background: rgba(255,107,74,.15); border-color: rgba(255,107,74,.3);
+}
+.uz-modal__btn--fav.active {
+  background: var(--accent2); border-color: var(--accent2);
+}
+
+/* ============================================================
+   空状態
+   ============================================================ */
+.uz-emptyState {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; gap: 8px;
+}
+.uz-emptyState__icon { font-size: 36px; opacity: .4; }
+.uz-emptyState__text { font-size: 15px; color: var(--muted); font-weight: 600; }
+.uz-emptyState__hint { font-size: 12px; color: var(--muted); opacity: .6; }
+
 /* ---- タッチデバイス: ツールチップ無効化 ---- */
 @media (hover: none), (pointer: coarse) {
   .uz-tooltip { display: none !important; }
@@ -582,8 +694,11 @@ body {
 /* ---- Phone (600px以下) ---- */
 @media (max-width: 600px) {
   .uz-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .uz-headerActions { width: 100%; }
-  .uz-tabBtn { padding: 6px 14px; font-size: 12px; }
+  .uz-headerActions { width: 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .uz-headerActions::-webkit-scrollbar { display: none; }
+  .uz-tabBtn { padding: 6px 14px; font-size: 12px; flex-shrink: 0; }
+  .uz-bookSearchInput { font-size: 13px; padding: 8px 36px 8px 12px; }
+  .uz-genreFilter { gap: 4px; padding: 6px; }
 
   .uz-shelfNav { gap: 4px; padding: 4px; margin-top: 12px; border-radius: 12px; }
   .uz-shelfNav__btn { padding: 6px 12px; font-size: 12px; border-radius: 10px; gap: 4px; }

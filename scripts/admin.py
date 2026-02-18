@@ -28,6 +28,7 @@ REST API:
 import os
 import sys
 import re
+import subprocess
 
 try:
     from flask import Flask, render_template_string, request, redirect, url_for, flash, jsonify
@@ -255,6 +256,7 @@ ADMIN_HTML = """
   <h1>本棚DB管理</h1>
   <div class="actions">
     <a href="{{ url_for('export_view') }}" class="btn" onclick="return confirm('JSONをエクスポートしますか？')">JSONエクスポート</a>
+    <a href="{{ url_for('deploy_view') }}" class="btn" style="background:#0984e3" onclick="return confirm('エクスポート＆Git Pushを実行しますか？')">デプロイ</a>
   </div>
 </div>
 
@@ -263,6 +265,7 @@ ADMIN_HTML = """
   <a href="{{ url_for('shelf_items_list') }}" class="{{ 'active' if active_tab == 'items' }}">本棚アイテム</a>
   <a href="{{ url_for('articles_list') }}" class="{{ 'active' if active_tab == 'articles' }}">記事</a>
   <a href="{{ url_for('rakuten_list') }}" class="{{ 'active' if active_tab == 'rakuten' }}">楽天書籍</a>
+  <a href="{{ url_for('data_quality_view') }}" class="{{ 'active' if active_tab == 'quality' }}">データ品質</a>
 </nav>
 
 <div class="container">
@@ -571,6 +574,7 @@ def rakuten_form():
                 author=f.get("author", ""), publisher=f.get("publisher", ""),
                 item_price=int(f.get("item_price") or 0), item_url=f.get("item_url", ""),
                 large_image_url=f.get("large_image_url", ""),
+                affiliate_url=f.get("affiliate_url", ""),
                 item_caption=f.get("item_caption", ""), sales_date=f.get("sales_date", ""),
                 sort_order=int(f.get("sort_order") or 0),
             )
@@ -603,6 +607,9 @@ def rakuten_form():
       <div class="form-group"><label>表紙画像URL</label><input name="large_image_url" value="{{ book.large_image_url if book else '' }}"></div>
     </div>
     <div class="form-row">
+      <div class="form-group"><label>アフィリエイトURL</label><input name="affiliate_url" value="{{ book.affiliate_url if book else '' }}"></div>
+    </div>
+    <div class="form-row">
       <div class="form-group"><label>発売日</label><input name="sales_date" value="{{ book.sales_date if book else '' }}"></div>
       <div class="form-group" style="max-width:120px"><label>並び順</label><input type="number" name="sort_order" value="{{ book.sort_order if book else 0 }}"></div>
     </div>
@@ -630,6 +637,155 @@ def export_view():
         results = db.export_all()
     flash(f"JSONエクスポート完了! {results}", "success")
     return redirect(url_for("index"))
+
+
+# --- Deploy (B2) ---
+
+@app.route("/deploy")
+def deploy_view():
+    with ShelfDB() as db:
+        results = db.export_all()
+
+    messages = [f"JSONエクスポート完了: {results}"]
+
+    try:
+        docs_dir = os.path.join(BASE_DIR, "docs")
+        git_add = subprocess.run(
+            ["git", "add", "docs/"],
+            cwd=BASE_DIR, capture_output=True, text=True, timeout=30
+        )
+        if git_add.returncode != 0:
+            messages.append(f"git add 失敗: {git_add.stderr}")
+        else:
+            git_commit = subprocess.run(
+                ["git", "commit", "-m", "Update bookshelf data"],
+                cwd=BASE_DIR, capture_output=True, text=True, timeout=30
+            )
+            if git_commit.returncode != 0:
+                if "nothing to commit" in git_commit.stdout:
+                    messages.append("変更なし（コミット不要）")
+                else:
+                    messages.append(f"git commit 失敗: {git_commit.stderr}")
+            else:
+                messages.append(f"コミット完了: {git_commit.stdout.strip()}")
+                git_push = subprocess.run(
+                    ["git", "push"],
+                    cwd=BASE_DIR, capture_output=True, text=True, timeout=60
+                )
+                if git_push.returncode != 0:
+                    messages.append(f"git push 失敗: {git_push.stderr}")
+                else:
+                    messages.append("プッシュ完了!")
+    except subprocess.TimeoutExpired:
+        messages.append("タイムアウト: git操作に時間がかかりすぎました")
+    except FileNotFoundError:
+        messages.append("エラー: gitコマンドが見つかりません")
+
+    for msg in messages:
+        flash(msg, "success")
+    return redirect(url_for("index"))
+
+
+# --- Data Quality (B3) ---
+
+@app.route("/data-quality")
+def data_quality_view():
+    with ShelfDB() as db:
+        missing_author = db.conn.execute(
+            "SELECT id, item_id, shelf_id, title, full_title FROM shelf_items WHERE author = '' OR author IS NULL ORDER BY shelf_id, sort_order"
+        ).fetchall()
+
+        empty_shelves = db.conn.execute(
+            """SELECT s.id, s.title, COUNT(si.id) as count
+               FROM shelves s LEFT JOIN shelf_items si ON s.id = si.shelf_id
+               GROUP BY s.id HAVING count = 0 ORDER BY s.sort_order"""
+        ).fetchall()
+
+        empty_articles = db.conn.execute(
+            "SELECT id, title, date, shelf FROM articles WHERE product_count = 0 OR categories = '[]' ORDER BY date DESC"
+        ).fetchall()
+
+        rakuten_no_affiliate = db.conn.execute(
+            "SELECT COUNT(*) FROM rakuten_books WHERE affiliate_url = '' OR affiliate_url IS NULL"
+        ).fetchone()[0]
+
+        total_rakuten = db.rakuten.count()
+
+    return render("""
+<h3 style="margin-bottom:16px">データ品質チェック</h3>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="num" style="color: {{ '#d63031' if missing_author|length > 0 else '#00b894' }}">{{ missing_author|length }}</div>
+    <div class="label">著者名なしアイテム</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" style="color: {{ '#d63031' if empty_shelves|length > 0 else '#00b894' }}">{{ empty_shelves|length }}</div>
+    <div class="label">空の棚</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" style="color: {{ '#e17055' if empty_articles|length > 0 else '#00b894' }}">{{ empty_articles|length }}</div>
+    <div class="label">未分類/空の記事</div>
+  </div>
+  <div class="stat-card">
+    <div class="num" style="color: {{ '#e17055' if rakuten_no_affiliate > 0 else '#00b894' }}">{{ rakuten_no_affiliate }}/{{ total_rakuten }}</div>
+    <div class="label">アフィリエイトURL未設定</div>
+  </div>
+</div>
+
+{% if missing_author %}
+<h4 style="margin:24px 0 12px">著者名が未設定のアイテム ({{ missing_author|length }}件)</h4>
+<table>
+  <tr><th>ID</th><th>タイトル</th><th>フルタイトル</th><th>棚</th><th>操作</th></tr>
+  {% for item in missing_author %}
+  <tr>
+    <td>{{ item.id }}</td>
+    <td>{{ item.title }}</td>
+    <td>{{ item.full_title or '-' }}</td>
+    <td><span class="badge">{{ item.shelf_id }}</span></td>
+    <td><a href="{{ url_for('shelf_item_form', id=item.id) }}" class="edit-btn">編集</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if empty_shelves %}
+<h4 style="margin:24px 0 12px">アイテムがない棚</h4>
+<table>
+  <tr><th>棚ID</th><th>タイトル</th></tr>
+  {% for s in empty_shelves %}
+  <tr><td>{{ s.id }}</td><td>{{ s.title }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if empty_articles %}
+<h4 style="margin:24px 0 12px">未分類 or 商品数0の記事 ({{ empty_articles|length }}件)</h4>
+<table>
+  <tr><th>ID</th><th>タイトル</th><th>日付</th><th>棚</th><th>操作</th></tr>
+  {% for a in empty_articles %}
+  <tr>
+    <td>{{ a.id }}</td>
+    <td>{{ a.title }}</td>
+    <td>{{ a.date }}</td>
+    <td><span class="badge">{{ a.shelf or '未分類' }}</span></td>
+    <td><a href="{{ url_for('article_form', id=a.id) }}" class="edit-btn">編集</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if not missing_author and not empty_shelves and not empty_articles and rakuten_no_affiliate == 0 %}
+<div style="text-align:center; padding:40px; color:#00b894; font-size:18px; font-weight:600">
+  すべてのデータが正常です
+</div>
+{% endif %}
+""", active_tab="quality",
+       missing_author=missing_author,
+       empty_shelves=empty_shelves,
+       empty_articles=empty_articles,
+       rakuten_no_affiliate=rakuten_no_affiliate,
+       total_rakuten=total_rakuten)
 
 
 if __name__ == "__main__":
