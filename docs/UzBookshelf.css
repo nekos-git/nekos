@@ -1,29 +1,43 @@
 /* ============================================================
-   UZ Bookshelf v2 — 美術的3D本棚CSS
-   表紙 / 背表紙 / 光沢 / 陰影 / 判型反映
+   UZ Bookshelf v3 — リアル木製本棚CSS
+   booklog.jp風: 木目テクスチャ, 棚板厚み, 側板, 前板リップ
    ============================================================ */
 
 :root {
-  --bg: #0a0e13;
-  --panel: #0f1520;
-  --panel2: #0c111a;
-  --text: #d7e1ea;
-  --muted: #8ea0b5;
-  --line: rgba(255,255,255,.07);
-  --shadow: rgba(0,0,0,.50);
-  --plank: #16202e;
-  --plank-light: #1e2c3e;
-  --accent: #4a9eff;
-  --accent2: #ff6b4a;
+  --bg: #2c2420;
+  --wall: #3a332d;
+  --panel: #1e1a16;
+  --panel2: #15120f;
+  --text: #ede6dc;
+  --muted: #a89882;
+  --line: rgba(255,255,255,.08);
+  --shadow: rgba(0,0,0,.55);
+  /* 木目カラー */
+  --wood-dark: #3d2b1a;
+  --wood-mid: #5a3d25;
+  --wood-light: #7a5535;
+  --wood-highlight: #8e6840;
+  --wood-edge: #2e1e10;
+  --plank: #5a3d25;
+  --plank-light: #7a5535;
+  --accent: #c49a6c;
+  --accent2: #d4764e;
   --rakuten: #bf0000;
   --amazon: #ff9900;
-  --wood: linear-gradient(180deg, #1e2a3a 0%, #141e2c 40%, #0e1620 100%);
+  --wood: linear-gradient(180deg, #4a3220 0%, #3d2b1a 50%, #2e1e10 100%);
 }
 
 * { box-sizing: border-box; }
 body {
-  margin: 0; background: var(--bg); color: var(--text);
+  margin: 0; color: var(--text);
   font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* 壁テクスチャ背景 */
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0px, transparent 1px, transparent 40px),
+    linear-gradient(160deg, #3a332d 0%, #2c2420 40%, #241e1a 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 .uz-wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
@@ -31,26 +45,30 @@ body {
 /* ---- Header ---- */
 .uz-header {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 10px 0 18px;
-  border-bottom: 1px solid var(--line); flex-wrap: wrap;
+  gap: 16px; padding: 12px 20px 14px;
+  background: linear-gradient(180deg, #3d2b1a, #2e1e10);
+  border-radius: 12px 12px 0 0;
+  border-bottom: 2px solid var(--wood-edge);
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
 .uz-kicker { font-size: 10px; letter-spacing: .22em; color: var(--accent); text-transform: uppercase; font-weight: 600; }
-.uz-title { margin: 4px 0 0; font-size: 24px; letter-spacing: .03em; font-weight: 800; }
+.uz-title { margin: 4px 0 0; font-size: 24px; letter-spacing: .03em; font-weight: 800; color: #f0e6d8; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
 .uz-headerActions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .uz-tabBtn {
-  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
   color: var(--muted); padding: 7px 18px; border-radius: 22px;
   font-size: 13px; cursor: pointer; transition: all .15s ease; font-weight: 500;
 }
-.uz-tabBtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
-.uz-tabBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.uz-tabBtn:hover { background: rgba(255,255,255,.15); color: var(--text); }
+.uz-tabBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 700; }
 
 /* ---- 棚セレクター ---- */
 .uz-shelfNav {
-  display: flex; gap: 6px; margin-top: 16px; padding: 6px;
-  background: rgba(255,255,255,.03); border: 1px solid var(--line);
-  border-radius: 16px;
+  display: flex; gap: 4px; margin-top: 0; padding: 8px 16px;
+  background: linear-gradient(180deg, #2e1e10, #3d2b1a);
+  border-bottom: 2px solid var(--wood-edge);
   overflow-x: auto; -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -58,16 +76,16 @@ body {
 .uz-shelfNav__btn {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   background: transparent; border: 1px solid transparent;
-  color: var(--muted); padding: 8px 16px; border-radius: 12px;
+  color: var(--muted); padding: 8px 16px; border-radius: 8px;
   font-size: 13px; cursor: pointer; transition: all .15s ease; font-weight: 500;
   white-space: nowrap;
 }
 .uz-shelfNav__btn:hover {
-  background: rgba(255,255,255,.06); color: var(--text);
+  background: rgba(255,255,255,.08); color: var(--text);
 }
 .uz-shelfNav__btn.active {
-  background: rgba(74,158,255,.12); color: var(--accent);
-  border-color: rgba(74,158,255,.25); font-weight: 700;
+  background: rgba(196,154,108,.2); color: var(--accent);
+  border-color: rgba(196,154,108,.3); font-weight: 700;
 }
 .uz-shelfNav__icon { font-size: 16px; }
 .uz-shelfNav__label {}
@@ -79,16 +97,16 @@ body {
 .uz-shelfPager {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; margin-top: 28px; padding: 16px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(196,154,108,.1);
 }
 .uz-shelfPager__btn {
-  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
   color: var(--text); padding: 12px 24px; border-radius: 12px;
   font-size: 14px; cursor: pointer; transition: all .15s ease;
   font-weight: 500; min-width: 140px;
 }
 .uz-shelfPager__btn:hover:not(:disabled) {
-  background: rgba(74,158,255,.12); border-color: rgba(74,158,255,.25);
+  background: rgba(196,154,108,.15); border-color: rgba(196,154,108,.3);
   color: var(--accent);
 }
 .uz-shelfPager__btn:disabled {
@@ -99,65 +117,125 @@ body {
   letter-spacing: .05em;
 }
 
-/* ---- Shelf ---- */
+/* ---- Shelf (木製本棚フレーム) ---- */
 .uz-shelf {
-  background: var(--wood);
-  border: 1px solid var(--line); border-radius: 18px;
-  padding: 18px 16px 16px; overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
+  position: relative;
+  background:
+    /* 木目テクスチャ */
+    repeating-linear-gradient(92deg, rgba(0,0,0,.03) 0px, transparent 2px, transparent 12px, rgba(0,0,0,.02) 14px),
+    repeating-linear-gradient(88deg, rgba(255,255,255,.02) 0px, transparent 3px, transparent 20px),
+    var(--wood);
+  border: none; border-radius: 0;
+  padding: 0; overflow: visible;
+  box-shadow:
+    8px 0 20px rgba(0,0,0,.3),
+    -8px 0 20px rgba(0,0,0,.3),
+    0 8px 30px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
-.uz-shelf--film { border-color: rgba(255,107,74,.12); }
-.uz-shelf--music { border-color: rgba(74,158,255,.12); }
-.uz-shelf--manga { border-color: rgba(255,200,60,.12); }
-.uz-shelf--books { border-color: rgba(120,200,120,.12); }
+/* 棚の左側板 */
+.uz-shelf::before {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 18px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.04) 0px, transparent 2px, transparent 8px),
+    linear-gradient(90deg, #2e1e10 0%, var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: inset -2px 0 4px rgba(0,0,0,.2), inset 1px 0 0 rgba(255,255,255,.05);
+  z-index: 2;
+}
+/* 棚の右側板 */
+.uz-shelf::after {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.04) 0px, transparent 2px, transparent 8px),
+    linear-gradient(270deg, #2e1e10 0%, var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: inset 2px 0 4px rgba(0,0,0,.2), inset -1px 0 0 rgba(255,255,255,.05);
+  z-index: 2;
+}
+/* カテゴリ色は側板のアクセントラインで表現 */
+.uz-shelf--film::before { border-left: 3px solid rgba(255,107,74,.3); }
+.uz-shelf--music::before { border-left: 3px solid rgba(100,160,255,.3); }
+.uz-shelf--manga::before { border-left: 3px solid rgba(255,200,60,.3); }
+.uz-shelf--books::before { border-left: 3px solid rgba(120,200,120,.3); }
 
-.uz-shelfHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.uz-shelfTitle { margin: 0; font-size: 15px; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.uz-shelfHead {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 36px; background: linear-gradient(180deg, rgba(0,0,0,.15), transparent);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.uz-shelfTitle { margin: 0; font-size: 15px; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; font-weight: 700; color: #f0e6d8; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
 .uz-shelfIcon { font-size: 18px; }
 .uz-shelfMeta { font-size: 11px; color: var(--muted); opacity: .7; }
 
-/* ---- Rack ---- */
+/* ---- Rack (本が並ぶ一段) ---- */
 .uz-rack {
-  position: relative; padding: 18px 14px 24px;
-  border-radius: 14px; background: rgba(0,0,0,.12);
-  border: 1px solid rgba(255,255,255,.03);
+  position: relative;
+  padding: 20px 36px 40px;
+  /* 棚の奥壁 */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 30%, rgba(0,0,0,.12) 100%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.01) 0px, transparent 1px, transparent 30px),
+    linear-gradient(180deg, #3d2b1a 0%, #4a3525 50%, #3d2b1a 100%);
+  border: none; border-radius: 0;
+  min-height: 180px;
 }
 
-/* 木目調の棚板 */
+/* 棚板 — リアルな厚みのある木製板 */
 .uz-plank {
-  position: absolute; left: 6px; right: 6px; bottom: 4px; height: 22px;
-  border-radius: 12px;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 28px;
   background:
-    linear-gradient(90deg, rgba(255,255,255,.04), transparent 10%, rgba(255,255,255,.02) 50%, transparent 90%, rgba(255,255,255,.04)),
-    linear-gradient(180deg, var(--plank-light) 0%, var(--plank) 60%, rgba(0,0,0,.4) 100%);
+    /* 木目テクスチャ */
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, transparent 3px, transparent 15px, rgba(0,0,0,.03) 18px),
+    /* 立体感 */
+    linear-gradient(180deg,
+      var(--wood-highlight) 0%,
+      var(--wood-light) 15%,
+      var(--wood-mid) 50%,
+      var(--wood-dark) 85%,
+      var(--wood-edge) 100%
+    );
   box-shadow:
-    0 8px 20px rgba(0,0,0,.35),
-    0 2px 6px rgba(0,0,0,.25),
-    inset 0 1px 0 rgba(255,255,255,.08);
-  transform: perspective(900px) rotateX(62deg);
+    0 4px 12px rgba(0,0,0,.4),
+    0 2px 4px rgba(0,0,0,.3),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(0,0,0,.3);
+  /* 前板リップ: 少し手前に傾けて棚板の厚みを見せる */
+  transform: none;
   transform-origin: bottom;
+  z-index: 3;
+}
+/* 棚板の前面（リップ） — 手前に見える厚みの部分 */
+.uz-plank::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, transparent 2px, transparent 12px),
+    linear-gradient(180deg, var(--wood-dark) 0%, var(--wood-edge) 60%, #1a0f06 100%);
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .uz-mixedRow {
-  display: flex; gap: 16px 12px; align-items: flex-end;
+  display: flex; gap: 8px 6px; align-items: flex-end;
   flex-wrap: wrap; min-height: 140px;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
   justify-content: center;
+  position: relative; z-index: 1;
 }
 
 /* ============================================================
-   表紙コンポーネント — 3Dブック
+   表紙コンポーネント — 3Dブック（棚上リアル配置）
    ============================================================ */
 .uz-book {
   position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
   transform-style: preserve-3d;
-  transform: perspective(900px) rotateY(-8deg) rotateX(1deg);
-  transform-origin: left center;
+  transform: perspective(900px) rotateY(-6deg) rotateX(1deg);
+  transform-origin: left bottom;
   transition: transform .28s cubic-bezier(.25,.46,.45,.94), filter .2s, box-shadow .28s;
+  margin-bottom: 0;
 }
 .uz-book:hover {
-  transform: perspective(900px) rotateY(-2deg) translateZ(20px) translateY(-4px);
-  filter: brightness(1.06);
+  transform: perspective(900px) rotateY(-2deg) translateZ(16px) translateY(-6px);
+  filter: brightness(1.08);
   z-index: 10;
 }
 
@@ -172,11 +250,10 @@ body {
   border-radius: 2px 4px 4px 2px;
   overflow: hidden;
   box-shadow:
-    0 2px 6px rgba(0,0,0,.25),
-    0 8px 24px rgba(0,0,0,.3),
-    0 16px 48px rgba(0,0,0,.15);
+    2px 2px 6px rgba(0,0,0,.35),
+    4px 4px 16px rgba(0,0,0,.25);
   border: 1px solid rgba(255,255,255,.06);
-  background: #1a1a2e;
+  background: #2a1f14;
 }
 
 .uz-book__img {
@@ -263,20 +340,18 @@ body {
   backdrop-filter: blur(4px); z-index: 2;
 }
 
-/* 影 */
+/* 影（棚板上に落ちる自然な影） */
 .uz-book__shadow {
-  position: absolute; left: 4px; right: -2px; bottom: -8px; height: 14px;
-  background: radial-gradient(closest-side, rgba(0,0,0,.4), transparent);
-  filter: blur(5px);
-  transform: perspective(400px) rotateX(55deg);
-  transform-origin: top;
+  position: absolute; left: 2px; right: -4px; bottom: -4px; height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.5) 0%, transparent 70%);
+  filter: blur(3px);
   pointer-events: none;
   transition: all .28s;
 }
 .uz-book:hover .uz-book__shadow {
-  bottom: -14px; height: 20px;
-  filter: blur(8px);
-  opacity: .7;
+  bottom: -8px; height: 12px;
+  filter: blur(5px);
+  opacity: .6;
 }
 
 /* ディスク（正方形） */
@@ -301,16 +376,16 @@ body {
 .uz-book--poster .uz-book__spine { width: 6px; }
 
 /* ============================================================
-   背表紙コンポーネント v2
+   背表紙コンポーネント v3 — 棚上リアル配置
    ============================================================ */
 .uz-spine2 {
   position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
-  transform: perspective(900px) rotateY(-8deg);
-  transform-origin: left center;
+  transform: perspective(900px) rotateY(-5deg);
+  transform-origin: left bottom;
   transition: transform .2s cubic-bezier(.25,.46,.45,.94), filter .18s;
 }
 .uz-spine2:hover {
-  transform: perspective(900px) rotateY(-2deg) translateZ(10px) translateY(-2px);
+  transform: perspective(900px) rotateY(-1deg) translateZ(8px) translateY(-3px);
   filter: brightness(1.1);
   z-index: 10;
 }
@@ -380,20 +455,20 @@ body {
    ============================================================ */
 .uz-highlight { animation: uzGlow 1.5s ease-in-out 2; }
 @keyframes uzGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74,158,255,0); }
-  50% { box-shadow: 0 0 24px 8px rgba(74,158,255,.55); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,154,108,0); }
+  50% { box-shadow: 0 0 24px 8px rgba(196,154,108,.6); }
 }
 
 /* ============================================================
    ツールチップ
    ============================================================ */
 .uz-tooltip {
-  background: rgba(8,12,18,.94); color: #fff;
+  background: rgba(30,20,12,.95); color: #f0e6d8;
   padding: 12px 16px; border-radius: 10px;
   font-size: 12px; max-width: 280px;
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(196,154,108,.2);
   backdrop-filter: blur(12px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
 }
 .uz-tooltip__title { font-weight: 700; margin-bottom: 3px; line-height: 1.35; }
 .uz-tooltip__author { color: var(--muted); margin-bottom: 4px; }
@@ -407,7 +482,9 @@ body {
    ============================================================ */
 .uz-articlesPanel {
   margin-top: 22px; padding: 18px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.12); border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
 }
 .uz-articlesPanelHead {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px;
@@ -415,7 +492,7 @@ body {
 .uz-articlesPanelHead h2 { margin: 0; font-size: 16px; font-weight: 700; }
 
 .uz-searchInput {
-  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
   color: var(--text); padding: 7px 16px; border-radius: 18px;
   font-size: 13px; outline: none; min-width: 180px; transition: border-color .15s;
 }
@@ -424,12 +501,12 @@ body {
 
 .uz-shelfFilter { display: flex; gap: 6px; flex-wrap: wrap; }
 .uz-filterBtn {
-  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.12);
   color: var(--muted); padding: 4px 12px; border-radius: 14px;
   font-size: 12px; cursor: pointer; transition: all .12s;
 }
-.uz-filterBtn:hover { background: rgba(255,255,255,.08); color: var(--text); }
-.uz-filterBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.uz-filterBtn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.uz-filterBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 600; }
 
 .uz-articlesList {
   display: flex; flex-direction: column; gap: 4px;
@@ -453,7 +530,7 @@ body {
   font-size: 11px; color: var(--muted);
 }
 .uz-articleCard__cat {
-  background: rgba(74,158,255,.10); color: var(--accent);
+  background: rgba(196,154,108,.12); color: var(--accent);
   padding: 1px 7px; border-radius: 8px; font-size: 10px;
 }
 .uz-articleCard__count { color: var(--muted); font-size: 10px; }
@@ -468,17 +545,18 @@ body {
    ============================================================ */
 .uz-modalOverlay {
   position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,.72); backdrop-filter: blur(8px);
+  background: rgba(15,10,5,.78); backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
   padding: 20px; animation: fadeIn .15s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .uz-modal {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 20px; max-width: 700px; width: 100%;
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.15);
+  border-radius: 16px; max-width: 700px; width: 100%;
   max-height: 85vh; overflow-y: auto;
-  box-shadow: 0 40px 100px rgba(0,0,0,.5);
+  box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.3);
   position: relative; animation: slideUp .2s ease;
 }
 @keyframes slideUp {
@@ -487,7 +565,7 @@ body {
 }
 .uz-modal__close {
   position: absolute; top: 14px; right: 16px;
-  background: rgba(255,255,255,.08); border: 1px solid var(--line);
+  background: rgba(255,255,255,.08); border: 1px solid rgba(196,154,108,.15);
   color: var(--text); width: 34px; height: 34px;
   border-radius: 50%; cursor: pointer; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
@@ -524,7 +602,7 @@ body {
 
 .uz-modal__articleLink {
   margin: 16px 0; padding: 12px 16px;
-  background: rgba(74,158,255,.06); border: 1px solid rgba(74,158,255,.15);
+  background: rgba(196,154,108,.08); border: 1px solid rgba(196,154,108,.15);
   border-radius: 12px;
 }
 .uz-modal__articleLabel {
@@ -552,7 +630,7 @@ body {
 /* ---- Scrollbar ---- */
 .uz-articlesList::-webkit-scrollbar, .uz-modal::-webkit-scrollbar { width: 5px; }
 .uz-articlesList::-webkit-scrollbar-track, .uz-modal::-webkit-scrollbar-track { background: transparent; }
-.uz-articlesList::-webkit-scrollbar-thumb, .uz-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+.uz-articlesList::-webkit-scrollbar-thumb, .uz-modal::-webkit-scrollbar-thumb { background: rgba(196,154,108,.2); border-radius: 3px; }
 
 /* ============================================================
    検索バー (A1)
@@ -562,7 +640,7 @@ body {
 }
 .uz-bookSearchInput {
   width: 100%; padding: 10px 40px 10px 16px;
-  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
   color: var(--text); border-radius: 14px;
   font-size: 14px; outline: none; transition: border-color .15s;
 }
@@ -582,17 +660,17 @@ body {
    ============================================================ */
 .uz-genreFilter {
   display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
-  padding: 8px; background: rgba(255,255,255,.02);
-  border: 1px solid var(--line); border-radius: 12px;
+  padding: 8px; background: rgba(255,255,255,.03);
+  border: 1px solid rgba(196,154,108,.1); border-radius: 12px;
 }
 .uz-genreBtn {
-  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.1);
   color: var(--muted); padding: 4px 12px; border-radius: 14px;
   font-size: 11px; cursor: pointer; transition: all .12s;
   white-space: nowrap;
 }
-.uz-genreBtn:hover { background: rgba(255,255,255,.08); color: var(--text); }
-.uz-genreBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.uz-genreBtn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.uz-genreBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 600; }
 
 /* ============================================================
    ローディング / エラー (A4)
@@ -602,7 +680,7 @@ body {
   padding: 80px 20px; gap: 16px;
 }
 .uz-loading__spinner {
-  width: 40px; height: 40px; border: 3px solid var(--line);
+  width: 40px; height: 40px; border: 3px solid rgba(196,154,108,.15);
   border-top-color: var(--accent); border-radius: 50%;
   animation: uzSpin 1s linear infinite;
 }
@@ -615,7 +693,7 @@ body {
 }
 .uz-error__icon {
   width: 48px; height: 48px; border-radius: 50%;
-  background: rgba(255,107,74,.15); color: var(--accent2);
+  background: rgba(212,118,78,.15); color: var(--accent2);
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; font-weight: 700;
 }
@@ -645,11 +723,11 @@ body {
 }
 
 .uz-modal__btn--fav {
-  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
   cursor: pointer; transition: all .15s;
 }
 .uz-modal__btn--fav:hover {
-  background: rgba(255,107,74,.15); border-color: rgba(255,107,74,.3);
+  background: rgba(212,118,78,.15); border-color: rgba(212,118,78,.3);
 }
 .uz-modal__btn--fav.active {
   background: var(--accent2); border-color: var(--accent2);
@@ -671,7 +749,9 @@ body {
    ============================================================ */
 .uz-articleDetail {
   margin-top: 22px; padding: 24px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.12); border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
 }
 .uz-articleDetail__back {
   background: none; border: none; color: var(--accent); cursor: pointer;
@@ -695,14 +775,14 @@ body {
 .uz-articleDetail__readLink {
   display: inline-flex; align-items: center;
   color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600;
-  padding: 8px 18px; border: 1px solid rgba(74,158,255,.25);
+  padding: 8px 18px; border: 1px solid rgba(196,154,108,.25);
   border-radius: 10px; transition: all .12s;
 }
 .uz-articleDetail__readLink:hover {
-  background: rgba(74,158,255,.1); color: #fff;
+  background: rgba(196,154,108,.1); color: #f0e6d8;
 }
 .uz-articleDetail__shelfBtn {
-  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.12);
   color: var(--muted); padding: 8px 18px; border-radius: 10px;
   font-size: 14px; cursor: pointer; transition: all .12s;
 }
@@ -716,12 +796,25 @@ body {
   margin: 0 0 14px; font-size: 14px; color: var(--muted); font-weight: 600;
 }
 .uz-articleDetail__miniShelf {
-  display: flex; gap: 16px 12px; align-items: flex-end;
+  display: flex; gap: 10px 6px; align-items: flex-end;
   flex-wrap: wrap; min-height: 120px;
-  padding: 18px 14px 24px;
-  background: rgba(0,0,0,.12); border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.03);
+  padding: 18px 14px 32px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0px, transparent 2px, transparent 20px),
+    linear-gradient(180deg, #3d2b1a 0%, #4a3525 50%, #3d2b1a 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(196,154,108,.1);
   justify-content: center;
+  position: relative;
+}
+/* ミニ棚板 */
+.uz-articleDetail__miniShelf::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, transparent 3px, transparent 12px),
+    linear-gradient(180deg, var(--wood-highlight), var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+  border-radius: 0 0 4px 4px;
 }
 
 /* ============================================================
@@ -732,12 +825,12 @@ body {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 .uz-modal__articleDetailBtn {
-  background: rgba(74,158,255,.1); border: 1px solid rgba(74,158,255,.2);
+  background: rgba(196,154,108,.1); border: 1px solid rgba(196,154,108,.2);
   color: var(--accent); padding: 4px 10px; border-radius: 8px;
   font-size: 11px; cursor: pointer; transition: all .12s; flex-shrink: 0;
 }
 .uz-modal__articleDetailBtn:hover {
-  background: rgba(74,158,255,.2); color: #fff;
+  background: rgba(196,154,108,.2); color: #f0e6d8;
 }
 .uz-modal__relatedBooks { margin-top: 12px; }
 .uz-modal__relatedLabel {
@@ -754,7 +847,7 @@ body {
 }
 .uz-modal__relatedThumb:hover {
   border-color: var(--accent); transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(74,158,255,.2);
+  box-shadow: 0 4px 12px rgba(196,154,108,.25);
 }
 .uz-modal__relatedThumb img {
   width: 100%; height: 100%; object-fit: cover;
@@ -782,14 +875,14 @@ body {
 .uz-articleFilterBar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; margin-top: 12px; padding: 10px 16px;
-  background: rgba(74,158,255,.08); border: 1px solid rgba(74,158,255,.2);
+  background: rgba(196,154,108,.1); border: 1px solid rgba(196,154,108,.2);
   border-radius: 12px;
 }
 .uz-articleFilterBar__label {
   font-size: 13px; color: var(--accent); font-weight: 600;
 }
 .uz-articleFilterBar__clear {
-  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.08); border: 1px solid rgba(196,154,108,.2);
   color: var(--muted); padding: 4px 12px; border-radius: 8px;
   font-size: 12px; cursor: pointer; transition: all .12s;
 }
@@ -807,14 +900,17 @@ body {
   .uz-wrap { padding: 20px 14px 40px; }
   .uz-title { font-size: 20px; }
 
-  .uz-shelf { padding: 14px 12px 12px; border-radius: 14px; }
-  .uz-rack { padding: 14px 10px 20px; }
-  .uz-mixedRow { gap: 12px 8px; min-height: 110px; }
+  .uz-shelf::before, .uz-shelf::after { width: 12px; }
+  .uz-shelfHead { padding: 10px 24px; }
+  .uz-rack { padding: 14px 24px 36px; }
+  .uz-mixedRow { gap: 8px 5px; min-height: 110px; }
+  .uz-plank { height: 22px; }
+  .uz-plank::after { height: 6px; bottom: -6px; }
 
-  .uz-book { transform: perspective(800px) rotateY(-6deg) rotateX(1deg) scale(.88); transform-origin: left bottom; }
-  .uz-book:hover { transform: perspective(800px) rotateY(-2deg) translateZ(14px) translateY(-3px) scale(.88); }
-  .uz-spine2 { transform: perspective(800px) rotateY(-6deg) scale(.88); transform-origin: left bottom; }
-  .uz-spine2:hover { transform: perspective(800px) rotateY(-2deg) translateZ(8px) translateY(-2px) scale(.88); }
+  .uz-book { transform: perspective(800px) rotateY(-5deg) rotateX(1deg) scale(.88); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(800px) rotateY(-1deg) translateZ(12px) translateY(-4px) scale(.88); }
+  .uz-spine2 { transform: perspective(800px) rotateY(-4deg) scale(.88); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(800px) rotateY(-1deg) translateZ(6px) translateY(-2px) scale(.88); }
 
   .uz-shelfPager__btn { min-width: 120px; padding: 10px 18px; font-size: 13px; }
 
@@ -824,7 +920,7 @@ body {
 
 /* ---- Phone (600px以下) ---- */
 @media (max-width: 600px) {
-  .uz-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .uz-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 10px 10px 0 0; }
   .uz-headerActions { width: 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
   .uz-headerActions::-webkit-scrollbar { display: none; }
   .uz-tabBtn { padding: 6px 14px; font-size: 12px; flex-shrink: 0; }
@@ -833,24 +929,27 @@ body {
 
   .uz-articleDetail { padding: 16px; margin-top: 14px; }
   .uz-articleDetail__title { font-size: 15px; }
-  .uz-articleDetail__miniShelf { gap: 10px 6px; padding: 12px 8px 18px; }
+  .uz-articleDetail__miniShelf { gap: 8px 5px; padding: 12px 8px 24px; }
   .uz-modal__relatedThumb { width: 40px; height: 56px; }
   .uz-articleFilterBar { flex-direction: column; gap: 8px; text-align: center; }
 
-  .uz-shelfNav { gap: 4px; padding: 4px; margin-top: 12px; border-radius: 12px; }
-  .uz-shelfNav__btn { padding: 6px 12px; font-size: 12px; border-radius: 10px; gap: 4px; }
+  .uz-shelfNav { gap: 4px; padding: 4px 10px; }
+  .uz-shelfNav__btn { padding: 6px 12px; font-size: 12px; border-radius: 8px; gap: 4px; }
   .uz-shelfNav__icon { font-size: 14px; }
 
   .uz-singleShelf { margin-top: 14px; }
-  .uz-shelf { padding: 12px 10px 10px; border-radius: 12px; }
+  .uz-shelf::before, .uz-shelf::after { width: 8px; }
+  .uz-shelfHead { padding: 10px 20px; }
   .uz-shelfTitle { font-size: 14px; }
-  .uz-rack { padding: 12px 8px 18px; border-radius: 10px; }
-  .uz-mixedRow { gap: 10px 6px; min-height: 90px; }
+  .uz-rack { padding: 12px 20px 32px; }
+  .uz-mixedRow { gap: 6px 4px; min-height: 90px; }
+  .uz-plank { height: 18px; }
+  .uz-plank::after { height: 5px; bottom: -5px; }
 
-  .uz-book { transform: perspective(700px) rotateY(-5deg) rotateX(1deg) scale(.78); transform-origin: left bottom; }
-  .uz-book:hover { transform: perspective(700px) rotateY(-1deg) translateZ(10px) translateY(-2px) scale(.78); }
-  .uz-spine2 { transform: perspective(700px) rotateY(-5deg) scale(.78); transform-origin: left bottom; }
-  .uz-spine2:hover { transform: perspective(700px) rotateY(-1deg) translateZ(6px) translateY(-1px) scale(.78); }
+  .uz-book { transform: perspective(700px) rotateY(-4deg) rotateX(1deg) scale(.78); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(700px) rotateY(-1deg) translateZ(8px) translateY(-3px) scale(.78); }
+  .uz-spine2 { transform: perspective(700px) rotateY(-3deg) scale(.78); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(700px) rotateY(0deg) translateZ(4px) translateY(-2px) scale(.78); }
 
   .uz-shelfPager { gap: 8px; margin-top: 20px; padding: 12px 0; }
   .uz-shelfPager__btn { min-width: 0; flex: 1; padding: 10px 12px; font-size: 12px; text-align: center; }
@@ -877,16 +976,19 @@ body {
   .uz-title { font-size: 18px; }
   .uz-kicker { font-size: 9px; }
 
-  .uz-book { transform: perspective(600px) rotateY(-4deg) scale(.68); transform-origin: left bottom; }
-  .uz-book:hover { transform: perspective(600px) rotateY(0deg) translateZ(8px) scale(.68); }
-  .uz-spine2 { transform: perspective(600px) rotateY(-4deg) scale(.68); transform-origin: left bottom; }
-  .uz-spine2:hover { transform: perspective(600px) rotateY(0deg) translateZ(4px) scale(.68); }
+  .uz-book { transform: perspective(600px) rotateY(-3deg) scale(.68); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(600px) rotateY(0deg) translateZ(6px) scale(.68); }
+  .uz-spine2 { transform: perspective(600px) rotateY(-3deg) scale(.68); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(600px) rotateY(0deg) translateZ(3px) scale(.68); }
 
-  .uz-mixedRow { gap: 8px 4px; }
-  .uz-shelf { padding: 10px 8px 8px; }
-  .uz-rack { padding: 10px 6px 14px; }
+  .uz-mixedRow { gap: 5px 3px; }
+  .uz-shelf::before, .uz-shelf::after { width: 6px; }
+  .uz-shelfHead { padding: 8px 16px; }
+  .uz-rack { padding: 10px 16px 28px; }
   .uz-shelfTitle { font-size: 13px; }
   .uz-shelfMeta { font-size: 10px; }
+  .uz-plank { height: 16px; }
+  .uz-plank::after { height: 4px; bottom: -4px; }
 
   .uz-modal__cover { width: 120px; }
   .uz-modal__inner { padding: 16px 12px; }
