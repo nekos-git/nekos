@@ -233,10 +233,13 @@ function UzBookshelf() {
   const uzShelves = React.useMemo(() => {
     if (!uzData) return [];
     return uzData.shelves.filter(s => s.items.length > 0).map(s => {
+      const isFilm = s.id === 'film';
       const items = s.items.map((item) => ({
         ...item,
         type: item.coverUrl ? 'featured' : 'spine',
-        source: 'uz', format: item.format || detectFormat(item.fullTitle || item.title),
+        source: 'uz',
+        shelfId: s.id,
+        format: isFilm ? 'disc' : (item.format || detectFormat(item.fullTitle || item.title)),
       }));
       return { ...s, mixedItems: items };
     });
@@ -269,10 +272,11 @@ function UzBookshelf() {
     const dim = getBookDimensions(item);
     const [imgLoaded, setImgLoaded] = React.useState(false);
     const isDisc = dim.format === 'disc';
+    const isFilmDisc = isDisc && item.shelfId === 'film';
 
     return (
       <a
-        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''}`}
+        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''} ${isFilmDisc ? 'uz-book--film' : ''}`}
         href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
         style={{ width: dim.width, height: dim.height }}
       >
@@ -293,18 +297,31 @@ function UzBookshelf() {
                 <span className="uz-book__placeholderAuthor">{item.author || item.fullAuthor || ''}</span>
               </div>
             )}
+            {/* DVDケース: タイトルオーバーレイ（通常時表示、ホバーで消える） */}
+            {isFilmDisc && (
+              <div className="uz-book__discLabel">
+                <span className="uz-book__discIcon">&#128191;</span>
+                <span className="uz-book__discTitle">{truncate(item.fullTitle || item.title, 18)}</span>
+              </div>
+            )}
             {/* 光沢オーバーレイ */}
             <div className="uz-book__gloss" />
           </div>
           {/* 背表紙面（右端） */}
           <div className="uz-book__spine" style={{ background: spineGradient(item.fullTitle || item.title), width: dim.thickness }} />
           {/* ページ断面（上部） */}
-          <div className="uz-book__pages" style={{ height: dim.thickness }} />
+          {!isDisc && <div className="uz-book__pages" style={{ height: dim.thickness }} />}
           {/* レビューバッジ */}
           {item.reviewAverage && item.reviewAverage !== '0' && (
             <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
           )}
         </div>
+        {/* ポスタープレビュー（映画ディスクホバー時） */}
+        {isFilmDisc && item.coverUrl && (
+          <div className="uz-book__poster">
+            <img src={item.coverUrl} alt="" />
+          </div>
+        )}
         {/* 影 */}
         <div className="uz-book__shadow" />
       </a>
