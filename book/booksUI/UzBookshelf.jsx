@@ -1,9 +1,6 @@
 // ============================================================
-// UZ Bookshelf — 統合UI
-// - 楽天Books棚（既存機能 + レビュー・価格・アフィリエイト反映）
-// - uzブログ連動棚（小説・マンガ・映画DVD・音楽・テクノロジー）
-// - 記事一覧パネル（記事→棚アイテムへのリンク）
-// - 書籍詳細モーダル
+// UZ Bookshelf — 統合UI v2
+// 美術的品質向上: 表紙3D, 判型反映, 光沢/陰影, 背表紙グラデ
 // ============================================================
 
 // ---- ユーティリティ ----
@@ -18,7 +15,16 @@ function stableHash(str) {
 
 function spineColorFromTitle(title) {
   const h = stableHash(title) % 360;
-  return `hsl(${h} 35% 42%)`;
+  const s = 25 + (stableHash(title + 'sat') % 20);
+  const l = 32 + (stableHash(title + 'lit') % 18);
+  return { h, s, l, css: `hsl(${h} ${s}% ${l}%)` };
+}
+
+function spineGradient(title) {
+  const c = spineColorFromTitle(title);
+  const light = `hsl(${c.h} ${c.s}% ${c.l + 12}%)`;
+  const dark = `hsl(${c.h} ${c.s}% ${c.l - 8}%)`;
+  return `linear-gradient(135deg, ${light} 0%, ${c.css} 50%, ${dark} 100%)`;
 }
 
 function shuffleArray(array) {
@@ -32,15 +38,13 @@ function shuffleArray(array) {
 
 function chunkArray(array, chunkSize) {
   const chunks = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize));
-  }
+  for (let i = 0; i < array.length; i += chunkSize) chunks.push(array.slice(i, i + chunkSize));
   return chunks;
 }
 
 function truncate(str, len) {
   if (!str) return '';
-  return str.length > len ? str.substring(0, len) + '...' : str;
+  return str.length > len ? str.substring(0, len) + '…' : str;
 }
 
 function formatDate(dateStr) {
@@ -61,12 +65,47 @@ function renderStars(rating) {
   return stars.join('');
 }
 
+// ---- 判型サイズマッピング ----
+const FORMAT_SIZES = {
+  bunko:     { w: 74, h: 105, label: '文庫' },
+  comic:     { w: 90, h: 128, label: 'コミック' },
+  shinsho:   { w: 74, h: 122, label: '新書' },
+  tankobon:  { w: 90, h: 128, label: '単行本' },
+  hardcover: { w: 105, h: 148, label: 'ハードカバー' },
+  disc:      { w: 100, h: 100, label: 'ディスク' },
+  standard:  { w: 90, h: 130, label: '' },
+};
+
+function detectFormat(name) {
+  if (!name) return 'standard';
+  if (/文庫/.test(name)) return 'bunko';
+  if (/コミック|漫画|マンガ|全\d+巻/.test(name)) return 'comic';
+  if (/新書/.test(name)) return 'shinsho';
+  if (/Blu-ray|ブルーレイ|DVD|BD/.test(name)) return 'disc';
+  if (/CD|レコード|vinyl|Vinyl/.test(name)) return 'disc';
+  if (/ハードカバー|単行本/.test(name)) return 'tankobon';
+  return 'standard';
+}
+
+function getBookDimensions(item) {
+  const fmt = item.format || detectFormat(item.fullTitle || item.title);
+  const base = FORMAT_SIZES[fmt] || FORMAT_SIZES.standard;
+  // Scale to px (roughly 0.7 px/mm for display)
+  const scale = 0.85;
+  return {
+    width: Math.round(base.w * scale),
+    height: Math.round(base.h * scale),
+    format: fmt,
+    label: base.label,
+    thickness: fmt === 'disc' ? 6 : (fmt === 'bunko' ? 14 : 18 + (stableHash(item.title || '') % 12)),
+  };
+}
+
 // ============================================================
 // メインコンポーネント
 // ============================================================
 function UzBookshelf() {
-  // --- State ---
-  const [mode, setMode] = React.useState('uz'); // 'rakuten' | 'uz'
+  const [mode, setMode] = React.useState('uz');
   const [rakutenData, setRakutenData] = React.useState(null);
   const [uzData, setUzData] = React.useState(null);
   const [genreMap, setGenreMap] = React.useState({});
@@ -76,33 +115,36 @@ function UzBookshelf() {
   const [showArticles, setShowArticles] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [highlightArticle, setHighlightArticle] = React.useState(null);
+  const [loadedImages, setLoadedImages] = React.useState({});
   const tooltipTimeoutRef = React.useRef(null);
 
   const handleMouseEnter = (e, item) => {
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
     tooltipTimeoutRef.current = setTimeout(() => {
       setTooltip({ x: e.clientX, y: e.clientY, item });
-    }, 400);
+    }, 350);
   };
   const handleMouseLeave = () => {
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
     setTooltip(null);
   };
 
-  // --- 楽天データ読み込み ---
+  // --- 画像ロード追跡 ---
+  const onCoverLoad = React.useCallback((id) => {
+    setLoadedImages(prev => ({ ...prev, [id]: true }));
+  }, []);
+
+  // --- 楽天データ ---
   React.useEffect(() => {
-    const genrePromises = [
+    Promise.all([
       fetch('001005genre.json').then(r => r.json()),
       fetch('001006genre.json').then(r => r.json()),
       fetch('001010genre.json').then(r => r.json()),
-    ];
-    Promise.all(genrePromises).then(([g5, g6, g10]) => {
+    ]).then(([g5, g6, g10]) => {
       const map = {};
       [g5, g6, g10].forEach(g => {
         map[g.current.booksGenreId] = g.current.booksGenreName;
-        g.children.forEach(c => {
-          map[c.child.booksGenreId] = c.child.booksGenreName;
-        });
+        g.children.forEach(c => { map[c.child.booksGenreId] = c.child.booksGenreName; });
       });
       setGenreMap(map);
     }).catch(e => console.error('Genre load error:', e));
@@ -110,48 +152,33 @@ function UzBookshelf() {
 
   React.useEffect(() => {
     if (Object.keys(genreMap).length === 0) return;
-    const bookPromises = [
+    Promise.all([
       fetch('001005.json').then(r => r.json()),
       fetch('001006.json').then(r => r.json()),
       fetch('001010.json').then(r => r.json()),
-    ];
-    Promise.all(bookPromises).then(([j5, j6, j10]) => {
+    ]).then(([j5, j6, j10]) => {
       const grouped = { tech: [], biz: [], culture: [] };
       const allBooks = [];
-      const configs = [
-        { json: j5, shelf: 'tech' },
-        { json: j6, shelf: 'biz' },
-        { json: j10, shelf: 'culture' },
-      ];
-      configs.forEach(({ json, shelf }) => {
-        json.Items.forEach(item => {
-          const b = item.Item;
-          const bookData = {
-            id: b.isbn,
-            title: truncate(b.title, 20),
-            fullTitle: b.title,
-            author: truncate(b.author, 16),
-            fullAuthor: b.author,
-            coverUrl: b.largeImageUrl,
-            url: b.itemUrl,
-            affiliateUrl: b.affiliateUrl || '',
-            isbn: b.isbn,
-            price: b.itemPrice,
-            reviewAverage: b.reviewAverage,
-            reviewCount: b.reviewCount,
-            caption: b.itemCaption || '',
-            publisher: b.publisherName || '',
-            salesDate: b.salesDate || '',
-            genreId: b.booksGenreId || '',
-            shelf,
-            source: 'rakuten',
-          };
-          grouped[shelf].push(bookData);
-          allBooks.push(bookData);
+      [{ json: j5, shelf: 'tech' }, { json: j6, shelf: 'biz' }, { json: j10, shelf: 'culture' }]
+        .forEach(({ json, shelf }) => {
+          json.Items.forEach(item => {
+            const b = item.Item;
+            const bookData = {
+              id: b.isbn, title: truncate(b.title, 20), fullTitle: b.title,
+              author: truncate(b.author, 16), fullAuthor: b.author,
+              coverUrl: b.largeImageUrl, url: b.itemUrl,
+              affiliateUrl: b.affiliateUrl || '', isbn: b.isbn,
+              price: b.itemPrice, reviewAverage: b.reviewAverage,
+              reviewCount: b.reviewCount, caption: b.itemCaption || '',
+              publisher: b.publisherName || '', salesDate: b.salesDate || '',
+              genreId: b.booksGenreId || '', shelf, source: 'rakuten',
+              format: detectFormat(b.title),
+            };
+            grouped[shelf].push(bookData);
+            allBooks.push(bookData);
+          });
         });
-      });
 
-      // Set data immediately so UI renders, then enrich asynchronously
       const finalData = [
         { id: 'tech', title: 'テクノロジー', books: grouped.tech },
         { id: 'biz', title: 'ビジネス', books: grouped.biz },
@@ -159,32 +186,22 @@ function UzBookshelf() {
       ];
       setRakutenData(finalData);
 
-      // openBD enrichment (async, non-blocking)
+      // openBD enrichment (non-blocking)
       const isbns = allBooks.map(b => b.isbn);
-      const chunks = chunkArray(isbns, 30);
       Promise.all(
-        chunks.map(chunk =>
-          fetch(`https://api.openbd.jp/v1/get?isbn=${chunk.join(',')}`)
-            .then(r => r.json())
-            .catch(() => [])
+        chunkArray(isbns, 30).map(chunk =>
+          fetch(`https://api.openbd.jp/v1/get?isbn=${chunk.join(',')}`).then(r => r.json()).catch(() => [])
         )
       ).then(results => {
-        const openbdData = {};
         results.forEach(result => {
           if (!Array.isArray(result)) return;
           result.forEach(book => {
             if (book && book.summary) {
-              openbdData[book.summary.isbn] = { pages: book.summary.pages, size: book.summary.size };
+              const match = allBooks.find(b => b.isbn === book.summary.isbn);
+              if (match) { match.pages = book.summary.pages; match.size = book.summary.size; }
             }
           });
         });
-        allBooks.forEach(book => {
-          if (openbdData[book.isbn]) {
-            book.pages = openbdData[book.isbn].pages;
-            book.size = openbdData[book.isbn].size;
-          }
-        });
-        // image aspect ratio (with timeout fallback)
         const imgTimeout = 3000;
         return Promise.all(allBooks.map(book => new Promise(resolve => {
           const img = new Image();
@@ -193,94 +210,144 @@ function UzBookshelf() {
           img.onerror = () => { clearTimeout(timer); book.aspectRatio = 0.7; resolve(); };
           img.src = book.coverUrl;
         })));
-      }).then(() => {
-        // Re-trigger render with enriched data
-        setRakutenData([...finalData]);
-      }).catch(() => {});
+      }).then(() => setRakutenData([...finalData])).catch(() => {});
     }).catch(e => console.error('Book load error:', e));
   }, [genreMap]);
 
-  // --- uzデータ読み込み ---
+  // --- uzデータ ---
   React.useEffect(() => {
-    fetch('uz-shelf-data.json')
-      .then(r => r.json())
-      .then(data => setUzData(data))
-      .catch(e => console.error('uz data load error:', e));
+    fetch('uz-shelf-data.json').then(r => r.json()).then(data => setUzData(data)).catch(e => console.error('uz data:', e));
   }, []);
 
-  // --- サイズスタイル ---
-  const getSizeStyle = (size, pages, aspectRatio) => {
-    let width = 112, height = 148;
-    if (size === 'コミック') { width = 100; height = 160; }
-    else if (size === 'B6') { width = 105; height = 140; }
-    if (aspectRatio && aspectRatio > 0) height = width / aspectRatio;
-    const thickness = Math.min((pages || 200) / 200, 1) * 10;
-    return { width: `${width}px`, height: `${height}px`, thickness };
-  };
-
-  // --- 楽天棚の描画 ---
+  // --- 棚データ構築 ---
   const rakutenShelves = React.useMemo(() => {
     if (!rakutenData) return [];
     return rakutenData.map(s => {
       const featured = s.books.slice(0, 3).map(b => ({ ...b, type: 'featured' }));
       let rest = s.books.slice(3, 27).map(b => ({ ...b, type: 'spine' }));
       if (rest.length > 3) {
-        const shuffledRest = shuffleArray(rest);
-        const randomFeatured = shuffledRest.slice(0, 3).map(b => ({ ...b, type: 'featured' }));
-        const remainingSpines = shuffledRest.slice(3).map(b => ({ ...b, type: 'spine' }));
-        rest = [...randomFeatured, ...remainingSpines];
+        const sr = shuffleArray(rest);
+        rest = [...sr.slice(0, 3).map(b => ({ ...b, type: 'featured' })), ...sr.slice(3)];
       }
       return { ...s, mixedBooks: shuffleArray([...featured, ...rest]) };
     });
   }, [rakutenData]);
 
-  // --- uz棚の描画 ---
   const uzShelves = React.useMemo(() => {
     if (!uzData) return [];
     return uzData.shelves.filter(s => s.items.length > 0).map(s => {
       const items = s.items.map((item, i) => ({
         ...item,
-        type: i < 4 || Math.random() > 0.6 ? 'featured' : 'spine',
-        source: 'uz',
+        type: (item.coverUrl && (i < 6 || Math.random() > 0.5)) ? 'featured' : 'spine',
+        source: 'uz', format: item.format || detectFormat(item.fullTitle || item.title),
       }));
       return { ...s, mixedItems: shuffleArray(items) };
     });
   }, [uzData]);
 
-  // --- 記事一覧（フィルタ付き） ---
   const filteredArticles = React.useMemo(() => {
     if (!uzData) return [];
     let articles = uzData.articles;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      articles = articles.filter(a =>
-        a.title.toLowerCase().includes(q) ||
-        a.categories.some(c => c.toLowerCase().includes(q))
-      );
+      articles = articles.filter(a => a.title.toLowerCase().includes(q) || a.categories.some(c => c.toLowerCase().includes(q)));
     }
-    if (activeShelf && activeShelf !== 'all') {
-      articles = articles.filter(a => a.shelf === activeShelf);
-    }
+    if (activeShelf && activeShelf !== 'all') articles = articles.filter(a => a.shelf === activeShelf);
     return articles;
   }, [uzData, searchQuery, activeShelf]);
 
-  // --- モーダル ---
-  const openModal = (item, e) => {
-    if (e) e.preventDefault();
-    setModal(item);
-  };
+  const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); };
   const closeModal = () => setModal(null);
-
-  // --- 記事からアイテムへジャンプ ---
   const jumpToShelfFromArticle = (articleId) => {
-    setShowArticles(false);
-    setHighlightArticle(articleId);
+    setShowArticles(false); setHighlightArticle(articleId);
     setTimeout(() => setHighlightArticle(null), 3000);
   };
 
-  // --- シェルフアイコン ---
-  const shelfIcons = {
-    books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', culture: '🌍',
+  const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', culture: '🌍' };
+
+  // ============================================================
+  // 表紙コンポーネント — 美術的3D
+  // ============================================================
+  const BookFace = ({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
+    const dim = getBookDimensions(item);
+    const [imgLoaded, setImgLoaded] = React.useState(false);
+    const isDisc = dim.format === 'disc';
+
+    return (
+      <a
+        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''}`}
+        href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
+        style={{ width: dim.width, height: dim.height }}
+      >
+        <div className="uz-book__body">
+          {/* 表紙面 */}
+          <div className="uz-book__front">
+            {item.coverUrl && (
+              <img
+                className={`uz-book__img ${imgLoaded ? 'loaded' : ''}`}
+                src={item.coverUrl} alt=""
+                onLoad={() => setImgLoaded(true)}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            )}
+            {(!item.coverUrl || !imgLoaded) && (
+              <div className="uz-book__placeholder" style={{ background: spineGradient(item.fullTitle || item.title) }}>
+                <span className="uz-book__placeholderText">{truncate(item.fullTitle || item.title, 20)}</span>
+                <span className="uz-book__placeholderAuthor">{item.author || item.fullAuthor || ''}</span>
+              </div>
+            )}
+            {/* 光沢オーバーレイ */}
+            <div className="uz-book__gloss" />
+          </div>
+          {/* 背表紙面（右端） */}
+          <div className="uz-book__spine" style={{ background: spineGradient(item.fullTitle || item.title), width: dim.thickness }} />
+          {/* ページ断面（上部） */}
+          <div className="uz-book__pages" style={{ height: dim.thickness }} />
+          {/* レビューバッジ */}
+          {item.reviewAverage && item.reviewAverage !== '0' && (
+            <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
+          )}
+          {/* 判型ラベル */}
+          {dim.label && <div className="uz-book__format">{dim.label}</div>}
+        </div>
+        {/* 影 */}
+        <div className="uz-book__shadow" />
+      </a>
+    );
+  };
+
+  // ============================================================
+  // 背表紙コンポーネント — リアルな質感
+  // ============================================================
+  const BookSpine = ({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
+    const dim = getBookDimensions(item);
+    const color = spineColorFromTitle(item.fullTitle || item.title);
+    const isDisc = dim.format === 'disc';
+    const thickness = isDisc ? 8 : dim.thickness;
+    const coverTiny = item.coverUrl;
+
+    return (
+      <a
+        className={`uz-spine2 ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-spine2--disc' : ''}`}
+        href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
+        style={{ width: thickness, height: dim.height }}
+      >
+        <div className="uz-spine2__body" style={{ background: spineGradient(item.fullTitle || item.title) }}>
+          {/* テクスチャ */}
+          <div className="uz-spine2__texture" />
+          {/* テキスト */}
+          <div className="uz-spine2__text">
+            <span className="uz-spine2__title">{truncate(item.fullTitle || item.title, 16)}</span>
+            {(item.author || item.fullAuthor) && (
+              <span className="uz-spine2__author">{truncate(item.fullAuthor || item.author, 10)}</span>
+            )}
+          </div>
+          {/* 端の丸み・光沢 */}
+          <div className="uz-spine2__edge" />
+          <div className="uz-spine2__gloss" />
+        </div>
+      </a>
+    );
   };
 
   // ============================================================
@@ -288,32 +355,16 @@ function UzBookshelf() {
   // ============================================================
   return (
     <div className="uz-wrap">
-      {/* ヘッダー */}
       <header className="uz-header">
         <div>
           <div className="uz-kicker">UZ MEDIA</div>
           <h1 className="uz-title">UZ Bookshelf</h1>
         </div>
         <div className="uz-headerActions">
-          <button
-            className={`uz-tabBtn ${mode === 'uz' ? 'active' : ''}`}
-            onClick={() => setMode('uz')}
-          >
-            UZ セレクション
-          </button>
-          <button
-            className={`uz-tabBtn ${mode === 'rakuten' ? 'active' : ''}`}
-            onClick={() => setMode('rakuten')}
-          >
-            楽天Books
-          </button>
+          <button className={`uz-tabBtn ${mode === 'uz' ? 'active' : ''}`} onClick={() => setMode('uz')}>UZ セレクション</button>
+          <button className={`uz-tabBtn ${mode === 'rakuten' ? 'active' : ''}`} onClick={() => setMode('rakuten')}>楽天Books</button>
           {mode === 'uz' && (
-            <button
-              className={`uz-tabBtn ${showArticles ? 'active' : ''}`}
-              onClick={() => setShowArticles(!showArticles)}
-            >
-              記事一覧
-            </button>
+            <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => setShowArticles(!showArticles)}>記事一覧</button>
           )}
         </div>
       </header>
@@ -323,19 +374,11 @@ function UzBookshelf() {
         <div className="uz-articlesPanel">
           <div className="uz-articlesPanelHead">
             <h2>UZ 記事一覧</h2>
-            <input
-              className="uz-searchInput"
-              type="text"
-              placeholder="記事を検索..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+            <input className="uz-searchInput" type="text" placeholder="記事を検索..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             <div className="uz-shelfFilter">
               <button className={`uz-filterBtn ${!activeShelf || activeShelf === 'all' ? 'active' : ''}`} onClick={() => setActiveShelf('all')}>すべて</button>
               {uzData.shelves.map(s => (
-                <button key={s.id} className={`uz-filterBtn ${activeShelf === s.id ? 'active' : ''}`} onClick={() => setActiveShelf(s.id)}>
-                  {s.title}
-                </button>
+                <button key={s.id} className={`uz-filterBtn ${activeShelf === s.id ? 'active' : ''}`} onClick={() => setActiveShelf(s.id)}>{s.title}</button>
               ))}
             </div>
           </div>
@@ -347,15 +390,11 @@ function UzBookshelf() {
                   <div className="uz-articleCard__title">{art.title}</div>
                   <div className="uz-articleCard__meta">
                     <span>{formatDate(art.date)}</span>
-                    {art.categories.map(c => (
-                      <span key={c} className="uz-articleCard__cat">{c}</span>
-                    ))}
+                    {art.categories.map(c => <span key={c} className="uz-articleCard__cat">{c}</span>)}
                     <span className="uz-articleCard__count">{art.productCount}点</span>
                   </div>
                 </div>
-                <a href={art.url} target="_blank" rel="noopener noreferrer" className="uz-articleCard__link" onClick={e => e.stopPropagation()}>
-                  記事を読む →
-                </a>
+                <a href={art.url} target="_blank" rel="noopener noreferrer" className="uz-articleCard__link" onClick={e => e.stopPropagation()}>記事を読む →</a>
               </div>
             ))}
           </div>
@@ -368,51 +407,23 @@ function UzBookshelf() {
           {uzShelves.map(shelf => (
             <section key={shelf.id} className={`uz-shelf uz-shelf--${shelf.id}`}>
               <div className="uz-shelfHead">
-                <h2 className="uz-shelfTitle">
-                  <span className="uz-shelfIcon">{shelfIcons[shelf.id] || ''}</span>
-                  {shelf.title}
-                </h2>
+                <h2 className="uz-shelfTitle"><span className="uz-shelfIcon">{shelfIcons[shelf.id] || ''}</span>{shelf.title}</h2>
                 <div className="uz-shelfMeta">{shelf.items.length} items</div>
               </div>
               <div className="uz-rack">
                 <div className="uz-plank" aria-hidden="true" />
                 <div className="uz-mixedRow">
                   {shelf.mixedItems.map((item, idx) => {
-                    const isHighlighted = highlightArticle && item.articleId === highlightArticle;
-                    if (item.type === 'featured' && item.coverUrl) {
-                      return (
-                        <a
-                          key={`${item.id}-${idx}`}
-                          className={`uz-bookFace ${isHighlighted ? 'uz-highlight' : ''}`}
-                          href="#"
-                          onClick={e => openModal(item, e)}
-                          onMouseEnter={e => handleMouseEnter(e, item)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          <div className="uz-bookFace__cover" style={{ backgroundImage: `url(${item.coverUrl})` }} />
-                          <div className="uz-bookFace__edge" aria-hidden="true" />
-                          <div className="uz-bookFace__shadow" aria-hidden="true" />
-                        </a>
-                      );
-                    } else {
-                      return (
-                        <a
-                          key={`${item.id}-${idx}`}
-                          className={`uz-spine ${isHighlighted ? 'uz-highlight' : ''}`}
-                          href="#"
-                          onClick={e => openModal(item, e)}
-                          style={{ backgroundColor: spineColorFromTitle(item.fullTitle || item.title) }}
-                          onMouseEnter={e => handleMouseEnter(e, item)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          <div className="uz-spine__side" aria-hidden="true" />
-                          <div className="uz-spine__text">
-                            <span className="uz-spine__title">{truncate(item.title, 14)}</span>
-                            <span className="uz-spine__author">{truncate(item.author, 8)}</span>
-                          </div>
-                        </a>
-                      );
+                    const isHl = highlightArticle && item.articleId === highlightArticle;
+                    const handlers = {
+                      onClick: e => openModal(item, e),
+                      onMouseEnter: e => handleMouseEnter(e, item),
+                      onMouseLeave: handleMouseLeave,
+                    };
+                    if (item.type === 'featured') {
+                      return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
                     }
+                    return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
                   })}
                 </div>
               </div>
@@ -433,51 +444,16 @@ function UzBookshelf() {
               <div className="uz-rack">
                 <div className="uz-plank" aria-hidden="true" />
                 <div className="uz-mixedRow">
-                  {shelf.mixedBooks.map((b) => {
-                    const sizeStyle = getSizeStyle(b.size, b.pages, b.aspectRatio);
+                  {shelf.mixedBooks.map((b, idx) => {
+                    const handlers = {
+                      onClick: e => openModal(b, e),
+                      onMouseEnter: e => handleMouseEnter(e, b),
+                      onMouseLeave: handleMouseLeave,
+                    };
                     if (b.type === 'featured') {
-                      return (
-                        <a
-                          key={b.id}
-                          className="uz-bookFace"
-                          href="#"
-                          onClick={e => openModal(b, e)}
-                          style={{ width: sizeStyle.width, height: sizeStyle.height }}
-                          onMouseEnter={e => handleMouseEnter(e, b)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          <div className="uz-bookFace__cover" style={{ backgroundImage: `url(${b.coverUrl})` }} />
-                          <div className="uz-bookFace__edge" aria-hidden="true" />
-                          <div className="uz-bookFace__shadow" aria-hidden="true" style={{ filter: `blur(${sizeStyle.thickness}px)` }} />
-                          {b.reviewAverage && b.reviewAverage !== '0' && (
-                            <div className="uz-bookFace__badge">
-                              {renderStars(b.reviewAverage)}
-                            </div>
-                          )}
-                        </a>
-                      );
-                    } else {
-                      return (
-                        <a
-                          key={b.id}
-                          className="uz-spine"
-                          href="#"
-                          onClick={e => openModal(b, e)}
-                          style={{
-                            backgroundColor: spineColorFromTitle(b.fullTitle || b.title),
-                            width: sizeStyle.thickness,
-                          }}
-                          onMouseEnter={e => handleMouseEnter(e, b)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          <div className="uz-spine__side" aria-hidden="true" />
-                          <div className="uz-spine__text">
-                            <span className="uz-spine__title">{b.title}</span>
-                            <span className="uz-spine__author">{b.author}</span>
-                          </div>
-                        </a>
-                      );
+                      return <BookFace key={`${b.id}-${idx}`} item={b} isHighlighted={false} {...handlers} />;
                     }
+                    return <BookSpine key={`${b.id}-${idx}`} item={b} isHighlighted={false} {...handlers} />;
                   })}
                 </div>
               </div>
@@ -486,92 +462,64 @@ function UzBookshelf() {
         </div>
       )}
 
-      {/* === ツールチップ === */}
+      {/* ツールチップ */}
       {tooltip && (
-        <div className="uz-tooltip" style={{
-          position: 'fixed', left: tooltip.x + 12, top: tooltip.y + 12,
-          zIndex: 1000, pointerEvents: 'none',
-        }}>
+        <div className="uz-tooltip" style={{ position: 'fixed', left: tooltip.x + 14, top: tooltip.y + 14, zIndex: 1000, pointerEvents: 'none' }}>
           <div className="uz-tooltip__title">{tooltip.item.fullTitle || tooltip.item.title}</div>
           <div className="uz-tooltip__author">{tooltip.item.fullAuthor || tooltip.item.author}</div>
           {tooltip.item.price && <div className="uz-tooltip__price">¥{Number(tooltip.item.price).toLocaleString()}</div>}
           {tooltip.item.reviewAverage && tooltip.item.reviewAverage !== '0' && (
             <div className="uz-tooltip__review">{renderStars(tooltip.item.reviewAverage)} ({tooltip.item.reviewCount}件)</div>
           )}
-          {tooltip.item.size && <div>サイズ: {tooltip.item.size}</div>}
-          {tooltip.item.pages && <div>ページ: {tooltip.item.pages}</div>}
-          {tooltip.item.articleTitle && (
-            <div className="uz-tooltip__article">関連記事: {truncate(tooltip.item.articleTitle, 30)}</div>
+          {tooltip.item.format && FORMAT_SIZES[tooltip.item.format] && FORMAT_SIZES[tooltip.item.format].label && (
+            <div className="uz-tooltip__format">{FORMAT_SIZES[tooltip.item.format].label}</div>
           )}
+          {tooltip.item.articleTitle && <div className="uz-tooltip__article">📝 {truncate(tooltip.item.articleTitle, 30)}</div>}
         </div>
       )}
 
-      {/* === モーダル === */}
+      {/* モーダル */}
       {modal && (
         <div className="uz-modalOverlay" onClick={closeModal}>
           <div className="uz-modal" onClick={e => e.stopPropagation()}>
             <button className="uz-modal__close" onClick={closeModal}>✕</button>
             <div className="uz-modal__inner">
-              {/* 左: 表紙 */}
               <div className="uz-modal__cover">
                 {modal.coverUrl ? (
                   <img src={modal.coverUrl} alt={modal.fullTitle || modal.title} />
                 ) : (
-                  <div className="uz-modal__noCover" style={{ backgroundColor: spineColorFromTitle(modal.fullTitle || modal.title) }}>
+                  <div className="uz-modal__noCover" style={{ background: spineGradient(modal.fullTitle || modal.title) }}>
                     <span>{modal.fullTitle || modal.title}</span>
                   </div>
                 )}
               </div>
-              {/* 右: 詳細 */}
               <div className="uz-modal__details">
                 <h2 className="uz-modal__title">{modal.fullTitle || modal.title}</h2>
                 <p className="uz-modal__author">{modal.fullAuthor || modal.author}</p>
-
                 {modal.publisher && <p className="uz-modal__meta">出版社: {modal.publisher}</p>}
                 {modal.salesDate && <p className="uz-modal__meta">発売日: {modal.salesDate}</p>}
-                {modal.genreId && genreMap[modal.genreId] && (
-                  <p className="uz-modal__meta">ジャンル: {genreMap[modal.genreId]}</p>
+                {modal.genreId && genreMap[modal.genreId] && <p className="uz-modal__meta">ジャンル: {genreMap[modal.genreId]}</p>}
+                {modal.format && FORMAT_SIZES[modal.format] && FORMAT_SIZES[modal.format].label && (
+                  <p className="uz-modal__meta">判型: {FORMAT_SIZES[modal.format].label}</p>
                 )}
-                {modal.price && (
-                  <p className="uz-modal__price">¥{Number(modal.price).toLocaleString()}</p>
-                )}
+                {modal.price && <p className="uz-modal__price">¥{Number(modal.price).toLocaleString()}</p>}
                 {modal.reviewAverage && modal.reviewAverage !== '0' && (
                   <div className="uz-modal__review">
                     <span className="uz-modal__stars">{renderStars(modal.reviewAverage)}</span>
                     <span>{modal.reviewAverage} / 5.0 ({modal.reviewCount}件のレビュー)</span>
                   </div>
                 )}
-                {modal.caption && (
-                  <p className="uz-modal__caption">{truncate(modal.caption, 300)}</p>
-                )}
-
-                {/* 記事リンク */}
+                {modal.caption && <p className="uz-modal__caption">{truncate(modal.caption, 300)}</p>}
                 {modal.articleTitle && (
                   <div className="uz-modal__articleLink">
                     <span className="uz-modal__articleLabel">関連記事</span>
-                    <a href={`https://uz-media.com/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">
-                      {modal.articleTitle}
-                    </a>
+                    <a href={`https://uz-media.com/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">{modal.articleTitle}</a>
                   </div>
                 )}
-
-                {/* 購入ボタン */}
                 <div className="uz-modal__actions">
-                  {(modal.affiliateUrl || modal.url) && (
-                    <a href={modal.affiliateUrl || modal.url} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">
-                      楽天で購入
-                    </a>
-                  )}
-                  {modal.amazonUrl && (
-                    <a href={modal.amazonUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--amazon">
-                      Amazonで見る
-                    </a>
-                  )}
-                  {modal.rakutenUrl && !modal.affiliateUrl && (
-                    <a href={modal.rakutenUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">
-                      楽天で見る
-                    </a>
-                  )}
+                  {(modal.affiliateUrl || modal.url) && <a href={modal.affiliateUrl || modal.url} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">楽天で購入</a>}
+                  {modal.amazonUrl && <a href={modal.amazonUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--amazon">Amazonで見る</a>}
+                  {modal.rakutenUrl && !modal.affiliateUrl && <a href={modal.rakutenUrl} target="_blank" rel="noopener noreferrer" className="uz-modal__btn uz-modal__btn--rakuten">楽天で見る</a>}
                 </div>
               </div>
             </div>

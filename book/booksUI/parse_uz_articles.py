@@ -5,6 +5,147 @@ import json
 import html
 from collections import defaultdict
 
+# --- Format detection ---
+
+FORMAT_DIMENSIONS = {
+    'bunko':    {'width': 105, 'height': 148},   # A6
+    'comic':    {'width': 128, 'height': 182},   # B6-ish
+    'shinsho':  {'width': 105, 'height': 173},
+    'disc':     {'width': 135, 'height': 170},   # square-ish
+    'tankobon': {'width': 128, 'height': 182},   # B6
+    'hardcover':{'width': 148, 'height': 210},   # A5
+    'standard': {'width': 128, 'height': 182},   # default B6
+}
+
+FORMAT_KEYWORDS = [
+    # Order matters: more specific patterns first
+    (r'文庫',                          'bunko'),
+    (r'コミック|コミックス|漫画',       'comic'),
+    (r'新書',                          'shinsho'),
+    (r'Blu-ray|DVD|ブルーレイ',        'disc'),
+    (r'CD|レコード|vinyl|Vinyl|VINYL', 'disc'),
+    (r'単行本',                        'tankobon'),
+    (r'ハードカバー',                  'hardcover'),
+]
+
+def detect_format(product_name):
+    """Detect the book/media format from the product name.
+
+    Returns a tuple of (format_name, dimensions_dict).
+    """
+    if not product_name:
+        return 'standard', FORMAT_DIMENSIONS['standard']
+
+    for pattern, fmt in FORMAT_KEYWORDS:
+        if re.search(pattern, product_name):
+            return fmt, FORMAT_DIMENSIONS[fmt]
+
+    return 'standard', FORMAT_DIMENSIONS['standard']
+
+
+# --- High-res image URL helper ---
+
+def upgrade_image_url(url):
+    """Replace _SL500_ with _SL800_ in Amazon image URLs for higher resolution."""
+    if not url:
+        return url
+    return url.replace('_SL500_', '_SL800_')
+
+
+# --- Original work detection for manga/anime ---
+
+KNOWN_MANGA_TITLES = {
+    'AKIRA': 'AKIRA（大友克洋）',
+    'アキラ': 'AKIRA（大友克洋）',
+    '攻殻機動隊': '攻殻機動隊（士郎正宗）',
+    'GHOST IN THE SHELL': '攻殻機動隊（士郎正宗）',
+    'チェンソーマン': 'チェンソーマン（藤本タツキ）',
+    'ベルセルク': 'ベルセルク（三浦建太郎）',
+    '進撃の巨人': '進撃の巨人（諫山創）',
+    'ナウシカ': '風の谷のナウシカ（宮崎駿）',
+    '風の谷のナウシカ': '風の谷のナウシカ（宮崎駿）',
+    'NARUTO': 'NARUTO（岸本斉史）',
+    'ナルト': 'NARUTO（岸本斉史）',
+    '鬼滅の刃': '鬼滅の刃（吾峠呼世晴）',
+    '呪術廻戦': '呪術廻戦（芥見下々）',
+    'ワンピース': 'ONE PIECE（尾田栄一郎）',
+    'ONE PIECE': 'ONE PIECE（尾田栄一郎）',
+    'ドラゴンボール': 'ドラゴンボール（鳥山明）',
+    'DRAGON BALL': 'ドラゴンボール（鳥山明）',
+    'スラムダンク': 'SLAM DUNK（井上雄彦）',
+    'SLAM DUNK': 'SLAM DUNK（井上雄彦）',
+    'ジョジョ': 'ジョジョの奇妙な冒険（荒木飛呂彦）',
+    'JOJO': 'ジョジョの奇妙な冒険（荒木飛呂彦）',
+    'エヴァンゲリオン': '新世紀エヴァンゲリオン（庵野秀明/貞本義行）',
+    'ヴィンランド・サガ': 'ヴィンランド・サガ（幸村誠）',
+    'プラネテス': 'プラネテス（幸村誠）',
+    '寄生獣': '寄生獣（岩明均）',
+    'デスノート': 'DEATH NOTE（大場つぐみ/小畑健）',
+    'DEATH NOTE': 'DEATH NOTE（大場つぐみ/小畑健）',
+    'ハンターハンター': 'HUNTER×HUNTER（冨樫義博）',
+    'HUNTER': 'HUNTER×HUNTER（冨樫義博）',
+    '銀河英雄伝説': '銀河英雄伝説（田中芳樹）',
+    'カウボーイビバップ': 'カウボーイビバップ（矢立肇）',
+    'COWBOY BEBOP': 'カウボーイビバップ（矢立肇）',
+    'BLAME': 'BLAME!（弐瓶勉）',
+    'シドニアの騎士': 'シドニアの騎士（弐瓶勉）',
+    '蟲師': '蟲師（漆原友紀）',
+}
+
+def detect_original_work(product_name, article_categories, article_title=''):
+    """Detect original work information for manga/anime products.
+
+    Returns an originalWork dict or None.
+    """
+    if not product_name:
+        return None
+
+    combined_text = product_name + ' ' + article_title
+
+    # Check if this is in an anime/manga related article
+    is_anime_context = any(
+        'マンガ' in c or 'アニメ' in c or '漫画' in c
+        for c in article_categories
+    )
+
+    result = None
+
+    # Check for "原作" pattern in the name
+    gensaku_m = re.search(r'原作[：:\s]*([^\s（）()]+)', combined_text)
+    if gensaku_m:
+        result = {
+            'title': gensaku_m.group(1),
+            'type': '原作',
+        }
+
+    # Check if product is a DVD/Blu-ray of an anime
+    if not result:
+        is_disc = bool(re.search(r'Blu-ray|DVD|ブルーレイ', product_name))
+        is_anime_product = bool(re.search(
+            r'アニメ|anime|TVシリーズ|劇場版|OVA|OAD', product_name, re.IGNORECASE
+        ))
+        if is_disc and (is_anime_product or is_anime_context):
+            result = {
+                'type': 'アニメ化作品',
+            }
+
+    # Check against known manga titles
+    for keyword, full_info in KNOWN_MANGA_TITLES.items():
+        if keyword in combined_text:
+            if result and result.get('type') == 'アニメ化作品':
+                result['title'] = full_info
+            elif not result:
+                result = {
+                    'title': full_info,
+                    'type': '原作マンガ' if is_anime_context else '関連作品',
+                }
+            break
+
+    return result
+
+
+# --- Parse export ---
+
 def parse_export(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -159,6 +300,9 @@ def build_shelf_data(articles):
             if og_m:
                 cover_url = og_m.group(1)
 
+        # Upgrade cover image to high-res
+        cover_url = upgrade_image_url(cover_url)
+
         item = {
             'id': art['basename'],
             'title': art['title'],
@@ -178,10 +322,11 @@ def build_shelf_data(articles):
                 'amazonUrl': '',
                 'rakutenUrl': '',
             }
-            # Build image URL
+            # Build image URL and upgrade to high-res
             if p.get('images') and p.get('domain'):
                 base = p.get('image_base', '/images/I')
-                product['coverUrl'] = f"{p['domain']}{base}{p['images'][0]}"
+                raw_url = f"{p['domain']}{base}{p['images'][0]}"
+                product['coverUrl'] = upgrade_image_url(raw_url)
 
             # Extract URLs
             if p.get('amazon_url'):
@@ -197,6 +342,18 @@ def build_shelf_data(articles):
                             product['amazonUrl'] = url
                         elif 'rakuten' in url:
                             product['rakutenUrl'] = url
+
+            # Detect format and dimensions
+            fmt, dims = detect_format(p['name'])
+            product['format'] = fmt
+            product['dimensions'] = dims
+
+            # Detect original work for anime/manga context
+            original = detect_original_work(
+                p['name'], art['categories'], art['title']
+            )
+            if original:
+                product['originalWork'] = original
 
             if product['name']:
                 item['products'].append(product)
@@ -230,6 +387,9 @@ def main():
         'culture': {'title': 'カルチャー', 'icon': 'culture'},
     }
 
+    # Track format statistics for reporting
+    format_counts = defaultdict(int)
+
     for cat_id, config in shelf_config.items():
         items = shelf_data.get(cat_id, [])
         if items:
@@ -237,18 +397,32 @@ def main():
             shelf_items = []
             for art in items:
                 for p in art['products']:
-                    shelf_items.append({
+                    fmt, dims = detect_format(p['name'])
+                    format_counts[fmt] += 1
+
+                    shelf_item = {
                         'id': f"{art['id']}_{p.get('eid', '')}",
                         'title': p['name'][:40] if p['name'] else art['title'][:40],
                         'fullTitle': p['name'] or art['title'],
                         'author': p.get('brand', ''),
-                        'coverUrl': p['coverUrl'],
+                        'coverUrl': upgrade_image_url(p['coverUrl']),
                         'amazonUrl': p.get('amazonUrl', ''),
                         'rakutenUrl': p.get('rakutenUrl', ''),
                         'articleId': art['id'],
                         'articleTitle': art['title'],
                         'type': 'product',
-                    })
+                        'format': fmt,
+                        'dimensions': dims,
+                    }
+
+                    # Add originalWork if detected
+                    original = detect_original_work(
+                        p['name'], art['categories'], art['title']
+                    )
+                    if original:
+                        shelf_item['originalWork'] = original
+
+                    shelf_items.append(shelf_item)
 
             output['shelves'].append({
                 'id': cat_id,
@@ -277,6 +451,12 @@ def main():
     print(f"Total articles: {len(output['articles'])}")
     for s in output['shelves']:
         print(f"  {s['title']}: {len(s['items'])} items")
+
+    # Print format detection stats
+    print(f"\nFormat detection stats:")
+    for fmt, count in sorted(format_counts.items(), key=lambda x: -x[1]):
+        dims = FORMAT_DIMENSIONS[fmt]
+        print(f"  {fmt}: {count} items ({dims['width']}x{dims['height']}mm)")
 
 if __name__ == '__main__':
     main()
