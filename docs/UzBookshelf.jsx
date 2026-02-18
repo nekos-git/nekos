@@ -1,7 +1,7 @@
 // ============================================================
-// UZ Bookshelf — 統合UI v3
-// v2 + 検索, ジャンルフィルタ, キーボード操作, ローディング,
-//      お気に入り(localStorage)
+// UZ Bookshelf — 統合UI v4
+// v3 + 記事詳細ビュー, モーダル内関連本, 記事カテゴリフィルタ,
+//      持続フィルタ, キーボード拡充
 // ============================================================
 
 // ---- ユーティリティ ----
@@ -124,7 +124,7 @@ function UzBookshelf() {
   const [activeShelf, setActiveShelf] = React.useState(null);
   const [showArticles, setShowArticles] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [highlightArticle, setHighlightArticle] = React.useState(null);
+  // highlightArticle は filterByArticle (A4) に置換済み
   const [shelfIndex, setShelfIndex] = React.useState(0);
   const tooltipTimeoutRef = React.useRef(null);
 
@@ -134,6 +134,15 @@ function UzBookshelf() {
   const [loadError, setLoadError] = React.useState(null);
   const [favorites, setFavorites] = React.useState(loadFavorites);
   const [showFavorites, setShowFavorites] = React.useState(false);
+
+  // --- A1: 記事詳細ビュー ---
+  const [selectedArticle, setSelectedArticle] = React.useState(null);
+
+  // --- A3: 記事カテゴリフィルタ ---
+  const [activeCategory, setActiveCategory] = React.useState(null);
+
+  // --- A4: 持続フィルタ（記事→棚のフィルタ） ---
+  const [filterByArticle, setFilterByArticle] = React.useState(null);
 
   // お気に入り永続化
   React.useEffect(() => { saveFavorites(favorites); }, [favorites]);
@@ -251,8 +260,20 @@ function UzBookshelf() {
       articles = articles.filter(a => a.title.toLowerCase().includes(q) || a.categories.some(c => c.toLowerCase().includes(q)));
     }
     if (activeShelf && activeShelf !== 'all') articles = articles.filter(a => a.shelf === activeShelf);
+    // A3: カテゴリフィルタ
+    if (activeCategory) articles = articles.filter(a => a.categories && a.categories.includes(activeCategory));
     return articles;
-  }, [uzData, searchQuery, activeShelf]);
+  }, [uzData, searchQuery, activeShelf, activeCategory]);
+
+  // A3: 全記事のカテゴリ一覧
+  const allCategories = React.useMemo(() => {
+    if (!uzData) return [];
+    const cats = new Set();
+    uzData.articles.forEach(a => {
+      (a.categories || []).forEach(c => { if (c) cats.add(c); });
+    });
+    return [...cats].sort();
+  }, [uzData]);
 
   // --- 棚ナビゲーション ---
   const allShelves = React.useMemo(() => {
@@ -278,22 +299,71 @@ function UzBookshelf() {
     setShowFavorites(false);
     setBookSearch('');
     setSelectedGenre(null);
+    setSelectedArticle(null);
+    setFilterByArticle(null);
   };
 
   const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); };
   const closeModal = () => setModal(null);
-  const jumpToShelfFromArticle = (articleId) => {
-    setShowArticles(false); setHighlightArticle(articleId);
-    setTimeout(() => setHighlightArticle(null), 3000);
+
+  // A1: 記事カードクリック → 記事詳細ビューを表示
+  const openArticleDetail = (article) => {
+    setSelectedArticle(article);
   };
+
+  // A1: 記事詳細から一覧に戻る
+  const backToArticleList = () => {
+    setSelectedArticle(null);
+  };
+
+  // A4: 記事詳細から棚にフィルタ付きジャンプ
+  const showArticleBooksOnShelf = (articleId) => {
+    setShowArticles(false);
+    setSelectedArticle(null);
+    setFilterByArticle(articleId);
+  };
+
+  // A2: モーダル内から記事詳細ビューを開く
+  const openArticleFromModal = (articleId) => {
+    if (!uzData) return;
+    const art = uzData.articles.find(a => a.id === articleId);
+    if (art) {
+      closeModal();
+      setShowArticles(true);
+      setShowFavorites(false);
+      setSelectedArticle(art);
+    }
+  };
+
+  // A1: 記事に関連する本を取得
+  const getArticleBooks = React.useCallback((articleId) => {
+    if (!uzData) return [];
+    const books = [];
+    uzData.shelves.forEach(s => {
+      s.items.forEach(item => {
+        if (item.articleId === articleId) {
+          books.push({
+            ...item,
+            type: item.coverUrl ? 'featured' : 'spine',
+            source: 'uz',
+            shelfId: s.id,
+            format: s.id === 'film' ? 'poster' : (item.format || detectFormat(item.fullTitle || item.title)),
+          });
+        }
+      });
+    });
+    return books;
+  }, [uzData]);
 
   const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', biz: '💼', culture: '🌍' };
 
-  // --- キーボードナビゲーション (A3) ---
+  // --- キーボードナビゲーション ---
   React.useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') {
         if (modal) { closeModal(); return; }
+        if (selectedArticle) { backToArticleList(); return; }
+        if (filterByArticle) { setFilterByArticle(null); return; }
       }
       // 検索入力中はキーボードナビ無効
       if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
@@ -302,7 +372,7 @@ function UzBookshelf() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [modal, shelfIndex, allShelves.length, showArticles, showFavorites]);
+  }, [modal, selectedArticle, filterByArticle, shelfIndex, allShelves.length, showArticles, showFavorites]);
 
   // --- ジャンルフィルタ用: 現在の棚のジャンル一覧 (A2) ---
   const currentGenres = React.useMemo(() => {
@@ -403,13 +473,25 @@ function UzBookshelf() {
     if (!currentShelf) return [];
     let items = currentShelf.mixedItems || currentShelf.mixedBooks || [];
 
-    // ジャンルフィルタ (A2)
+    // ジャンルフィルタ
     if (selectedGenre && mode === 'rakuten') {
       items = items.filter(b => b.genreId === selectedGenre);
     }
 
+    // A4: 記事フィルタ
+    if (filterByArticle && mode === 'uz') {
+      items = items.filter(b => b.articleId === filterByArticle);
+    }
+
     return items;
-  }, [currentShelf, selectedGenre, mode]);
+  }, [currentShelf, selectedGenre, mode, filterByArticle]);
+
+  // A4: フィルタ中の記事タイトルを取得
+  const filterArticleTitle = React.useMemo(() => {
+    if (!filterByArticle || !uzData) return '';
+    const art = uzData.articles.find(a => a.id === filterByArticle);
+    return art ? art.title : filterByArticle;
+  }, [filterByArticle, uzData]);
 
   // --- 検索結果 (A1): 全棚横断検索 ---
   const searchResults = React.useMemo(() => {
@@ -553,8 +635,8 @@ function UzBookshelf() {
         </div>
       )}
 
-      {/* 記事一覧パネル */}
-      {showArticles && uzData && (
+      {/* 記事一覧パネル (A1改修: 記事詳細ビュー対応) */}
+      {showArticles && uzData && !selectedArticle && (
         <div className="uz-articlesPanel">
           <div className="uz-articlesPanelHead">
             <h2>UZ 記事一覧</h2>
@@ -565,10 +647,19 @@ function UzBookshelf() {
                 <button key={s.id} className={`uz-filterBtn ${activeShelf === s.id ? 'active' : ''}`} onClick={() => setActiveShelf(s.id)}>{s.title}</button>
               ))}
             </div>
+            {/* A3: カテゴリフィルタ */}
+            {allCategories.length > 0 && (
+              <div className="uz-categoryFilter">
+                <button className={`uz-filterBtn ${!activeCategory ? 'active' : ''}`} onClick={() => setActiveCategory(null)}>全カテゴリ</button>
+                {allCategories.map(c => (
+                  <button key={c} className={`uz-filterBtn ${activeCategory === c ? 'active' : ''}`} onClick={() => setActiveCategory(c)}>{c}</button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="uz-articlesList">
             {filteredArticles.map(art => (
-              <div key={art.id} className="uz-articleCard" onClick={() => jumpToShelfFromArticle(art.id)}>
+              <div key={art.id} className="uz-articleCard" onClick={() => openArticleDetail(art)}>
                 <div className="uz-articleCard__icon">{shelfIcons[art.shelf] || '📄'}</div>
                 <div className="uz-articleCard__body">
                   <div className="uz-articleCard__title">{art.title}</div>
@@ -584,6 +675,58 @@ function UzBookshelf() {
           </div>
         </div>
       )}
+
+      {/* A1: 記事詳細ビュー */}
+      {showArticles && selectedArticle && uzData && (() => {
+        const articleBooks = getArticleBooks(selectedArticle.id);
+        return (
+          <div className="uz-articleDetail">
+            <button className="uz-articleDetail__back" onClick={backToArticleList}>← 記事一覧に戻る</button>
+            <div className="uz-articleDetail__header">
+              <div className="uz-articleDetail__icon">{shelfIcons[selectedArticle.shelf] || '📄'}</div>
+              <div>
+                <h2 className="uz-articleDetail__title">{selectedArticle.title}</h2>
+                <div className="uz-articleDetail__meta">
+                  <span>{formatDate(selectedArticle.date)}</span>
+                  {selectedArticle.categories.map(c => <span key={c} className="uz-articleCard__cat">{c}</span>)}
+                </div>
+              </div>
+            </div>
+            <div className="uz-articleDetail__actions">
+              <a href={selectedArticle.url} target="_blank" rel="noopener noreferrer" className="uz-articleDetail__readLink">記事を読む →</a>
+              {articleBooks.length > 0 && (
+                <button className="uz-articleDetail__shelfBtn" onClick={() => showArticleBooksOnShelf(selectedArticle.id)}>
+                  本棚で表示
+                </button>
+              )}
+            </div>
+
+            {articleBooks.length > 0 ? (
+              <div className="uz-articleDetail__booksSection">
+                <h3 className="uz-articleDetail__booksTitle">この記事で紹介された本（{articleBooks.length}冊）</h3>
+                <div className="uz-articleDetail__miniShelf">
+                  {articleBooks.map((item, idx) => {
+                    const handlers = {
+                      onClick: e => openModal(item, e),
+                      onMouseEnter: e => handleMouseEnter(e, item),
+                      onMouseLeave: handleMouseLeave,
+                    };
+                    if (item.type === 'featured') {
+                      return <BookFace key={`ad-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                    }
+                    return <BookSpine key={`ad-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="uz-emptyState">
+                <div className="uz-emptyState__icon">📝</div>
+                <div className="uz-emptyState__text">この記事に関連する本はまだ登録されていません</div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* お気に入りパネル (A6) */}
       {showFavorites && (
@@ -662,6 +805,14 @@ function UzBookshelf() {
         </div>
       )}
 
+      {/* A4: 記事フィルタバー */}
+      {!showArticles && !showFavorites && filterByArticle && mode === 'uz' && (
+        <div className="uz-articleFilterBar">
+          <span className="uz-articleFilterBar__label">📝 「{truncate(filterArticleTitle, 30)}」の本のみ表示中</span>
+          <button className="uz-articleFilterBar__clear" onClick={() => setFilterByArticle(null)}>✕ 解除</button>
+        </div>
+      )}
+
       {/* === 1ページ1棚（通常表示） === */}
       {!showArticles && !showFavorites && !searchResults && currentShelf && !isLoading && (
         <div className="uz-singleShelf">
@@ -677,16 +828,15 @@ function UzBookshelf() {
               <div className="uz-plank" aria-hidden="true" />
               <div className="uz-mixedRow">
                 {currentItems.map((item, idx) => {
-                  const isHl = highlightArticle && item.articleId === highlightArticle;
                   const handlers = {
                     onClick: e => openModal(item, e),
                     onMouseEnter: e => handleMouseEnter(e, item),
                     onMouseLeave: handleMouseLeave,
                   };
                   if (item.type === 'featured') {
-                    return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
+                    return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                   }
-                  return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
+                  return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                 })}
               </div>
             </div>
@@ -761,12 +911,45 @@ function UzBookshelf() {
                   </div>
                 )}
                 {modal.caption && <p className="uz-modal__caption">{truncate(modal.caption, 300)}</p>}
-                {modal.articleTitle && (
-                  <div className="uz-modal__articleLink">
-                    <span className="uz-modal__articleLabel">関連記事</span>
-                    <a href={`https://uz-media.com/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">{modal.articleTitle}</a>
-                  </div>
-                )}
+                {modal.articleTitle && (() => {
+                  const relatedBooks = getArticleBooks(modal.articleId).filter(b =>
+                    (b.id || b.fullTitle) !== (modal.id || modal.fullTitle)
+                  );
+                  return (
+                    <div className="uz-modal__articleSection">
+                      <div className="uz-modal__articleLink">
+                        <span className="uz-modal__articleLabel">関連記事</span>
+                        <div className="uz-modal__articleLinkRow">
+                          <a href={`https://uz-media.com/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">{modal.articleTitle}</a>
+                          <button className="uz-modal__articleDetailBtn" onClick={() => openArticleFromModal(modal.articleId)}>詳細を見る</button>
+                        </div>
+                      </div>
+                      {relatedBooks.length > 0 && (
+                        <div className="uz-modal__relatedBooks">
+                          <span className="uz-modal__relatedLabel">この記事の他の本（{relatedBooks.length}冊）</span>
+                          <div className="uz-modal__relatedList">
+                            {relatedBooks.slice(0, 8).map((b, i) => (
+                              <button
+                                key={`rel-${b.id}-${i}`}
+                                className="uz-modal__relatedThumb"
+                                onClick={() => setModal(b)}
+                                title={b.fullTitle || b.title}
+                              >
+                                {b.coverUrl ? (
+                                  <img src={b.coverUrl} alt="" />
+                                ) : (
+                                  <div className="uz-modal__relatedPlaceholder" style={{ background: spineGradient(b.fullTitle || b.title) }}>
+                                    <span>{truncate(b.title, 6)}</span>
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="uz-modal__actions">
                   {/* お気に入りボタン (A6) */}
                   <button

@@ -666,6 +666,137 @@ body {
 .uz-emptyState__text { font-size: 15px; color: var(--muted); font-weight: 600; }
 .uz-emptyState__hint { font-size: 12px; color: var(--muted); opacity: .6; }
 
+/* ============================================================
+   A1: 記事詳細ビュー
+   ============================================================ */
+.uz-articleDetail {
+  margin-top: 22px; padding: 24px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+}
+.uz-articleDetail__back {
+  background: none; border: none; color: var(--accent); cursor: pointer;
+  font-size: 13px; padding: 0; margin-bottom: 16px; transition: color .12s;
+}
+.uz-articleDetail__back:hover { color: #fff; }
+.uz-articleDetail__header {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px;
+}
+.uz-articleDetail__icon { font-size: 28px; flex-shrink: 0; }
+.uz-articleDetail__title {
+  margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4;
+}
+.uz-articleDetail__meta {
+  display: flex; gap: 8px; align-items: center; margin-top: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.uz-articleDetail__actions {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.uz-articleDetail__readLink {
+  display: inline-flex; align-items: center;
+  color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600;
+  padding: 8px 18px; border: 1px solid rgba(74,158,255,.25);
+  border-radius: 10px; transition: all .12s;
+}
+.uz-articleDetail__readLink:hover {
+  background: rgba(74,158,255,.1); color: #fff;
+}
+.uz-articleDetail__shelfBtn {
+  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  color: var(--muted); padding: 8px 18px; border-radius: 10px;
+  font-size: 14px; cursor: pointer; transition: all .12s;
+}
+.uz-articleDetail__shelfBtn:hover {
+  background: rgba(255,255,255,.1); color: var(--text);
+}
+.uz-articleDetail__booksSection {
+  border-top: 1px solid var(--line); padding-top: 18px;
+}
+.uz-articleDetail__booksTitle {
+  margin: 0 0 14px; font-size: 14px; color: var(--muted); font-weight: 600;
+}
+.uz-articleDetail__miniShelf {
+  display: flex; gap: 16px 12px; align-items: flex-end;
+  flex-wrap: wrap; min-height: 120px;
+  padding: 18px 14px 24px;
+  background: rgba(0,0,0,.12); border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.03);
+  justify-content: center;
+}
+
+/* ============================================================
+   A2: モーダル内関連コンテンツ
+   ============================================================ */
+.uz-modal__articleSection { margin-top: 16px; }
+.uz-modal__articleLinkRow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.uz-modal__articleDetailBtn {
+  background: rgba(74,158,255,.1); border: 1px solid rgba(74,158,255,.2);
+  color: var(--accent); padding: 4px 10px; border-radius: 8px;
+  font-size: 11px; cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.uz-modal__articleDetailBtn:hover {
+  background: rgba(74,158,255,.2); color: #fff;
+}
+.uz-modal__relatedBooks { margin-top: 12px; }
+.uz-modal__relatedLabel {
+  display: block; font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  font-weight: 600;
+}
+.uz-modal__relatedList {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.uz-modal__relatedThumb {
+  width: 48px; height: 68px; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--line); cursor: pointer;
+  transition: all .15s; background: none; padding: 0; flex-shrink: 0;
+}
+.uz-modal__relatedThumb:hover {
+  border-color: var(--accent); transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74,158,255,.2);
+}
+.uz-modal__relatedThumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.uz-modal__relatedPlaceholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  padding: 4px; text-align: center;
+}
+.uz-modal__relatedPlaceholder span {
+  font-size: 6px; color: rgba(255,255,255,.8); writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* ============================================================
+   A3: 記事カテゴリフィルタ
+   ============================================================ */
+.uz-categoryFilter {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+  padding-top: 8px; border-top: 1px solid var(--line);
+}
+
+/* ============================================================
+   A4: 持続フィルタバー
+   ============================================================ */
+.uz-articleFilterBar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 12px; padding: 10px 16px;
+  background: rgba(74,158,255,.08); border: 1px solid rgba(74,158,255,.2);
+  border-radius: 12px;
+}
+.uz-articleFilterBar__label {
+  font-size: 13px; color: var(--accent); font-weight: 600;
+}
+.uz-articleFilterBar__clear {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  color: var(--muted); padding: 4px 12px; border-radius: 8px;
+  font-size: 12px; cursor: pointer; transition: all .12s;
+}
+.uz-articleFilterBar__clear:hover {
+  background: rgba(255,255,255,.15); color: var(--text);
+}
+
 /* ---- タッチデバイス: ツールチップ無効化 ---- */
 @media (hover: none), (pointer: coarse) {
   .uz-tooltip { display: none !important; }
@@ -699,6 +830,12 @@ body {
   .uz-tabBtn { padding: 6px 14px; font-size: 12px; flex-shrink: 0; }
   .uz-bookSearchInput { font-size: 13px; padding: 8px 36px 8px 12px; }
   .uz-genreFilter { gap: 4px; padding: 6px; }
+
+  .uz-articleDetail { padding: 16px; margin-top: 14px; }
+  .uz-articleDetail__title { font-size: 15px; }
+  .uz-articleDetail__miniShelf { gap: 10px 6px; padding: 12px 8px 18px; }
+  .uz-modal__relatedThumb { width: 40px; height: 56px; }
+  .uz-articleFilterBar { flex-direction: column; gap: 8px; text-align: center; }
 
   .uz-shelfNav { gap: 4px; padding: 4px; margin-top: 12px; border-radius: 12px; }
   .uz-shelfNav__btn { padding: 6px 12px; font-size: 12px; border-radius: 10px; gap: 4px; }
