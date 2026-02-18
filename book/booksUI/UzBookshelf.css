@@ -1,0 +1,381 @@
+/* ============================================================
+   UZ Bookshelf — 統合CSS
+   ============================================================ */
+
+:root {
+  --bg: #0b0f14;
+  --panel: #0f1520;
+  --panel2: #0d131c;
+  --text: #d7e1ea;
+  --muted: #9bb0c3;
+  --line: rgba(255,255,255,.08);
+  --shadow: rgba(0,0,0,.45);
+  --plank: #141b26;
+  --accent: #4a9eff;
+  --accent2: #ff6b4a;
+  --rakuten: #bf0000;
+  --amazon: #ff9900;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+}
+
+/* ---- Layout ---- */
+.uz-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 18px 48px; }
+
+/* ---- Header ---- */
+.uz-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 8px 0 16px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.uz-kicker { font-size: 11px; letter-spacing: .18em; color: var(--accent); text-transform: uppercase; }
+.uz-title { margin: 4px 0 0; font-size: 22px; letter-spacing: .02em; }
+.uz-headerActions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Tab Buttons ---- */
+.uz-tabBtn {
+  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  color: var(--muted); padding: 7px 16px; border-radius: 20px;
+  font-size: 13px; cursor: pointer; transition: all .15s ease;
+}
+.uz-tabBtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
+.uz-tabBtn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* ---- Grid ---- */
+.uz-grid { display: grid; grid-template-columns: 1fr; gap: 22px; margin-top: 20px; }
+@media (min-width: 920px) {
+  .uz-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .uz-grid--uz { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1200px) {
+  .uz-grid--uz { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+/* ---- Shelf ---- */
+.uz-shelf {
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 14px 12px 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+.uz-shelf--film { border-color: rgba(255,107,74,.15); }
+.uz-shelf--music { border-color: rgba(74,158,255,.15); }
+.uz-shelf--manga { border-color: rgba(255,200,60,.15); }
+
+.uz-shelfHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.uz-shelfTitle { margin: 0; font-size: 15px; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; }
+.uz-shelfIcon { font-size: 18px; }
+.uz-shelfMeta { font-size: 11px; color: var(--muted); }
+
+/* ---- Rack ---- */
+.uz-rack {
+  position: relative; padding: 10px 8px 12px;
+  border-radius: 12px; background: rgba(0,0,0,.10);
+  border: 1px solid rgba(255,255,255,.04);
+}
+.uz-plank {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; height: 16px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)),
+             linear-gradient(180deg, var(--plank), rgba(0,0,0,.2));
+  box-shadow: 0 14px 30px rgba(0,0,0,.35);
+  transform: perspective(900px) rotateX(66deg);
+  transform-origin: bottom;
+}
+
+/* ---- Mixed Row ---- */
+.uz-mixedRow {
+  display: flex; gap: 10px; align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ---- Book Face (featured) ---- */
+.uz-bookFace {
+  position: relative; width: 110px; height: 146px;
+  border-radius: 2px;
+  transform: perspective(900px) rotateY(-18deg) rotateX(2deg);
+  transform-origin: left center;
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  text-decoration: none; color: inherit; flex-shrink: 0;
+}
+.uz-bookFace:hover {
+  transform: perspective(900px) rotateY(-10deg) translateY(-2px) translateZ(48px);
+  filter: brightness(1.05);
+}
+.uz-bookFace__cover {
+  position: absolute; inset: 0; border-radius: 2px;
+  background-size: cover; background-position: center;
+  box-shadow: 0 16px 36px rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.uz-bookFace__edge {
+  position: absolute; top: 0; right: -10px; bottom: 0; width: 12px;
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.25));
+  transform: skewY(10deg); opacity: .85;
+}
+.uz-bookFace__shadow {
+  position: absolute; left: 10px; right: 0; bottom: -8px; height: 16px;
+  background: radial-gradient(closest-side, rgba(0,0,0,.4), transparent);
+  filter: blur(2px);
+}
+.uz-bookFace__badge {
+  position: absolute; top: 4px; left: 4px;
+  background: rgba(0,0,0,.7); color: #ffd700;
+  font-size: 9px; padding: 2px 5px; border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+/* ---- Spine ---- */
+.uz-spine {
+  position: relative; width: 26px; height: 144px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 12px 24px rgba(0,0,0,.28);
+  transform: perspective(800px) rotateY(-18deg);
+  transform-origin: left center;
+  transition: transform .16s ease, filter .16s ease;
+  text-decoration: none; color: inherit; flex-shrink: 0;
+}
+.uz-spine:hover {
+  transform: perspective(800px) rotateY(-10deg) translateY(-2px) translateZ(8px);
+  filter: brightness(1.05);
+}
+.uz-spine__side {
+  position: absolute; top: 0; right: -8px; bottom: 0; width: 10px;
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(0,0,0,.25));
+  opacity: .85;
+}
+.uz-spine__text {
+  position: absolute; inset: 8px 14px 8px 6px;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  display: flex; gap: 8px; align-items: flex-start; justify-content: space-between;
+}
+.uz-spine__title {
+  font-size: 6px; letter-spacing: .06em;
+  color: rgba(255,255,255,.95);
+  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+  max-height: 120px; overflow: hidden;
+}
+.uz-spine__author {
+  font-size: 4px; color: rgba(255,255,255,.70);
+  max-height: 90px; overflow: hidden;
+}
+
+/* ---- Highlight Animation ---- */
+.uz-highlight {
+  animation: uzHighlight 1.5s ease-in-out 2;
+}
+@keyframes uzHighlight {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74,158,255,0); }
+  50% { box-shadow: 0 0 20px 6px rgba(74,158,255,.6); }
+}
+
+/* ---- Tooltip ---- */
+.uz-tooltip {
+  background: rgba(10,14,20,.92); color: #fff;
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 12px; max-width: 260px;
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.uz-tooltip__title { font-weight: 700; margin-bottom: 3px; line-height: 1.35; }
+.uz-tooltip__author { color: var(--muted); margin-bottom: 4px; }
+.uz-tooltip__price { color: var(--accent2); font-weight: 700; font-size: 14px; }
+.uz-tooltip__review { color: #ffd700; margin-top: 2px; }
+.uz-tooltip__article { color: var(--accent); margin-top: 4px; font-size: 11px; }
+
+/* ============================================================
+   Articles Panel
+   ============================================================ */
+.uz-articlesPanel {
+  margin-top: 20px; padding: 16px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.uz-articlesPanelHead {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.uz-articlesPanelHead h2 { margin: 0; font-size: 16px; }
+
+.uz-searchInput {
+  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  color: var(--text); padding: 6px 14px; border-radius: 16px;
+  font-size: 13px; outline: none; min-width: 180px;
+  transition: border-color .15s;
+}
+.uz-searchInput:focus { border-color: var(--accent); }
+.uz-searchInput::placeholder { color: var(--muted); }
+
+.uz-shelfFilter { display: flex; gap: 6px; flex-wrap: wrap; }
+.uz-filterBtn {
+  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  color: var(--muted); padding: 4px 12px; border-radius: 14px;
+  font-size: 12px; cursor: pointer; transition: all .12s;
+}
+.uz-filterBtn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.uz-filterBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.uz-articlesList {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 500px; overflow-y: auto;
+}
+.uz-articleCard {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 10px;
+  background: rgba(255,255,255,.03); border: 1px solid transparent;
+  cursor: pointer; transition: all .12s;
+}
+.uz-articleCard:hover { background: rgba(255,255,255,.06); border-color: var(--line); }
+.uz-articleCard__icon { font-size: 20px; flex-shrink: 0; }
+.uz-articleCard__body { flex: 1; min-width: 0; }
+.uz-articleCard__title {
+  font-size: 13px; font-weight: 600; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.uz-articleCard__meta {
+  display: flex; gap: 8px; align-items: center; margin-top: 3px;
+  font-size: 11px; color: var(--muted);
+}
+.uz-articleCard__cat {
+  background: rgba(74,158,255,.12); color: var(--accent);
+  padding: 1px 7px; border-radius: 8px; font-size: 10px;
+}
+.uz-articleCard__count { color: var(--muted); font-size: 10px; }
+.uz-articleCard__link {
+  color: var(--accent); text-decoration: none; font-size: 12px;
+  white-space: nowrap; flex-shrink: 0;
+  transition: color .12s;
+}
+.uz-articleCard__link:hover { color: #fff; }
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.uz-modalOverlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.uz-modal {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 18px; max-width: 680px; width: 100%;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  position: relative;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.uz-modal__close {
+  position: absolute; top: 12px; right: 14px;
+  background: rgba(255,255,255,.08); border: 1px solid var(--line);
+  color: var(--text); width: 32px; height: 32px;
+  border-radius: 50%; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s;
+  z-index: 1;
+}
+.uz-modal__close:hover { background: rgba(255,255,255,.15); }
+
+.uz-modal__inner {
+  display: flex; gap: 24px; padding: 28px;
+}
+@media (max-width: 600px) {
+  .uz-modal__inner { flex-direction: column; align-items: center; }
+}
+
+.uz-modal__cover {
+  flex-shrink: 0; width: 180px;
+}
+.uz-modal__cover img {
+  width: 100%; border-radius: 4px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.4);
+}
+.uz-modal__noCover {
+  width: 180px; height: 250px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; text-align: center; font-size: 14px;
+  color: rgba(255,255,255,.8);
+  writing-mode: vertical-rl; text-orientation: mixed;
+}
+
+.uz-modal__details { flex: 1; min-width: 0; }
+.uz-modal__title { margin: 0 0 6px; font-size: 18px; line-height: 1.35; }
+.uz-modal__author { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
+.uz-modal__meta { color: var(--muted); margin: 2px 0; font-size: 13px; }
+.uz-modal__price {
+  color: var(--accent2); font-size: 20px; font-weight: 700; margin: 10px 0;
+}
+.uz-modal__review { margin: 6px 0; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.uz-modal__stars { color: #ffd700; font-size: 15px; }
+.uz-modal__caption {
+  margin: 12px 0; font-size: 13px; line-height: 1.6; color: var(--muted);
+  border-left: 3px solid var(--line); padding-left: 12px;
+}
+
+.uz-modal__articleLink {
+  margin: 14px 0; padding: 10px 14px;
+  background: rgba(74,158,255,.08); border: 1px solid rgba(74,158,255,.2);
+  border-radius: 10px;
+}
+.uz-modal__articleLabel {
+  display: block; font-size: 11px; color: var(--accent); margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.uz-modal__articleLink a {
+  color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600;
+  transition: color .12s;
+}
+.uz-modal__articleLink a:hover { color: var(--accent); }
+
+.uz-modal__actions {
+  display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap;
+}
+.uz-modal__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; color: #fff;
+  transition: all .15s ease;
+}
+.uz-modal__btn--rakuten { background: var(--rakuten); }
+.uz-modal__btn--rakuten:hover { background: #d40000; transform: translateY(-1px); }
+.uz-modal__btn--amazon { background: var(--amazon); color: #111; }
+.uz-modal__btn--amazon:hover { background: #ffaa22; transform: translateY(-1px); }
+
+/* ---- Scrollbar ---- */
+.uz-articlesList::-webkit-scrollbar { width: 6px; }
+.uz-articlesList::-webkit-scrollbar-track { background: transparent; }
+.uz-articlesList::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+.uz-modal::-webkit-scrollbar { width: 6px; }
+.uz-modal::-webkit-scrollbar-track { background: transparent; }
+.uz-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+
+/* ---- Mobile ---- */
+@media (max-width: 600px) {
+  .uz-header { flex-direction: column; align-items: flex-start; }
+  .uz-modal__inner { padding: 20px; }
+  .uz-modal__cover { width: 140px; }
+  .uz-bookFace { width: 90px; height: 120px; }
+  .uz-spine { height: 120px; }
+}

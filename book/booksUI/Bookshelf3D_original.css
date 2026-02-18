@@ -1,0 +1,160 @@
+:root{
+  --bg:#0b0f14;
+  --panel:#0f1520;
+  --panel2:#0d131c;
+  --text:#d7e1ea;
+  --muted:#9bb0c3;
+  --line:rgba(255,255,255,.08);
+  --shadow: rgba(0,0,0,.45);
+  --plank:#141b26;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP",sans-serif}
+
+.uz-wrap{max-width:1160px;margin:0 auto;padding:28px 18px 48px}
+.uz-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 0 18px;border-bottom:1px solid var(--line)}
+.uz-kicker{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.uz-title{margin:6px 0 0;font-size:24px;letter-spacing:.02em}
+.uz-note{font-size:12px;color:var(--muted);max-width:420px;text-align:right;line-height:1.45}
+
+.uz-grid{display:grid;grid-template-columns:1fr;gap:26px;margin-top:22px}
+@media (min-width: 920px){
+  .uz-grid{grid-template-columns:1fr 1fr;gap:22px}
+}
+
+.uz-shelf{
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px 14px 14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+
+.uz-shelfHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.uz-shelfTitle{margin:0;font-size:16px;letter-spacing:.04em}
+.uz-shelfMeta{font-size:12px;color:var(--muted)}
+
+.uz-rack{
+  position:relative;
+  padding:12px 10px 14px;
+  border-radius:14px;
+  background:rgba(0,0,0,.10);
+  border:1px solid rgba(255,255,255,.05);
+}
+
+/* 棚板 */
+.uz-plank{
+  position:absolute;left:10px;right:10px;bottom:10px;height:18px;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)),
+             linear-gradient(180deg, var(--plank), rgba(0,0,0,.2));
+  box-shadow:0 18px 36px rgba(0,0,0,.35);
+  transform:perspective(900px) rotateX(66deg);
+  transform-origin:bottom;
+}
+
+/* mixed 正面表紙と背表紙を混ぜて表示 */
+.uz-mixedRow{
+  display:flex;gap:12px;align-items:flex-end;
+  flex-wrap:wrap;
+}
+
+/* 正面表紙（擬似3D） */
+.uz-bookFace{
+  position:relative;
+  width:112px;height:148px;
+  border-radius:2px;
+  transform:perspective(900px) rotateY(-18deg) rotateX(2deg);
+  transform-origin:left center;
+  transition:transform .18s ease, filter .18s ease;
+  text-decoration:none;color:inherit;
+  flex-shrink:0;
+}
+.uz-bookFace:hover{
+  transform:perspective(900px) rotateY(-10deg) translateY(-2px) translateZ(48px);
+  filter:brightness(1.03);
+}
+.uz-bookFace__cover{
+  position:absolute;inset:0;
+  border-radius:2px;
+  background-size:cover;background-position:center;
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.10);
+}
+.uz-bookFace__edge{
+  position:absolute;top:0;right:-10px;bottom:0;width:12px;
+  border-radius:0 12px 12px 0;
+  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.25));
+  transform:skewY(10deg);
+  opacity:.85;
+}
+.uz-bookFace__shadow{
+  position:absolute;left:10px;right:0;bottom:-10px;height:18px;
+  background:radial-gradient(closest-side, rgba(0,0,0,.45), rgba(0,0,0,0));
+  filter:blur(2px);
+  transform:translateZ(-1px);
+}
+.uz-bookFace__label{
+  position:absolute;left:8px;right:14px;bottom:8px;
+  padding:6px 7px;border-radius:10px;
+  background:rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(6px);
+}
+.uz-bookFace__t{font-size:11px;line-height:1.25;max-height:2.5em;overflow:hidden}
+.uz-bookFace__a{margin-top:3px;font-size:10px;color:rgba(255,255,255,.8)}
+.uz-bookFace__size{margin-top:2px;font-size:9px;color:rgba(255,255,255,.6)}
+
+/* 背表紙（擬似奥行き） */
+.uz-spine{
+  position:relative;
+  width:26px;height:146px;
+  border-radius:2;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 14px 28px rgba(0,0,0,.28);
+  transform:perspective(800px) rotateY(-18deg);
+  transform-origin:left center;
+  transition:transform .16s ease, filter .16s ease;
+  text-decoration:none;color:inherit;
+  flex-shrink:0;
+}
+
+.uz-spine:hover{
+  transform:perspective(800px) rotateY(-10deg) translateY(-2px) translateZ(8px);
+  filter:brightness(1.05);
+}
+
+/* 側面（奥行き） */
+.uz-spine__side{
+  position:absolute;top:0;right:-8px;bottom:0;width:10px;
+  border-radius:0 10px 10px 0;
+  background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(0,0,0,.25));
+  opacity:.85;
+}
+
+/* 縦書き文字 */
+.uz-spine__text{
+  position:absolute;inset:8px 14px 8px 6px;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+.uz-spine__title{
+  font-size:6px;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,.95);
+  text-shadow:0 2px 10px rgba(0,0,0,.35);
+  max-height:120px;
+  overflow:hidden;
+}
+.uz-spine__author{
+  font-size:4px;
+  color:rgba(255,255,255,.70);
+  max-height:90px;
+  overflow:hidden;
+}
