@@ -151,16 +151,27 @@ function UzBookshelf() {
         });
       });
 
-      // openBD enrichment
+      // Set data immediately so UI renders, then enrich asynchronously
+      const finalData = [
+        { id: 'tech', title: 'テクノロジー', books: grouped.tech },
+        { id: 'biz', title: 'ビジネス', books: grouped.biz },
+        { id: 'culture', title: 'カルチャー', books: grouped.culture },
+      ];
+      setRakutenData(finalData);
+
+      // openBD enrichment (async, non-blocking)
       const isbns = allBooks.map(b => b.isbn);
       const chunks = chunkArray(isbns, 30);
       Promise.all(
         chunks.map(chunk =>
-          fetch(`https://api.openbd.jp/v1/get?isbn=${chunk.join(',')}`).then(r => r.json())
+          fetch(`https://api.openbd.jp/v1/get?isbn=${chunk.join(',')}`)
+            .then(r => r.json())
+            .catch(() => [])
         )
       ).then(results => {
         const openbdData = {};
         results.forEach(result => {
+          if (!Array.isArray(result)) return;
           result.forEach(book => {
             if (book && book.summary) {
               openbdData[book.summary.isbn] = { pages: book.summary.pages, size: book.summary.size };
@@ -173,26 +184,19 @@ function UzBookshelf() {
             book.size = openbdData[book.isbn].size;
           }
         });
-        // image aspect ratio
+        // image aspect ratio (with timeout fallback)
+        const imgTimeout = 3000;
         return Promise.all(allBooks.map(book => new Promise(resolve => {
           const img = new Image();
-          img.onload = () => { book.aspectRatio = img.naturalWidth / img.naturalHeight; resolve(); };
-          img.onerror = () => { book.aspectRatio = 0.7; resolve(); };
+          const timer = setTimeout(() => { book.aspectRatio = 0.7; resolve(); }, imgTimeout);
+          img.onload = () => { clearTimeout(timer); book.aspectRatio = img.naturalWidth / img.naturalHeight; resolve(); };
+          img.onerror = () => { clearTimeout(timer); book.aspectRatio = 0.7; resolve(); };
           img.src = book.coverUrl;
         })));
       }).then(() => {
-        setRakutenData([
-          { id: 'tech', title: 'テクノロジー', books: grouped.tech },
-          { id: 'biz', title: 'ビジネス', books: grouped.biz },
-          { id: 'culture', title: 'カルチャー', books: grouped.culture },
-        ]);
-      }).catch(() => {
-        setRakutenData([
-          { id: 'tech', title: 'テクノロジー', books: grouped.tech },
-          { id: 'biz', title: 'ビジネス', books: grouped.biz },
-          { id: 'culture', title: 'カルチャー', books: grouped.culture },
-        ]);
-      });
+        // Re-trigger render with enriched data
+        setRakutenData([...finalData]);
+      }).catch(() => {});
     }).catch(e => console.error('Book load error:', e));
   }, [genreMap]);
 
