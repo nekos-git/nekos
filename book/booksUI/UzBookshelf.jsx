@@ -66,6 +66,7 @@ const FORMAT_SIZES = {
   shinsho:   { w: 82, h: 132, label: '新書' },
   tankobon:  { w: 96, h: 138, label: '単行本' },
   hardcover: { w: 110, h: 158, label: 'ハードカバー' },
+  poster:    { w: 100, h: 148, label: '映画' },
   disc:      { w: 110, h: 110, label: 'ディスク' },
   standard:  { w: 96, h: 140, label: '' },
 };
@@ -90,7 +91,7 @@ function getBookDimensions(item) {
     height: Math.round(base.h * scale),
     format: fmt,
     label: base.label,
-    thickness: fmt === 'disc' ? 6 : (fmt === 'bunko' ? 14 : 18 + (stableHash(item.title || '') % 12)),
+    thickness: (fmt === 'disc' || fmt === 'poster') ? 6 : (fmt === 'bunko' ? 14 : 18 + (stableHash(item.title || '') % 12)),
   };
 }
 
@@ -200,7 +201,7 @@ function UzBookshelf() {
         type: item.coverUrl ? 'featured' : 'spine',
         source: 'uz',
         shelfId: s.id,
-        format: isFilm ? 'disc' : (item.format || detectFormat(item.fullTitle || item.title)),
+        format: isFilm ? 'poster' : (item.format || detectFormat(item.fullTitle || item.title)),
       }));
       return { ...s, mixedItems: items };
     });
@@ -233,11 +234,11 @@ function UzBookshelf() {
     const dim = getBookDimensions(item);
     const [imgLoaded, setImgLoaded] = React.useState(false);
     const isDisc = dim.format === 'disc';
-    const isFilmDisc = isDisc && item.shelfId === 'film';
+    const isPoster = dim.format === 'poster';
 
     return (
       <a
-        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''} ${isFilmDisc ? 'uz-book--film' : ''}`}
+        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''} ${isPoster ? 'uz-book--poster' : ''}`}
         href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
         style={{ width: dim.width, height: dim.height }}
       >
@@ -258,31 +259,18 @@ function UzBookshelf() {
                 <span className="uz-book__placeholderAuthor">{item.author || item.fullAuthor || ''}</span>
               </div>
             )}
-            {/* DVDケース: タイトルオーバーレイ（通常時表示、ホバーで消える） */}
-            {isFilmDisc && (
-              <div className="uz-book__discLabel">
-                <span className="uz-book__discIcon">&#128191;</span>
-                <span className="uz-book__discTitle">{truncate(item.fullTitle || item.title, 18)}</span>
-              </div>
-            )}
             {/* 光沢オーバーレイ */}
             <div className="uz-book__gloss" />
           </div>
           {/* 背表紙面（右端） */}
           <div className="uz-book__spine" style={{ background: spineGradient(item.fullTitle || item.title), width: dim.thickness }} />
           {/* ページ断面（上部） */}
-          {!isDisc && <div className="uz-book__pages" style={{ height: dim.thickness }} />}
+          {!isDisc && !isPoster && <div className="uz-book__pages" style={{ height: dim.thickness }} />}
           {/* レビューバッジ */}
           {item.reviewAverage && item.reviewAverage !== '0' && (
             <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
           )}
         </div>
-        {/* ポスタープレビュー（映画ディスクホバー時） */}
-        {isFilmDisc && item.coverUrl && (
-          <div className="uz-book__poster">
-            <img src={item.coverUrl} alt="" />
-          </div>
-        )}
         {/* 影 */}
         <div className="uz-book__shadow" />
       </a>
@@ -295,9 +283,8 @@ function UzBookshelf() {
   const BookSpine = ({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
     const dim = getBookDimensions(item);
     const color = spineColorFromTitle(item.fullTitle || item.title);
-    const isDisc = dim.format === 'disc';
+    const isDisc = dim.format === 'disc' || dim.format === 'poster';
     const thickness = isDisc ? 8 : dim.thickness;
-    const coverTiny = item.coverUrl;
 
     return (
       <a

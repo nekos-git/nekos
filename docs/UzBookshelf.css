@@ -236,110 +236,20 @@ body {
 .uz-book--disc .uz-book__spine { width: 6px; }
 
 /* ============================================================
-   映画ディスク — DVDケース風 + ホバーでポスター表示
+   映画ポスター — 表紙画像を常時表示
    ============================================================ */
-.uz-book--film {
-  transform: perspective(900px) rotateY(-4deg) rotateX(1deg);
-}
-.uz-book--film:hover {
-  transform: perspective(900px) rotateY(0deg) translateZ(16px) translateY(-6px);
-}
-
-/* DVDケースの外観 */
-.uz-book--film .uz-book__front {
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: #0c0c14;
+.uz-book--poster .uz-book__front {
+  border-radius: 4px;
+  overflow: hidden;
   box-shadow:
-    0 2px 6px rgba(0,0,0,.3),
-    0 8px 24px rgba(0,0,0,.35),
-    inset 0 0 0 1px rgba(255,255,255,.04);
+    0 2px 8px rgba(0,0,0,.35),
+    0 8px 24px rgba(0,0,0,.3);
 }
-
-/* DVDケース: 画像は通常隠れ、ホバーで表示 */
-.uz-book--film .uz-book__img {
-  opacity: 0;
-  transition: opacity .35s ease;
+.uz-book--poster .uz-book__img {
+  border-radius: 4px;
 }
-.uz-book--film .uz-book__img.loaded {
-  opacity: 0;
-}
-.uz-book--film:hover .uz-book__img.loaded {
-  opacity: 1;
-}
-
-/* DVDケース: タイトルオーバーレイ */
-.uz-book__discLabel {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 8px 6px; text-align: center;
-  background: linear-gradient(
-    160deg,
-    rgba(12,12,20,.95) 0%,
-    rgba(20,20,35,.9) 40%,
-    rgba(15,15,28,.95) 100%
-  );
-  transition: opacity .3s ease;
-  z-index: 1;
-}
-.uz-book--film:hover .uz-book__discLabel {
-  opacity: 0;
-}
-
-.uz-book__discIcon {
-  font-size: 22px; margin-bottom: 6px;
-  opacity: .5; filter: grayscale(.4);
-}
-.uz-book__discTitle {
-  font-size: 9px; font-weight: 600;
-  color: rgba(255,255,255,.82);
-  line-height: 1.35; letter-spacing: .02em;
-  text-shadow: 0 1px 3px rgba(0,0,0,.5);
-  max-height: 60px; overflow: hidden;
-}
-
-/* DVDケース: 光沢 */
-.uz-book--film .uz-book__gloss {
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,.10) 0%,
-    rgba(255,255,255,.03) 30%,
-    transparent 50%,
-    rgba(0,0,0,.05) 80%
-  );
-}
-.uz-book--film:hover .uz-book__gloss {
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,.20) 0%,
-    rgba(255,255,255,.06) 35%,
-    transparent 55%
-  );
-}
-
-/* ポスタープレビュー（ホバー時にケースの上に浮かぶ） */
-.uz-book__poster {
-  position: absolute;
-  bottom: 100%; left: 50%;
-  transform: translateX(-50%) translateY(10px) scale(.9);
-  width: 160px;
-  opacity: 0;
-  pointer-events: none;
-  transition: all .3s cubic-bezier(.25,.46,.45,.94);
-  z-index: 100;
-}
-.uz-book--film:hover .uz-book__poster {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-8px) scale(1);
-}
-.uz-book__poster img {
-  width: 100%; border-radius: 6px;
-  box-shadow:
-    0 8px 28px rgba(0,0,0,.55),
-    0 2px 8px rgba(0,0,0,.3);
-  border: 1px solid rgba(255,255,255,.10);
-}
+.uz-book--poster .uz-book__pages { display: none; }
+.uz-book--poster .uz-book__spine { width: 6px; }
 
 /* ============================================================
    背表紙コンポーネント v2
