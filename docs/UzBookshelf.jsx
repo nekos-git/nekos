@@ -112,6 +112,80 @@ function favKey(item) {
 }
 
 // ============================================================
+// 表紙コンポーネント — 美術的3D（親の外に定義して再マウント防止）
+// ============================================================
+const BookFace = React.memo(({ item, isHighlighted, isFav, onClick, onMouseEnter, onMouseLeave }) => {
+  const dim = getBookDimensions(item);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const isDisc = dim.format === 'disc';
+  const isPoster = dim.format === 'poster';
+
+  return (
+    <a
+      className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''} ${isPoster ? 'uz-book--poster' : ''}`}
+      href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
+      style={{ width: dim.width, height: dim.height }}
+    >
+      <div className="uz-book__body">
+        <div className="uz-book__front">
+          {item.coverUrl && (
+            <img
+              className={`uz-book__img ${imgLoaded ? 'loaded' : ''}`}
+              src={item.coverUrl} alt=""
+              onLoad={() => setImgLoaded(true)}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          )}
+          {(!item.coverUrl || !imgLoaded) && (
+            <div className="uz-book__placeholder" style={{ background: spineGradient(item.fullTitle || item.title) }}>
+              <span className="uz-book__placeholderText">{truncate(item.fullTitle || item.title, 20)}</span>
+              <span className="uz-book__placeholderAuthor">{item.author || item.fullAuthor || ''}</span>
+            </div>
+          )}
+          <div className="uz-book__gloss" />
+        </div>
+        <div className="uz-book__spine" style={{ background: spineGradient(item.fullTitle || item.title), width: dim.thickness }} />
+        {!isDisc && !isPoster && <div className="uz-book__pages" style={{ height: dim.thickness }} />}
+        {item.reviewAverage && item.reviewAverage !== '0' && (
+          <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
+        )}
+        {isFav && <div className="uz-book__favBadge">♥</div>}
+      </div>
+      <div className="uz-book__shadow" />
+    </a>
+  );
+});
+
+// ============================================================
+// 背表紙コンポーネント — リアルな質感（親の外に定義して再マウント防止）
+// ============================================================
+const BookSpine = React.memo(({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
+  const dim = getBookDimensions(item);
+  const isDisc = dim.format === 'disc' || dim.format === 'poster';
+  const thickness = isDisc ? 8 : dim.thickness;
+
+  return (
+    <a
+      className={`uz-spine2 ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-spine2--disc' : ''}`}
+      href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
+      style={{ width: thickness, height: dim.height }}
+    >
+      <div className="uz-spine2__body" style={{ background: spineGradient(item.fullTitle || item.title) }}>
+        <div className="uz-spine2__texture" />
+        <div className="uz-spine2__text">
+          <span className="uz-spine2__title">{truncate(item.fullTitle || item.title, 16)}</span>
+          {(item.author || item.fullAuthor) && (
+            <span className="uz-spine2__author">{truncate(item.fullAuthor || item.author, 10)}</span>
+          )}
+        </div>
+        <div className="uz-spine2__edge" />
+        <div className="uz-spine2__gloss" />
+      </div>
+    </a>
+  );
+});
+
+// ============================================================
 // メインコンポーネント
 // ============================================================
 function UzBookshelf() {
@@ -383,91 +457,6 @@ function UzBookshelf() {
     return [...ids].map(id => ({ id, name: genreMap[id] || id })).sort((a, b) => a.name.localeCompare(b.name));
   }, [mode, currentShelf, genreMap]);
 
-  // ============================================================
-  // 表紙コンポーネント — 美術的3D
-  // ============================================================
-  const BookFace = ({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
-    const dim = getBookDimensions(item);
-    const [imgLoaded, setImgLoaded] = React.useState(false);
-    const isDisc = dim.format === 'disc';
-    const isPoster = dim.format === 'poster';
-
-    return (
-      <a
-        className={`uz-book ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-book--disc' : ''} ${isPoster ? 'uz-book--poster' : ''}`}
-        href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
-        style={{ width: dim.width, height: dim.height }}
-      >
-        <div className="uz-book__body">
-          {/* 表紙面 */}
-          <div className="uz-book__front">
-            {item.coverUrl && (
-              <img
-                className={`uz-book__img ${imgLoaded ? 'loaded' : ''}`}
-                src={item.coverUrl} alt=""
-                onLoad={() => setImgLoaded(true)}
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            )}
-            {(!item.coverUrl || !imgLoaded) && (
-              <div className="uz-book__placeholder" style={{ background: spineGradient(item.fullTitle || item.title) }}>
-                <span className="uz-book__placeholderText">{truncate(item.fullTitle || item.title, 20)}</span>
-                <span className="uz-book__placeholderAuthor">{item.author || item.fullAuthor || ''}</span>
-              </div>
-            )}
-            {/* 光沢オーバーレイ */}
-            <div className="uz-book__gloss" />
-          </div>
-          {/* 背表紙面（右端） */}
-          <div className="uz-book__spine" style={{ background: spineGradient(item.fullTitle || item.title), width: dim.thickness }} />
-          {/* ページ断面（上部） */}
-          {!isDisc && !isPoster && <div className="uz-book__pages" style={{ height: dim.thickness }} />}
-          {/* レビューバッジ */}
-          {item.reviewAverage && item.reviewAverage !== '0' && (
-            <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
-          )}
-          {/* お気に入りバッジ */}
-          {isFavorite(item) && <div className="uz-book__favBadge">♥</div>}
-        </div>
-        {/* 影 */}
-        <div className="uz-book__shadow" />
-      </a>
-    );
-  };
-
-  // ============================================================
-  // 背表紙コンポーネント — リアルな質感
-  // ============================================================
-  const BookSpine = ({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
-    const dim = getBookDimensions(item);
-    const color = spineColorFromTitle(item.fullTitle || item.title);
-    const isDisc = dim.format === 'disc' || dim.format === 'poster';
-    const thickness = isDisc ? 8 : dim.thickness;
-
-    return (
-      <a
-        className={`uz-spine2 ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-spine2--disc' : ''}`}
-        href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
-        style={{ width: thickness, height: dim.height }}
-      >
-        <div className="uz-spine2__body" style={{ background: spineGradient(item.fullTitle || item.title) }}>
-          {/* テクスチャ */}
-          <div className="uz-spine2__texture" />
-          {/* テキスト */}
-          <div className="uz-spine2__text">
-            <span className="uz-spine2__title">{truncate(item.fullTitle || item.title, 16)}</span>
-            {(item.author || item.fullAuthor) && (
-              <span className="uz-spine2__author">{truncate(item.fullAuthor || item.author, 10)}</span>
-            )}
-          </div>
-          {/* 端の丸み・光沢 */}
-          <div className="uz-spine2__edge" />
-          <div className="uz-spine2__gloss" />
-        </div>
-      </a>
-    );
-  };
-
   // --- 棚の本リスト（UZ/楽天で統一） ---
   const currentItems = React.useMemo(() => {
     if (!currentShelf) return [];
@@ -712,7 +701,7 @@ function UzBookshelf() {
                       onMouseLeave: handleMouseLeave,
                     };
                     if (item.type === 'featured') {
-                      return <BookFace key={`ad-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                      return <BookFace key={`ad-${item.id}-${idx}`} item={item} isHighlighted={false} isFav={isFavorite(item)} {...handlers} />;
                     }
                     return <BookSpine key={`ad-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                   })}
@@ -750,7 +739,7 @@ function UzBookshelf() {
                       onMouseLeave: handleMouseLeave,
                     };
                     if (item.type === 'featured') {
-                      return <BookFace key={`fav-${favKey(item)}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                      return <BookFace key={`fav-${favKey(item)}-${idx}`} item={item} isHighlighted={false} isFav={isFavorite(item)} {...handlers} />;
                     }
                     return <BookSpine key={`fav-${favKey(item)}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                   })}
@@ -789,7 +778,7 @@ function UzBookshelf() {
                       onMouseLeave: handleMouseLeave,
                     };
                     if (item.type === 'featured') {
-                      return <BookFace key={`sr-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                      return <BookFace key={`sr-${item.id}-${idx}`} item={item} isHighlighted={false} isFav={isFavorite(item)} {...handlers} />;
                     }
                     return <BookSpine key={`sr-${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                   })}
@@ -834,7 +823,7 @@ function UzBookshelf() {
                     onMouseLeave: handleMouseLeave,
                   };
                   if (item.type === 'featured') {
-                    return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
+                    return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={false} isFav={isFavorite(item)} {...handlers} />;
                   }
                   return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={false} {...handlers} />;
                 })}
