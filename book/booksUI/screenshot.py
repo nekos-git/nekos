@@ -55,9 +55,9 @@ def take_screenshots():
 
         # ===== 3. Tooltip =====
         print("3. ツールチップ表示")
-        spines = page.query_selector_all(".uz-spine2")
-        if len(spines) > 5:
-            spines[5].hover()
+        books = page.query_selector_all(".uz-book")
+        if len(books) > 3:
+            books[3].hover()
             page.wait_for_timeout(800)
             page.screenshot(path=f"{OUT_DIR}/03_tooltip.png", full_page=False)
         page.mouse.move(10, 10)
@@ -65,7 +65,7 @@ def take_screenshots():
 
         # ===== 4. Modal (UZ selection) =====
         print("4. 書籍詳細モーダル")
-        js_click(".uz-spine2", 2)
+        js_click(".uz-book", 2)
         page.wait_for_timeout(800)
         page.screenshot(path=f"{OUT_DIR}/04_modal_uz.png", full_page=False)
         close_modal()
@@ -134,7 +134,7 @@ def take_screenshots():
         rakuten_count = page.evaluate('document.querySelectorAll(".uz-book, .uz-spine2").length')
         print(f"   Rakuten items found: {rakuten_count}")
         if rakuten_count > 0:
-            js_click(".uz-spine2", 0)
+            js_click(".uz-book", 0)
             page.wait_for_timeout(800)
             modal = page.query_selector(".uz-modal")
             if modal:

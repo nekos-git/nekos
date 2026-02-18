@@ -67,13 +67,13 @@ function renderStars(rating) {
 
 // ---- 判型サイズマッピング ----
 const FORMAT_SIZES = {
-  bunko:     { w: 74, h: 105, label: '文庫' },
-  comic:     { w: 90, h: 128, label: 'コミック' },
-  shinsho:   { w: 74, h: 122, label: '新書' },
-  tankobon:  { w: 90, h: 128, label: '単行本' },
-  hardcover: { w: 105, h: 148, label: 'ハードカバー' },
-  disc:      { w: 100, h: 100, label: 'ディスク' },
-  standard:  { w: 90, h: 130, label: '' },
+  bunko:     { w: 82, h: 118, label: '文庫' },
+  comic:     { w: 96, h: 138, label: 'コミック' },
+  shinsho:   { w: 82, h: 132, label: '新書' },
+  tankobon:  { w: 96, h: 138, label: '単行本' },
+  hardcover: { w: 110, h: 158, label: 'ハードカバー' },
+  disc:      { w: 110, h: 110, label: 'ディスク' },
+  standard:  { w: 96, h: 140, label: '' },
 };
 
 function detectFormat(name) {
@@ -90,8 +90,7 @@ function detectFormat(name) {
 function getBookDimensions(item) {
   const fmt = item.format || detectFormat(item.fullTitle || item.title);
   const base = FORMAT_SIZES[fmt] || FORMAT_SIZES.standard;
-  // Scale to px (roughly 0.7 px/mm for display)
-  const scale = 0.85;
+  const scale = 1.0;
   return {
     width: Math.round(base.w * scale),
     height: Math.round(base.h * scale),
@@ -223,25 +222,23 @@ function UzBookshelf() {
   const rakutenShelves = React.useMemo(() => {
     if (!rakutenData) return [];
     return rakutenData.map(s => {
-      const featured = s.books.slice(0, 3).map(b => ({ ...b, type: 'featured' }));
-      let rest = s.books.slice(3, 27).map(b => ({ ...b, type: 'spine' }));
-      if (rest.length > 3) {
-        const sr = shuffleArray(rest);
-        rest = [...sr.slice(0, 3).map(b => ({ ...b, type: 'featured' })), ...sr.slice(3)];
-      }
-      return { ...s, mixedBooks: shuffleArray([...featured, ...rest]) };
+      const books = s.books.slice(0, 30).map(b => ({
+        ...b,
+        type: b.coverUrl ? 'featured' : 'spine',
+      }));
+      return { ...s, mixedBooks: books };
     });
   }, [rakutenData]);
 
   const uzShelves = React.useMemo(() => {
     if (!uzData) return [];
     return uzData.shelves.filter(s => s.items.length > 0).map(s => {
-      const items = s.items.map((item, i) => ({
+      const items = s.items.map((item) => ({
         ...item,
-        type: (item.coverUrl && (i < 6 || Math.random() > 0.5)) ? 'featured' : 'spine',
+        type: item.coverUrl ? 'featured' : 'spine',
         source: 'uz', format: item.format || detectFormat(item.fullTitle || item.title),
       }));
-      return { ...s, mixedItems: shuffleArray(items) };
+      return { ...s, mixedItems: items };
     });
   }, [uzData]);
 
@@ -307,8 +304,6 @@ function UzBookshelf() {
           {item.reviewAverage && item.reviewAverage !== '0' && (
             <div className="uz-book__badge">{renderStars(item.reviewAverage)}</div>
           )}
-          {/* 判型ラベル */}
-          {dim.label && <div className="uz-book__format">{dim.label}</div>}
         </div>
         {/* 影 */}
         <div className="uz-book__shadow" />

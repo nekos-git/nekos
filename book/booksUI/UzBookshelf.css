@@ -26,7 +26,7 @@ body {
   font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.uz-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 20px 56px; }
+.uz-wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 56px; }
 
 /* ---- Header ---- */
 .uz-header {
@@ -47,15 +47,15 @@ body {
 .uz-tabBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ---- Grid ---- */
-.uz-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 22px; }
+.uz-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 22px; }
 @media (min-width: 880px) { .uz-grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1200px) { .uz-grid--uz { grid-template-columns: 1fr 1fr 1fr; } }
+@media (min-width: 1200px) { .uz-grid--uz { grid-template-columns: 1fr 1fr; } }
 
 /* ---- Shelf ---- */
 .uz-shelf {
   background: var(--wood);
   border: 1px solid var(--line); border-radius: 18px;
-  padding: 16px 14px 14px; overflow: hidden;
+  padding: 18px 16px 16px; overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
 }
 .uz-shelf--film { border-color: rgba(255,107,74,.12); }
@@ -70,7 +70,7 @@ body {
 
 /* ---- Rack ---- */
 .uz-rack {
-  position: relative; padding: 14px 10px 18px;
+  position: relative; padding: 18px 14px 24px;
   border-radius: 14px; background: rgba(0,0,0,.12);
   border: 1px solid rgba(255,255,255,.03);
 }
@@ -91,8 +91,9 @@ body {
 }
 
 .uz-mixedRow {
-  display: flex; gap: 6px; align-items: flex-end;
-  flex-wrap: wrap; min-height: 90px;
+  display: flex; gap: 14px 10px; align-items: flex-end;
+  flex-wrap: wrap; min-height: 100px;
+  padding-bottom: 4px;
 }
 
 /* ============================================================
@@ -101,13 +102,13 @@ body {
 .uz-book {
   position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
   transform-style: preserve-3d;
-  transform: perspective(800px) rotateY(-16deg) rotateX(1deg);
+  transform: perspective(900px) rotateY(-8deg) rotateX(1deg);
   transform-origin: left center;
-  transition: transform .22s cubic-bezier(.25,.46,.45,.94), filter .2s;
+  transition: transform .28s cubic-bezier(.25,.46,.45,.94), filter .2s, box-shadow .28s;
 }
 .uz-book:hover {
-  transform: perspective(800px) rotateY(-6deg) translateZ(30px) translateY(-3px);
-  filter: brightness(1.08);
+  transform: perspective(900px) rotateY(-2deg) translateZ(20px) translateY(-4px);
+  filter: brightness(1.06);
   z-index: 10;
 }
 
@@ -119,12 +120,13 @@ body {
 /* 表紙面 */
 .uz-book__front {
   position: absolute; inset: 0;
-  border-radius: 2px 3px 3px 2px;
+  border-radius: 2px 4px 4px 2px;
   overflow: hidden;
   box-shadow:
-    0 2px 8px rgba(0,0,0,.3),
-    0 10px 30px rgba(0,0,0,.25);
-  border: 1px solid rgba(255,255,255,.08);
+    0 2px 6px rgba(0,0,0,.25),
+    0 8px 24px rgba(0,0,0,.3),
+    0 16px 48px rgba(0,0,0,.15);
+  border: 1px solid rgba(255,255,255,.06);
   background: #1a1a2e;
 }
 
@@ -214,12 +216,18 @@ body {
 
 /* 影 */
 .uz-book__shadow {
-  position: absolute; left: 8px; right: -4px; bottom: -10px; height: 18px;
-  background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent);
-  filter: blur(4px);
-  transform: perspective(400px) rotateX(60deg);
+  position: absolute; left: 4px; right: -2px; bottom: -8px; height: 14px;
+  background: radial-gradient(closest-side, rgba(0,0,0,.4), transparent);
+  filter: blur(5px);
+  transform: perspective(400px) rotateX(55deg);
   transform-origin: top;
   pointer-events: none;
+  transition: all .28s;
+}
+.uz-book:hover .uz-book__shadow {
+  bottom: -14px; height: 20px;
+  filter: blur(8px);
+  opacity: .7;
 }
 
 /* ディスク（正方形） */
@@ -232,12 +240,12 @@ body {
    ============================================================ */
 .uz-spine2 {
   position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
-  transform: perspective(800px) rotateY(-16deg);
+  transform: perspective(900px) rotateY(-8deg);
   transform-origin: left center;
   transition: transform .2s cubic-bezier(.25,.46,.45,.94), filter .18s;
 }
 .uz-spine2:hover {
-  transform: perspective(800px) rotateY(-6deg) translateZ(10px) translateY(-2px);
+  transform: perspective(900px) rotateY(-2deg) translateZ(10px) translateY(-2px);
   filter: brightness(1.1);
   z-index: 10;
 }
@@ -486,6 +494,6 @@ body {
   .uz-header { flex-direction: column; align-items: flex-start; }
   .uz-modal__inner { padding: 20px; }
   .uz-modal__cover { width: 150px; }
-  .uz-book { transform: perspective(600px) rotateY(-12deg); }
-  .uz-spine2 { transform: perspective(600px) rotateY(-12deg); }
+  .uz-book { transform: perspective(700px) rotateY(-6deg); }
+  .uz-spine2 { transform: perspective(700px) rotateY(-6deg); }
 }
