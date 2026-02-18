@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="美しい文学作品を通じてタイピングスキルを向上させましょう。お好みのテキストファイルを読み込んで練習できます。">
+  <meta name="keywords" content="タイピング,文学,練習,スキルアップ,学習">
+  <title>文学タイピングゲーム - END2ENDWORLD</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f2f2f2;
+    }
+    #wrapper {
+      width: 90%;
+      max-width: 800px;
+    }
+    #container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin: 0 0 12px;
+      font-size: 1.8em;
+    }
+    #display {
+      font-size: 1.2em;
+      line-height: 1.6;
+      min-height: 6em;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    .revealed { color: #333; }
+    .hidden   { color: #ccc; }
+#input {
+    width: 100%;
+    min-height: 4em;
+    font-size: 1.1em;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    resize: none;
+    margin-top: 70px;
+}
+    }
+    #input.error {
+      border-color: #e74c3c;
+      animation: shake 0.2s;
+    }
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-3px); }
+      50%  { transform: translateX(3px); }
+      75%  { transform: translateX(-3px); }
+      100% { transform: translateX(0); }
+    }
+    #info {
+      text-align: right;
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #666;
+    }
+    #controls {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .btn {
+      padding: 6px 12px;
+      font-size: 1em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      text-decoration: none;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .back-link:hover {
+      background: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    @media (max-width: 768px) {
+      .back-link {
+        top: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+      #wrapper {
+        width: 95%;
+      }
+      h1 {
+        font-size: 1.4em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">← ホームに戻る</a>
+  <div id="wrapper">
+    <div id="container">
+      <h1>文学タイピングゲーム</h1>
+      <div id="display"></div>
+      <textarea id="input" placeholder="ここに文章をタイプ…"></textarea>
+      <div id="info"><span id="progress">0 / 0 文</span></div>
+      <div id="controls">
+        <button id="loadBtn" class="btn">別のテキストを読み込む</button>
+        <a href="https://end2endworld.org" target="_blank" class="btn">END2ENDWORLD</a>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept=".txt" style="display:none;">
+  </div>
+
+  <script>
+  (async function() {
+    const LAST_KEY    = 'typing:lastKey';
+    const DEFAULT_KEY = 'typing:default';
+
+    // text.txt 読み込み／ファイル読み込み後に使うクリーニング関数
+    function cleanRaw(text) {
+      return text
+        .replace(/^\uFEFF/, '')           // BOM 除去
+        .replace(/[\r\n]+/g, ' ')         // 改行まとめてスペースに
+        .trim();
+    }
+    // クリーニング済み raw → 文の配列
+    function splitSegments(raw) {
+      return (raw.match(/[^。．！？\?]+[。．！？\?]?/g) || [raw])
+        .map(s => s.trim());
+    }
+
+    // 進捗保存／復元
+    let storageKey = '';
+    function saveProgress() {
+      if (!storageKey) return;
+      localStorage.setItem(storageKey,
+        JSON.stringify({ current, revealIndex }));
+    }
+    function loadProgress() {
+      if (!storageKey) return null;
+      const json = localStorage.getItem(storageKey);
+      if (!json) return null;
+      try {
+        const obj = JSON.parse(json);
+        return {
+          current:    Number.isInteger(obj.current)    ? obj.current    : 0,
+          revealIndex: Number.isInteger(obj.revealIndex) ? obj.revealIndex : 0
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    // DOM 要素
+    const loadBtn   = document.getElementById('loadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const inp       = document.getElementById('input');
+    let segments    = [], current = 0, revealIndex = 0;
+
+    // 画面描画
+    function updateDisplay() {
+      const disp = document.getElementById('display');
+      const info = document.getElementById('progress');
+      let html = '';
+      for (let i = 0; i < current; i++) {
+        html += `<span class="revealed">${segments[i]}</span>`;
+      }
+      const seg = segments[current] || '';
+      html += `<span class="revealed">${seg.slice(0, revealIndex)}</span>`;
+      html += `<span class="hidden">${seg.slice(revealIndex)}</span>`;
+      disp.innerHTML = html;
+      info.textContent = `${current + 1} / ${segments.length} 文`;
+      saveProgress();
+    }
+
+    // 入力判定
+    function handleInput() {
+      const val = inp.value;
+      const seg = segments[current] || '';
+      if (seg.startsWith(val)) {
+        revealIndex = val.length;
+        if (revealIndex === seg.length) {
+          current++;
+          revealIndex = 0;
+          inp.value = '';
+          if (current >= segments.length) {
+            alert('お疲れさまでした！');
+          }
+        }
+        updateDisplay();
+      } else {
+        inp.classList.add('error');
+        setTimeout(() => inp.classList.remove('error'), 200);
+        inp.value = val.slice(0, -1);
+      }
+    }
+
+    // IME 制御
+    let isComposing = false;
+    inp.addEventListener('compositionstart', () => { isComposing = true; });
+    inp.addEventListener('compositionend',   () => {
+      isComposing = false;
+      handleInput();
+    });
+    inp.addEventListener('input', () => {
+      if (!isComposing) handleInput();
+    });
+
+    // 起動時：最後に読んだテキストかデフォルトを選択して読み込み
+    let raw;
+    const lastKey = localStorage.getItem(LAST_KEY);
+    if (lastKey && lastKey.startsWith('typing:file:')) {
+      // ファイル読み込み済みなら raw を復元
+      const storedRaw = localStorage.getItem(lastKey + ':raw');
+      if (storedRaw) {
+        storageKey = lastKey;
+        raw = storedRaw;
+      } else {
+        // 何らかの理由で raw がない → デフォルトへ
+        storageKey = DEFAULT_KEY;
+        localStorage.setItem(LAST_KEY, DEFAULT_KEY);
+      }
+    }
+    if (!raw) {
+      // デフォルト text.txt
+      storageKey = DEFAULT_KEY;
+      localStorage.setItem(LAST_KEY, DEFAULT_KEY);
+      const resp = await fetch('text.txt?_=' + Date.now());
+      raw = await resp.text();
+      raw = cleanRaw(raw);
+    }
+
+    segments = splitSegments(raw);
+    // 進捗復元
+    const prog0 = loadProgress();
+    if (prog0 && prog0.current < segments.length) {
+      current     = prog0.current;
+      revealIndex = Math.min(prog0.revealIndex, segments[current].length);
+    }
+    updateDisplay();
+    inp.focus();
+
+    // 「別のテキストを読み込む」
+    loadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      // 生テキスト読み込み
+      raw = (typeof file.text === 'function')
+        ? await file.text()
+        : await new Promise((res, rej) => {
+            const fr = new FileReader();
+            fr.onload  = () => res(fr.result);
+            fr.onerror = e => rej(e);
+            fr.readAsText(file, 'UTF-8');
+          });
+      raw = cleanRaw(raw);
+      // 新しいキー
+      storageKey = 'typing:file:' + file.name;
+      localStorage.setItem(LAST_KEY, storageKey);
+      localStorage.setItem(storageKey + ':raw', raw);
+
+      segments = splitSegments(raw);
+      const prog = loadProgress();
+      if (prog && prog.current < segments.length) {
+        current     = prog.current;
+        revealIndex = Math.min(prog.revealIndex, segments[current].length);
+      } else {
+        current = 0; revealIndex = 0;
+      }
+      inp.value = '';
+      updateDisplay();
+      inp.focus();
+    });
+  })();
+  </script>
+</body>
+</html>
