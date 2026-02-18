@@ -234,7 +234,14 @@ function UzBookshelf() {
   const handleMouseEnter = (e, item) => {
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
     tooltipTimeoutRef.current = setTimeout(() => {
-      setTooltip({ x: e.clientX, y: e.clientY, item });
+      // 本の要素の位置を取得してツールチップを本の上に重ねる
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      setTooltip({
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        item
+      });
     }, 350);
   };
   const handleMouseLeave = () => {
@@ -852,19 +859,31 @@ function UzBookshelf() {
         </div>
       )}
 
-      {/* ツールチップ */}
+      {/* ツールチップ — 本棚に重なるオーバーレイカード */}
       {tooltip && (
-        <div className="uz-tooltip" style={{ position: 'fixed', left: tooltip.x + 14, top: tooltip.y + 14, zIndex: 1000, pointerEvents: 'none' }}>
+        <div className="uz-tooltip" style={{
+          position: 'fixed',
+          left: Math.min(tooltip.x, window.innerWidth - 280),
+          top: Math.max(8, tooltip.y - 8),
+          transform: 'translate(-50%, -100%)',
+          zIndex: 1000, pointerEvents: 'none'
+        }}>
           <div className="uz-tooltip__title">{tooltip.item.fullTitle || tooltip.item.title}</div>
-          <div className="uz-tooltip__author">{tooltip.item.fullAuthor || tooltip.item.author}</div>
-          {tooltip.item.price && <div className="uz-tooltip__price">¥{Number(tooltip.item.price).toLocaleString()}</div>}
-          {tooltip.item.reviewAverage && tooltip.item.reviewAverage !== '0' && (
-            <div className="uz-tooltip__review">{renderStars(tooltip.item.reviewAverage)} ({tooltip.item.reviewCount}件)</div>
+          {(tooltip.item.fullAuthor || tooltip.item.author) && (
+            <div className="uz-tooltip__author">{tooltip.item.fullAuthor || tooltip.item.author}</div>
           )}
-          {tooltip.item.format && FORMAT_SIZES[tooltip.item.format] && FORMAT_SIZES[tooltip.item.format].label && (
-            <div className="uz-tooltip__format">{FORMAT_SIZES[tooltip.item.format].label}</div>
+          {tooltip.item.comment && (
+            <div className="uz-tooltip__comment">{tooltip.item.comment}</div>
           )}
-          {tooltip.item.articleTitle && <div className="uz-tooltip__article">📝 {truncate(tooltip.item.articleTitle, 30)}</div>}
+          {tooltip.item.tags && tooltip.item.tags.length > 0 && (
+            <div className="uz-tooltip__tags">
+              {tooltip.item.tags.map((tag, i) => (
+                <span key={i} className="uz-tooltip__tag">{tag}</span>
+              ))}
+            </div>
+          )}
+          {tooltip.item.articleTitle && <div className="uz-tooltip__article">{truncate(tooltip.item.articleTitle, 40)}</div>}
+          <div className="uz-tooltip__arrow" />
         </div>
       )}
 

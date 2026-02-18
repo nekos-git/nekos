@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS shelf_items (
     rakuten_url TEXT DEFAULT '',
     article_id TEXT DEFAULT '' REFERENCES articles(id),
     article_title TEXT DEFAULT '',
+    comment TEXT DEFAULT '',
+    tags TEXT DEFAULT '[]',
     type TEXT DEFAULT 'product',
     format TEXT DEFAULT 'standard',
     width INTEGER DEFAULT 128,
@@ -114,6 +116,8 @@ MIGRATIONS = [
     ("rakuten_books", "created_at", "TEXT DEFAULT (datetime('now','localtime'))"),
     ("rakuten_books", "updated_at", "TEXT DEFAULT (datetime('now','localtime'))"),
     ("rakuten_books", "affiliate_url", "TEXT DEFAULT ''"),
+    ("shelf_items", "comment", "TEXT DEFAULT ''"),
+    ("shelf_items", "tags", "TEXT DEFAULT '[]'"),
 ]
 
 
@@ -417,6 +421,8 @@ class ShelfDB:
                     "rakutenUrl": it["rakuten_url"] or "",
                     "articleId": it["article_id"] or "",
                     "articleTitle": it["article_title"] or "",
+                    "comment": it["comment"] or "",
+                    "tags": json.loads(it["tags"]) if it["tags"] and it["tags"] != '[]' else [],
                     "type": it["type"] or "product",
                     "format": it["format"] or "standard",
                     "dimensions": {

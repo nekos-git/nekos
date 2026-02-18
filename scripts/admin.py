@@ -25,6 +25,7 @@ REST API:
   POST   /api/export                 JSONエクスポート実行
 """
 
+import json
 import os
 import sys
 import re
@@ -379,7 +380,10 @@ def shelf_item_form():
                 full_title=f.get("full_title", ""), author=f.get("author", ""),
                 cover_url=f.get("cover_url", ""), amazon_url=f.get("amazon_url", ""),
                 rakuten_url=f.get("rakuten_url", ""), article_id=f.get("article_id", ""),
-                article_title=f.get("article_title", ""), format=f.get("format", "standard"),
+                article_title=f.get("article_title", ""),
+                comment=f.get("comment", ""),
+                tags=json.dumps([t.strip() for t in f.get("tags", "").split(",") if t.strip()], ensure_ascii=False),
+                format=f.get("format", "standard"),
                 width=int(f.get("width") or 128), height=int(f.get("height") or 182),
                 sort_order=int(f.get("sort_order") or 0),
             )
@@ -392,6 +396,10 @@ def shelf_item_form():
                 flash("アイテムを追加しました", "success")
             return redirect(url_for("shelf_items_list"))
         item = db.items.get(edit_id) if edit_id else None
+        try:
+            tags_list = json.loads(item["tags"]) if item and item.get("tags") else []
+        except (json.JSONDecodeError, TypeError):
+            tags_list = []
     return render("""
 <h3 style="margin-bottom:16px">{{ '編集' if item else '新規追加' }}: 本棚アイテム</h3>
 <div class="form-card">
@@ -418,6 +426,12 @@ def shelf_item_form():
       <div class="form-group"><label>記事タイトル</label><input name="article_title" value="{{ item.article_title if item else '' }}"></div>
     </div>
     <div class="form-row">
+      <div class="form-group" style="flex:2"><label>UZコメント（1行）</label><input name="comment" value="{{ item.comment if item else '' }}" placeholder="例: 春樹の最高傑作。読後に世界が変わる。"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label>タグ（カンマ区切り）</label><input name="tags" value="{{ ', '.join(tags_list) if tags_list else '' }}" placeholder="例: 思想, SF, 技術史"></div>
+    </div>
+    <div class="form-row">
       <div class="form-group" style="max-width:120px"><label>幅 (mm)</label><input type="number" name="width" value="{{ item.width if item else 128 }}"></div>
       <div class="form-group" style="max-width:120px"><label>高さ (mm)</label><input type="number" name="height" value="{{ item.height if item else 182 }}"></div>
       <div class="form-group" style="max-width:120px"><label>並び順</label><input type="number" name="sort_order" value="{{ item.sort_order if item else 0 }}"></div>
@@ -426,7 +440,7 @@ def shelf_item_form():
     <a href="{{ url_for('shelf_items_list') }}" style="margin-left:12px;color:#636e72">キャンセル</a>
   </form>
 </div>
-""", active_tab="items", item=item, shelves=shelves)
+""", active_tab="items", item=item, shelves=shelves, tags_list=tags_list)
 
 
 @app.route("/items/<int:id>/delete", methods=["POST"])
