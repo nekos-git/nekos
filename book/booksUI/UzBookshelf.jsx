@@ -109,6 +109,7 @@ function UzBookshelf() {
   const [showArticles, setShowArticles] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [highlightArticle, setHighlightArticle] = React.useState(null);
+  const [shelfIndex, setShelfIndex] = React.useState(0);
   const tooltipTimeoutRef = React.useRef(null);
 
   const handleMouseEnter = (e, item) => {
@@ -218,6 +219,28 @@ function UzBookshelf() {
     return articles;
   }, [uzData, searchQuery, activeShelf]);
 
+  // --- 棚ナビゲーション ---
+  const allShelves = React.useMemo(() => {
+    if (mode === 'uz') return uzShelves;
+    return rakutenShelves;
+  }, [mode, uzShelves, rakutenShelves]);
+
+  const currentShelf = allShelves[shelfIndex] || null;
+
+  const goToShelf = (idx) => {
+    setShelfIndex(idx);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const prevShelf = () => goToShelf(Math.max(0, shelfIndex - 1));
+  const nextShelf = () => goToShelf(Math.min(allShelves.length - 1, shelfIndex + 1));
+
+  // モード切替時にリセット
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setShelfIndex(0);
+    setShowArticles(false);
+  };
+
   const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); };
   const closeModal = () => setModal(null);
   const jumpToShelfFromArticle = (articleId) => {
@@ -225,7 +248,7 @@ function UzBookshelf() {
     setTimeout(() => setHighlightArticle(null), 3000);
   };
 
-  const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', culture: '🌍' };
+  const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', biz: '💼', culture: '🌍' };
 
   // ============================================================
   // 表紙コンポーネント — 美術的3D
@@ -310,6 +333,12 @@ function UzBookshelf() {
     );
   };
 
+  // --- 棚の本リスト（UZ/楽天で統一） ---
+  const currentItems = React.useMemo(() => {
+    if (!currentShelf) return [];
+    return currentShelf.mixedItems || currentShelf.mixedBooks || [];
+  }, [currentShelf]);
+
   // ============================================================
   // RENDER
   // ============================================================
@@ -321,13 +350,29 @@ function UzBookshelf() {
           <h1 className="uz-title">UZ Bookshelf</h1>
         </div>
         <div className="uz-headerActions">
-          <button className={`uz-tabBtn ${mode === 'uz' ? 'active' : ''}`} onClick={() => setMode('uz')}>UZ セレクション</button>
-          <button className={`uz-tabBtn ${mode === 'rakuten' ? 'active' : ''}`} onClick={() => setMode('rakuten')}>楽天Books</button>
+          <button className={`uz-tabBtn ${mode === 'uz' ? 'active' : ''}`} onClick={() => switchMode('uz')}>UZ セレクション</button>
+          <button className={`uz-tabBtn ${mode === 'rakuten' ? 'active' : ''}`} onClick={() => switchMode('rakuten')}>楽天Books</button>
           {mode === 'uz' && (
             <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => setShowArticles(!showArticles)}>記事一覧</button>
           )}
         </div>
       </header>
+
+      {/* 棚セレクター */}
+      {!showArticles && allShelves.length > 0 && (
+        <nav className="uz-shelfNav">
+          {allShelves.map((s, i) => (
+            <button
+              key={s.id}
+              className={`uz-shelfNav__btn ${i === shelfIndex ? 'active' : ''}`}
+              onClick={() => goToShelf(i)}
+            >
+              <span className="uz-shelfNav__icon">{shelfIcons[s.id] || ''}</span>
+              <span className="uz-shelfNav__label">{s.title}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* 記事一覧パネル */}
       {showArticles && uzData && (
@@ -361,64 +406,54 @@ function UzBookshelf() {
         </div>
       )}
 
-      {/* === UZ セレクション棚 === */}
-      {mode === 'uz' && !showArticles && (
-        <div className="uz-grid uz-grid--uz">
-          {uzShelves.map(shelf => (
-            <section key={shelf.id} className={`uz-shelf uz-shelf--${shelf.id}`}>
-              <div className="uz-shelfHead">
-                <h2 className="uz-shelfTitle"><span className="uz-shelfIcon">{shelfIcons[shelf.id] || ''}</span>{shelf.title}</h2>
-                <div className="uz-shelfMeta">{shelf.items.length} items</div>
+      {/* === 1ページ1棚 === */}
+      {!showArticles && currentShelf && (
+        <div className="uz-singleShelf">
+          <section className={`uz-shelf uz-shelf--${currentShelf.id}`}>
+            <div className="uz-shelfHead">
+              <h2 className="uz-shelfTitle">
+                <span className="uz-shelfIcon">{shelfIcons[currentShelf.id] || ''}</span>
+                {currentShelf.title}
+              </h2>
+              <div className="uz-shelfMeta">{currentItems.length} items</div>
+            </div>
+            <div className="uz-rack">
+              <div className="uz-plank" aria-hidden="true" />
+              <div className="uz-mixedRow">
+                {currentItems.map((item, idx) => {
+                  const isHl = highlightArticle && item.articleId === highlightArticle;
+                  const handlers = {
+                    onClick: e => openModal(item, e),
+                    onMouseEnter: e => handleMouseEnter(e, item),
+                    onMouseLeave: handleMouseLeave,
+                  };
+                  if (item.type === 'featured') {
+                    return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
+                  }
+                  return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
+                })}
               </div>
-              <div className="uz-rack">
-                <div className="uz-plank" aria-hidden="true" />
-                <div className="uz-mixedRow">
-                  {shelf.mixedItems.map((item, idx) => {
-                    const isHl = highlightArticle && item.articleId === highlightArticle;
-                    const handlers = {
-                      onClick: e => openModal(item, e),
-                      onMouseEnter: e => handleMouseEnter(e, item),
-                      onMouseLeave: handleMouseLeave,
-                    };
-                    if (item.type === 'featured') {
-                      return <BookFace key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
-                    }
-                    return <BookSpine key={`${item.id}-${idx}`} item={item} isHighlighted={isHl} {...handlers} />;
-                  })}
-                </div>
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+            </div>
+          </section>
 
-      {/* === 楽天Books棚 === */}
-      {mode === 'rakuten' && (
-        <div className="uz-grid">
-          {rakutenShelves.map(shelf => (
-            <section key={shelf.id} className="uz-shelf">
-              <div className="uz-shelfHead">
-                <h2 className="uz-shelfTitle">{shelf.title}</h2>
-                <div className="uz-shelfMeta">{shelf.books.length} items</div>
-              </div>
-              <div className="uz-rack">
-                <div className="uz-plank" aria-hidden="true" />
-                <div className="uz-mixedRow">
-                  {shelf.mixedBooks.map((b, idx) => {
-                    const handlers = {
-                      onClick: e => openModal(b, e),
-                      onMouseEnter: e => handleMouseEnter(e, b),
-                      onMouseLeave: handleMouseLeave,
-                    };
-                    if (b.type === 'featured') {
-                      return <BookFace key={`${b.id}-${idx}`} item={b} isHighlighted={false} {...handlers} />;
-                    }
-                    return <BookSpine key={`${b.id}-${idx}`} item={b} isHighlighted={false} {...handlers} />;
-                  })}
-                </div>
-              </div>
-            </section>
-          ))}
+          {/* 前後ナビゲーション */}
+          <div className="uz-shelfPager">
+            <button
+              className="uz-shelfPager__btn"
+              onClick={prevShelf}
+              disabled={shelfIndex === 0}
+            >
+              ← {shelfIndex > 0 ? allShelves[shelfIndex - 1].title : ''}
+            </button>
+            <span className="uz-shelfPager__pos">{shelfIndex + 1} / {allShelves.length}</span>
+            <button
+              className="uz-shelfPager__btn"
+              onClick={nextShelf}
+              disabled={shelfIndex === allShelves.length - 1}
+            >
+              {shelfIndex < allShelves.length - 1 ? allShelves[shelfIndex + 1].title : ''} →
+            </button>
+          </div>
         </div>
       )}
 

@@ -46,10 +46,54 @@ body {
 .uz-tabBtn:hover { background: rgba(255,255,255,.10); color: var(--text); }
 .uz-tabBtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ---- Grid ---- */
-.uz-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 22px; }
-@media (min-width: 880px) { .uz-grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1200px) { .uz-grid--uz { grid-template-columns: 1fr 1fr; } }
+/* ---- 棚セレクター ---- */
+.uz-shelfNav {
+  display: flex; gap: 6px; margin-top: 16px; padding: 6px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--line);
+  border-radius: 16px; flex-wrap: wrap;
+}
+.uz-shelfNav__btn {
+  display: flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--muted); padding: 8px 16px; border-radius: 12px;
+  font-size: 13px; cursor: pointer; transition: all .15s ease; font-weight: 500;
+}
+.uz-shelfNav__btn:hover {
+  background: rgba(255,255,255,.06); color: var(--text);
+}
+.uz-shelfNav__btn.active {
+  background: rgba(74,158,255,.12); color: var(--accent);
+  border-color: rgba(74,158,255,.25); font-weight: 700;
+}
+.uz-shelfNav__icon { font-size: 16px; }
+.uz-shelfNav__label {}
+
+/* ---- 1ページ1棚 ---- */
+.uz-singleShelf { margin-top: 22px; }
+
+/* ---- ページャー ---- */
+.uz-shelfPager {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-top: 28px; padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.uz-shelfPager__btn {
+  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  color: var(--text); padding: 12px 24px; border-radius: 12px;
+  font-size: 14px; cursor: pointer; transition: all .15s ease;
+  font-weight: 500; min-width: 140px;
+}
+.uz-shelfPager__btn:hover:not(:disabled) {
+  background: rgba(74,158,255,.12); border-color: rgba(74,158,255,.25);
+  color: var(--accent);
+}
+.uz-shelfPager__btn:disabled {
+  opacity: .25; cursor: default;
+}
+.uz-shelfPager__pos {
+  font-size: 13px; color: var(--muted); font-weight: 600;
+  letter-spacing: .05em;
+}
 
 /* ---- Shelf ---- */
 .uz-shelf {
@@ -91,9 +135,10 @@ body {
 }
 
 .uz-mixedRow {
-  display: flex; gap: 14px 10px; align-items: flex-end;
-  flex-wrap: wrap; min-height: 100px;
+  display: flex; gap: 16px 12px; align-items: flex-end;
+  flex-wrap: wrap; min-height: 140px;
   padding-bottom: 4px;
+  justify-content: center;
 }
 
 /* ============================================================
@@ -512,4 +557,8 @@ body {
   .uz-modal__cover { width: 150px; }
   .uz-book { transform: perspective(700px) rotateY(-6deg); }
   .uz-spine2 { transform: perspective(700px) rotateY(-6deg); }
+  .uz-shelfNav { gap: 4px; padding: 4px; }
+  .uz-shelfNav__btn { padding: 6px 10px; font-size: 12px; }
+  .uz-shelfNav__icon { font-size: 14px; }
+  .uz-shelfPager__btn { min-width: 100px; padding: 10px 14px; font-size: 12px; }
 }
