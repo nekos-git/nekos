@@ -643,6 +643,67 @@ class UZ_Bookshelf_DB {
     }
 
     /**
+     * Move shelf sort_order up or down
+     */
+    public function move_shelf( $id, $direction ) {
+        global $wpdb;
+        $shelf = $this->get_shelf( $id );
+        if ( ! $shelf ) return;
+
+        $current_order = (int) $shelf['sort_order'];
+        if ( $direction === 'up' ) {
+            $neighbor = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->shelves_table()} WHERE sort_order < %d ORDER BY sort_order DESC LIMIT 1",
+                    $current_order
+                ), ARRAY_A
+            );
+        } else {
+            $neighbor = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->shelves_table()} WHERE sort_order > %d ORDER BY sort_order ASC LIMIT 1",
+                    $current_order
+                ), ARRAY_A
+            );
+        }
+        if ( ! $neighbor ) return;
+
+        $wpdb->update( $this->shelves_table(), array( 'sort_order' => (int) $neighbor['sort_order'] ), array( 'id' => $id ) );
+        $wpdb->update( $this->shelves_table(), array( 'sort_order' => $current_order ), array( 'id' => $neighbor['id'] ) );
+    }
+
+    /**
+     * Move item sort_order up or down within its shelf
+     */
+    public function move_item( $id, $direction ) {
+        global $wpdb;
+        $item = $this->get_item( $id );
+        if ( ! $item ) return;
+
+        $current_order = (int) $item['sort_order'];
+        $shelf_id = $item['shelf_id'];
+        if ( $direction === 'up' ) {
+            $neighbor = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->items_table()} WHERE shelf_id = %s AND sort_order < %d ORDER BY sort_order DESC LIMIT 1",
+                    $shelf_id, $current_order
+                ), ARRAY_A
+            );
+        } else {
+            $neighbor = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->items_table()} WHERE shelf_id = %s AND sort_order > %d ORDER BY sort_order ASC LIMIT 1",
+                    $shelf_id, $current_order
+                ), ARRAY_A
+            );
+        }
+        if ( ! $neighbor ) return;
+
+        $wpdb->update( $this->items_table(), array( 'sort_order' => (int) $neighbor['sort_order'] ), array( 'id' => $id ) );
+        $wpdb->update( $this->items_table(), array( 'sort_order' => $current_order ), array( 'id' => (int) $neighbor['id'] ) );
+    }
+
+    /**
      * Check if database has any data
      */
     public function is_empty() {

@@ -48,6 +48,15 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
+            'Shelves',
+            'Shelves',
+            'manage_options',
+            'uz-bookshelf-shelves',
+            array( $this, 'page_shelves' )
+        );
+
+        add_submenu_page(
+            'uz-bookshelf',
             'Shelf Items',
             'Shelf Items',
             'manage_options',
@@ -93,7 +102,7 @@ class UZ_Bookshelf_Admin {
     }
 
     /**
-     * Enqueue admin styles
+     * Enqueue admin styles and scripts
      */
     public function enqueue_admin_assets( $hook ) {
         if ( strpos( $hook, 'uz-bookshelf' ) === false ) {
@@ -105,6 +114,18 @@ class UZ_Bookshelf_Admin {
             array(),
             UZ_BOOKSHELF_VERSION
         );
+
+        // Media uploader for item edit pages
+        if ( strpos( $hook, 'uz-bookshelf-items' ) !== false ) {
+            wp_enqueue_media();
+            wp_enqueue_script(
+                'uz-bookshelf-admin-media',
+                $this->plugin_url . 'assets/js/admin-media.js',
+                array( 'jquery' ),
+                UZ_BOOKSHELF_VERSION,
+                true
+            );
+        }
     }
 
     // =========================================================================
@@ -173,6 +194,209 @@ class UZ_Bookshelf_Admin {
     }
 
     // =========================================================================
+    // Shelves (CRUD + reorder)
+    // =========================================================================
+
+    public function page_shelves() {
+        $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : 'list';
+
+        switch ( $action ) {
+            case 'add':
+            case 'edit':
+                $this->page_shelf_form();
+                break;
+            case 'delete':
+                $this->handle_shelf_delete();
+                break;
+            case 'move_up':
+            case 'move_down':
+                $this->handle_shelf_move();
+                break;
+            default:
+                $this->page_shelves_list();
+        }
+    }
+
+    private function page_shelves_list() {
+        $shelf_stats = $this->db->get_shelf_stats();
+        ?>
+        <div class="wrap">
+            <h1>
+                Shelves
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>" class="page-title-action">Add New</a>
+            </h1>
+
+            <?php if ( isset( $_GET['msg'] ) ) : ?>
+                <?php if ( $_GET['msg'] === 'deleted' ) : ?>
+                    <div class="notice notice-success"><p>Shelf deleted.</p></div>
+                <?php elseif ( $_GET['msg'] === 'created' ) : ?>
+                    <div class="notice notice-success"><p>Shelf created.</p></div>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <table class="widefat striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Icon</th>
+                        <th>Items</th>
+                        <th>Order</th>
+                        <th width="120">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ( empty( $shelf_stats ) ) : ?>
+                        <tr><td colspan="6">No shelves found. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>">Create one</a>.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ( $shelf_stats as $i => $s ) : ?>
+                        <tr>
+                            <td><code><?php echo esc_html( $s['id'] ); ?></code></td>
+                            <td><strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=edit&id=' . urlencode( $s['id'] ) ) ); ?>"><?php echo esc_html( $s['title'] ); ?></a></strong></td>
+                            <td><?php echo esc_html( $s['icon'] ?? '-' ); ?></td>
+                            <td>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&shelf_id=' . urlencode( $s['id'] ) ) ); ?>">
+                                    <?php echo esc_html( $s['item_count'] ); ?> items
+                                </a>
+                            </td>
+                            <td>
+                                <?php if ( $i > 0 ) : ?>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_up&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="Move up">&uarr;</a>
+                                <?php endif; ?>
+                                <?php if ( $i < count( $shelf_stats ) - 1 ) : ?>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_down&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="Move down">&darr;</a>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=edit&id=' . urlencode( $s['id'] ) ) ); ?>">Edit</a> |
+                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=delete&id=' . urlencode( $s['id'] ) ), 'uz_delete_shelf_' . $s['id'] ) ); ?>" onclick="return confirm('Delete this shelf and all its items?');" style="color:#b32d2e;">Delete</a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
+
+    private function page_shelf_form() {
+        $id    = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : '';
+        $shelf = $id ? $this->db->get_shelf( $id ) : null;
+
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_shelf_nonce'] ) ) {
+            if ( wp_verify_nonce( $_POST['uz_shelf_nonce'], 'uz_save_shelf' ) ) {
+                $shelf_id = $id ?: sanitize_title( $_POST['shelf_id'] ?? '' );
+                if ( ! $shelf_id ) {
+                    echo '<div class="notice notice-error"><p>Shelf ID is required.</p></div>';
+                } else {
+                    $max_order = 0;
+                    if ( ! $id ) {
+                        $all_shelves = $this->db->get_shelves();
+                        foreach ( $all_shelves as $s ) {
+                            if ( (int) $s['sort_order'] > $max_order ) $max_order = (int) $s['sort_order'];
+                        }
+                        $max_order++;
+                    }
+                    $data = array(
+                        'title'      => sanitize_text_field( $_POST['title'] ?? '' ),
+                        'icon'       => sanitize_text_field( $_POST['icon'] ?? '' ),
+                        'sort_order' => $id ? absint( $_POST['sort_order'] ?? 0 ) : $max_order,
+                    );
+                    $this->db->upsert_shelf( $shelf_id, $data );
+
+                    if ( ! $id ) {
+                        wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-shelves&msg=created' ) );
+                        exit;
+                    }
+                    echo '<div class="notice notice-success"><p>Shelf updated.</p></div>';
+                    $shelf = $this->db->get_shelf( $shelf_id );
+                }
+            }
+        }
+
+        $icons = array( 'book', 'film', 'music', 'manga', 'tech', 'biz', 'culture', 'star', 'heart', 'bookmark' );
+        ?>
+        <div class="wrap">
+            <h1><?php echo $id ? 'Edit Shelf' : 'Add New Shelf'; ?></h1>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves' ) ); ?>">&larr; Back to list</a>
+
+            <form method="post" style="max-width:700px;">
+                <?php wp_nonce_field( 'uz_save_shelf', 'uz_shelf_nonce' ); ?>
+
+                <table class="form-table">
+                    <tr>
+                        <th><label for="shelf_id">Shelf ID (slug)</label></th>
+                        <td>
+                            <?php if ( $id ) : ?>
+                                <code><?php echo esc_html( $id ); ?></code>
+                            <?php else : ?>
+                                <input type="text" name="shelf_id" id="shelf_id" class="regular-text" required placeholder="e.g. my-books" />
+                                <p class="description">Unique identifier. Cannot be changed later.</p>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="title">Title</label></th>
+                        <td><input type="text" name="title" id="title" class="regular-text" value="<?php echo esc_attr( $shelf['title'] ?? '' ); ?>" required /></td>
+                    </tr>
+                    <tr>
+                        <th><label for="icon">Icon</label></th>
+                        <td>
+                            <select name="icon" id="icon">
+                                <?php foreach ( $icons as $ico ) : ?>
+                                    <option value="<?php echo esc_attr( $ico ); ?>" <?php selected( $shelf['icon'] ?? '', $ico ); ?>><?php echo esc_html( $ico ); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php if ( $id ) : ?>
+                    <tr>
+                        <th><label for="sort_order">Sort Order</label></th>
+                        <td><input type="number" name="sort_order" id="sort_order" style="width:80px;" value="<?php echo esc_attr( $shelf['sort_order'] ?? 0 ); ?>" /></td>
+                    </tr>
+                    <?php endif; ?>
+                </table>
+
+                <?php submit_button( $id ? 'Update Shelf' : 'Create Shelf' ); ?>
+            </form>
+
+            <?php if ( $id ) : ?>
+            <hr />
+            <h2>Items in this shelf</h2>
+            <?php
+            $items = $this->db->get_items( $id );
+            if ( empty( $items ) ) :
+            ?>
+                <p>No items yet. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) ); ?>">Add one</a>.</p>
+            <?php else : ?>
+                <p><?php echo count( $items ); ?> items. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&shelf_id=' . urlencode( $id ) ) ); ?>">View all</a> | <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) ); ?>">Add new</a></p>
+            <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    private function handle_shelf_delete() {
+        $id = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : '';
+        if ( $id && check_admin_referer( 'uz_delete_shelf_' . $id ) ) {
+            $this->db->delete_shelf( $id );
+        }
+        wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-shelves&msg=deleted' ) );
+        exit;
+    }
+
+    private function handle_shelf_move() {
+        $id        = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : '';
+        $direction = ( $_GET['action'] === 'move_up' ) ? 'up' : 'down';
+        if ( $id && check_admin_referer( 'uz_move_shelf_' . $id ) ) {
+            $this->db->move_shelf( $id, $direction );
+        }
+        wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-shelves' ) );
+        exit;
+    }
+
+    // =========================================================================
     // Shelf Items
     // =========================================================================
 
@@ -186,6 +410,10 @@ class UZ_Bookshelf_Admin {
                 break;
             case 'delete':
                 $this->handle_item_delete();
+                break;
+            case 'move_up':
+            case 'move_down':
+                $this->handle_item_move();
                 break;
             default:
                 $this->page_items_list();
@@ -201,12 +429,21 @@ class UZ_Bookshelf_Admin {
         } else {
             $items = $this->db->get_items();
         }
+
+        $add_url = admin_url( 'admin.php?page=uz-bookshelf-items&action=add' );
+        if ( $shelf_filter ) {
+            $add_url .= '&shelf_id=' . urlencode( $shelf_filter );
+        }
         ?>
         <div class="wrap">
             <h1>
                 Shelf Items
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add' ) ); ?>" class="page-title-action">Add New</a>
+                <a href="<?php echo esc_url( $add_url ); ?>" class="page-title-action">Add New</a>
             </h1>
+
+            <?php if ( isset( $_GET['msg'] ) && $_GET['msg'] === 'deleted' ) : ?>
+                <div class="notice notice-success"><p>Item deleted.</p></div>
+            <?php endif; ?>
 
             <div class="tablenav top">
                 <div class="alignleft actions">
@@ -237,15 +474,15 @@ class UZ_Bookshelf_Admin {
                         <th>Author</th>
                         <th>Shelf</th>
                         <th>Article</th>
-                        <th>Tags</th>
+                        <?php if ( $shelf_filter ) : ?><th width="60">Order</th><?php endif; ?>
                         <th width="100">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $items ) ) : ?>
-                        <tr><td colspan="8">No items found.</td></tr>
+                        <tr><td colspan="<?php echo $shelf_filter ? 8 : 7; ?>">No items found.</td></tr>
                     <?php else : ?>
-                        <?php foreach ( $items as $item ) : ?>
+                        <?php foreach ( $items as $idx => $item ) : ?>
                         <tr>
                             <td><?php echo esc_html( $item['id'] ); ?></td>
                             <td>
@@ -256,24 +493,24 @@ class UZ_Bookshelf_Admin {
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <strong><?php echo esc_html( $item['title'] ); ?></strong>
+                                <strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php echo esc_html( $item['title'] ); ?></a></strong>
                                 <?php if ( $item['full_title'] && $item['full_title'] !== $item['title'] ) : ?>
-                                    <br><small><?php echo esc_html( $item['full_title'] ); ?></small>
+                                    <br><small><?php echo esc_html( mb_substr( $item['full_title'], 0, 50 ) ); ?></small>
                                 <?php endif; ?>
                             </td>
                             <td><?php echo esc_html( $item['author'] ); ?></td>
                             <td><code><?php echo esc_html( $item['shelf_id'] ); ?></code></td>
                             <td><?php echo esc_html( $item['article_title'] ? mb_substr( $item['article_title'], 0, 20 ) . '...' : '-' ); ?></td>
+                            <?php if ( $shelf_filter ) : ?>
                             <td>
-                                <?php
-                                $tags = json_decode( $item['tags'], true );
-                                if ( is_array( $tags ) && ! empty( $tags ) ) {
-                                    echo esc_html( implode( ', ', $tags ) );
-                                } else {
-                                    echo '-';
-                                }
-                                ?>
+                                <?php if ( $idx > 0 ) : ?>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_up&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&uarr;</a>
+                                <?php endif; ?>
+                                <?php if ( $idx < count( $items ) - 1 ) : ?>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_down&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&darr;</a>
+                                <?php endif; ?>
                             </td>
+                            <?php endif; ?>
                             <td>
                                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>">Edit</a> |
                                 <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=delete&id=' . $item['id'] ), 'uz_delete_item_' . $item['id'] ) ); ?>" onclick="return confirm('Delete this item?');" style="color:#b32d2e;">Delete</a>
@@ -287,15 +524,40 @@ class UZ_Bookshelf_Admin {
         <?php
     }
 
+    private function handle_item_move() {
+        $id        = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+        $shelf_id  = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
+        $direction = ( $_GET['action'] === 'move_up' ) ? 'up' : 'down';
+        if ( $id && check_admin_referer( 'uz_move_item_' . $id ) ) {
+            $this->db->move_item( $id, $direction );
+        }
+        wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-items' . ( $shelf_id ? '&shelf_id=' . urlencode( $shelf_id ) : '' ) ) );
+        exit;
+    }
+
     private function page_item_form() {
         $id   = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
         $item = $id ? $this->db->get_item( $id ) : null;
+
+        // Preset shelf_id and article from URL params
+        $preset_shelf   = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
+        $preset_article = isset( $_GET['article_id'] ) ? sanitize_text_field( $_GET['article_id'] ) : '';
 
         // Handle form submission
         if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_item_nonce'] ) ) {
             if ( wp_verify_nonce( $_POST['uz_item_nonce'], 'uz_save_item' ) ) {
                 $tags_raw = isset( $_POST['tags'] ) ? sanitize_text_field( $_POST['tags'] ) : '';
                 $tags     = array_filter( array_map( 'trim', explode( ',', $tags_raw ) ) );
+
+                // Auto-fill article_title from selected article
+                $sel_article_id = sanitize_text_field( $_POST['article_id'] ?? '' );
+                $sel_article_title = sanitize_text_field( $_POST['article_title'] ?? '' );
+                if ( $sel_article_id && ! $sel_article_title ) {
+                    $article_obj = $this->db->get_article( $sel_article_id );
+                    if ( $article_obj ) {
+                        $sel_article_title = $article_obj['title'];
+                    }
+                }
 
                 $data = array(
                     'item_id'       => sanitize_text_field( $_POST['item_id'] ?? '' ),
@@ -308,8 +570,8 @@ class UZ_Bookshelf_Admin {
                     'amazon_url'    => esc_url_raw( $_POST['amazon_url'] ?? '' ),
                     'rakuten_url'   => esc_url_raw( $_POST['rakuten_url'] ?? '' ),
                     'affiliate_url' => esc_url_raw( $_POST['affiliate_url'] ?? '' ),
-                    'article_id'    => sanitize_text_field( $_POST['article_id'] ?? '' ),
-                    'article_title' => sanitize_text_field( $_POST['article_title'] ?? '' ),
+                    'article_id'    => $sel_article_id,
+                    'article_title' => $sel_article_title,
                     'comment'       => sanitize_textarea_field( $_POST['comment'] ?? '' ),
                     'tags'          => wp_json_encode( $tags ),
                     'type'          => sanitize_text_field( $_POST['type'] ?? 'product' ),
@@ -335,7 +597,8 @@ class UZ_Bookshelf_Admin {
             echo '<div class="notice notice-success"><p>Item created.</p></div>';
         }
 
-        $shelves = $this->db->get_shelves();
+        $shelves   = $this->db->get_shelves();
+        $articles  = $this->db->get_articles();
         $tags_list = '';
         if ( $item && $item['tags'] ) {
             $decoded = json_decode( $item['tags'], true );
@@ -343,6 +606,10 @@ class UZ_Bookshelf_Admin {
                 $tags_list = implode( ', ', $decoded );
             }
         }
+
+        $current_shelf   = $item['shelf_id'] ?? $preset_shelf;
+        $current_article = $item['article_id'] ?? $preset_article;
+        $cover_url_val   = $item['cover_url'] ?? '';
         ?>
         <div class="wrap">
             <h1><?php echo $id ? 'Edit Item' : 'Add New Item'; ?></h1>
@@ -361,7 +628,7 @@ class UZ_Bookshelf_Admin {
                         <td>
                             <select name="shelf_id" id="shelf_id">
                                 <?php foreach ( $shelves as $s ) : ?>
-                                    <option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $item['shelf_id'] ?? '', $s['id'] ); ?>>
+                                    <option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $current_shelf, $s['id'] ); ?>>
                                         <?php echo esc_html( $s['title'] ); ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -385,8 +652,19 @@ class UZ_Bookshelf_Admin {
                         <td><input type="text" name="full_author" id="full_author" class="regular-text" value="<?php echo esc_attr( $item['full_author'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="cover_url">Cover URL</label></th>
-                        <td><input type="url" name="cover_url" id="cover_url" class="large-text" value="<?php echo esc_attr( $item['cover_url'] ?? '' ); ?>" /></td>
+                        <th><label for="cover_url">Cover Image</label></th>
+                        <td>
+                            <div style="margin-bottom:8px;">
+                                <img id="uz-cover-preview" src="<?php echo esc_url( $cover_url_val ); ?>" style="max-width:120px;max-height:170px;border:1px solid #ccc;<?php echo $cover_url_val ? '' : 'display:none;'; ?>" />
+                            </div>
+                            <input type="url" name="cover_url" id="cover_url" class="large-text" value="<?php echo esc_attr( $cover_url_val ); ?>" placeholder="https://..." />
+                            <div style="margin-top:6px;">
+                                <button type="button" id="uz-select-cover" class="button">Media Library</button>
+                                <button type="button" id="uz-fetch-cover" class="button">Amazon URL &rarr; Cover</button>
+                                <button type="button" id="uz-clear-cover" class="button" style="color:#b32d2e;">Clear</button>
+                            </div>
+                            <p class="description">Select from Media Library, auto-fetch from Amazon URL, or paste a URL directly.</p>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="amazon_url">Amazon URL</label></th>
@@ -401,12 +679,18 @@ class UZ_Bookshelf_Admin {
                         <td><input type="url" name="affiliate_url" id="affiliate_url" class="large-text" value="<?php echo esc_attr( $item['affiliate_url'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="article_id">Article ID</label></th>
-                        <td><input type="text" name="article_id" id="article_id" class="regular-text" value="<?php echo esc_attr( $item['article_id'] ?? '' ); ?>" /></td>
-                    </tr>
-                    <tr>
-                        <th><label for="article_title">Article Title</label></th>
-                        <td><input type="text" name="article_title" id="article_title" class="large-text" value="<?php echo esc_attr( $item['article_title'] ?? '' ); ?>" /></td>
+                        <th><label for="article_id">Article</label></th>
+                        <td>
+                            <select name="article_id" id="article_id">
+                                <option value="">-- None --</option>
+                                <?php foreach ( $articles as $a ) : ?>
+                                    <option value="<?php echo esc_attr( $a['id'] ); ?>" <?php selected( $current_article, $a['id'] ); ?>>
+                                        <?php echo esc_html( mb_substr( $a['title'], 0, 60 ) ); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="hidden" name="article_title" id="article_title" value="<?php echo esc_attr( $item['article_title'] ?? '' ); ?>" />
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="comment">UZ Comment</label></th>
@@ -623,6 +907,43 @@ class UZ_Bookshelf_Admin {
 
                 <?php submit_button( $id ? 'Update Article' : 'Add Article' ); ?>
             </form>
+
+            <?php if ( $id && $article ) : ?>
+            <hr />
+            <h2>Related Items</h2>
+            <?php
+            $related_items = $this->db->get_items_by_article( $id );
+            if ( empty( $related_items ) ) :
+            ?>
+                <p>No items linked to this article yet.</p>
+            <?php else : ?>
+                <table class="widefat striped" style="max-width:700px;">
+                    <thead><tr><th width="50">Cover</th><th>Title</th><th>Author</th><th>Shelf</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        <?php foreach ( $related_items as $ri ) : ?>
+                        <tr>
+                            <td>
+                                <?php if ( $ri['cover_url'] ) : ?>
+                                    <img src="<?php echo esc_url( $ri['cover_url'] ); ?>" style="width:35px;height:auto;" />
+                                <?php else : ?>
+                                    <span style="color:#999;">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo esc_html( $ri['title'] ); ?></td>
+                            <td><?php echo esc_html( $ri['author'] ); ?></td>
+                            <td><code><?php echo esc_html( $ri['shelf_id'] ); ?></code></td>
+                            <td><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $ri['id'] ) ); ?>">Edit</a></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+            <p>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&article_id=' . urlencode( $id ) ) ); ?>" class="button">
+                    + Add Item to This Article
+                </a>
+            </p>
+            <?php endif; ?>
         </div>
         <?php
     }
