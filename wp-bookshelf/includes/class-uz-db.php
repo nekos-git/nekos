@@ -561,6 +561,97 @@ class UZ_Bookshelf_DB {
     }
 
     /**
+     * Clear all data from all tables (for "Start Fresh" mode)
+     */
+    public function clear_all_data() {
+        global $wpdb;
+        $wpdb->query( "TRUNCATE TABLE {$this->items_table()}" );
+        $wpdb->query( "TRUNCATE TABLE {$this->articles_table()}" );
+        $wpdb->query( "TRUNCATE TABLE {$this->rakuten_table()}" );
+        $wpdb->query( "TRUNCATE TABLE {$this->shelves_table()}" );
+    }
+
+    /**
+     * Load bundled sample data from plugin data/ directory
+     *
+     * @param bool $include_rakuten Whether to also load Rakuten book data
+     * @return array|WP_Error Counts of imported items
+     */
+    public function load_sample_data( $include_rakuten = true ) {
+        $data_dir = UZ_BOOKSHELF_PATH . 'data/';
+
+        // Load shelf data
+        $shelf_file = $data_dir . 'uz-shelf-data.json';
+        if ( ! file_exists( $shelf_file ) ) {
+            return new WP_Error( 'missing_data', 'Sample data file not found: uz-shelf-data.json' );
+        }
+
+        $json = file_get_contents( $shelf_file );
+        $data = json_decode( $json, true );
+        if ( ! $data ) {
+            return new WP_Error( 'invalid_json', 'Failed to parse uz-shelf-data.json' );
+        }
+
+        $result = $this->import_from_json( $data );
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+
+        $result['rakuten_books'] = 0;
+
+        // Load Rakuten data
+        if ( $include_rakuten ) {
+            $genres = array( '001005', '001006', '001010' );
+            foreach ( $genres as $genre_id ) {
+                $rakuten_file = $data_dir . $genre_id . '.json';
+                if ( ! file_exists( $rakuten_file ) ) {
+                    continue;
+                }
+                $rjson = file_get_contents( $rakuten_file );
+                $rdata = json_decode( $rjson, true );
+                if ( ! $rdata || empty( $rdata['Items'] ) ) {
+                    continue;
+                }
+                foreach ( $rdata['Items'] as $i => $entry ) {
+                    $item = isset( $entry['Item'] ) ? $entry['Item'] : array();
+                    $this->insert_rakuten_book( array(
+                        'genre_id'         => $genre_id,
+                        'isbn'             => $item['isbn'] ?? '',
+                        'title'            => $item['title'] ?? '',
+                        'author'           => $item['author'] ?? '',
+                        'publisher'        => $item['publisherName'] ?? '',
+                        'item_price'       => $item['itemPrice'] ?? 0,
+                        'item_url'         => $item['itemUrl'] ?? '',
+                        'large_image_url'  => $item['largeImageUrl'] ?? '',
+                        'medium_image_url' => $item['mediumImageUrl'] ?? '',
+                        'small_image_url'  => $item['smallImageUrl'] ?? '',
+                        'item_caption'     => $item['itemCaption'] ?? '',
+                        'books_genre_id'   => $item['booksGenreId'] ?? '',
+                        'sales_date'       => $item['salesDate'] ?? '',
+                        'review_average'   => $item['reviewAverage'] ?? '',
+                        'review_count'     => $item['reviewCount'] ?? 0,
+                        'availability'     => $item['availability'] ?? '',
+                        'affiliate_url'    => $item['affiliateUrl'] ?? '',
+                        'sort_order'       => $i,
+                    ) );
+                    $result['rakuten_books']++;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check if database has any data
+     */
+    public function is_empty() {
+        global $wpdb;
+        $count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->shelves_table()}" );
+        return $count === 0;
+    }
+
+    /**
      * Get stats for dashboard
      */
     public function get_stats() {

@@ -115,6 +115,12 @@ final class UZ_Bookshelf_Plugin {
      */
     public function activate() {
         $this->db->create_tables();
+
+        // Auto-load sample data on first activation if tables are empty
+        if ( $this->db->is_empty() ) {
+            $this->db->load_sample_data( true );
+        }
+
         flush_rewrite_rules();
     }
 

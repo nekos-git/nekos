@@ -699,6 +699,25 @@ class UZ_Bookshelf_Admin {
             if ( wp_verify_nonce( $_POST['uz_import_nonce'], 'uz_import_data' ) ) {
                 $import_type = sanitize_text_field( $_POST['import_type'] ?? '' );
 
+                // Load bundled sample data
+                if ( $import_type === 'load_sample' ) {
+                    $result = $this->db->load_sample_data( true );
+                    if ( is_wp_error( $result ) ) {
+                        $message = '<div class="notice notice-error"><p>' . esc_html( $result->get_error_message() ) . '</p></div>';
+                    } else {
+                        $message = sprintf(
+                            '<div class="notice notice-success"><p>サンプルデータを読み込みました: %d棚, %dアイテム, %d記事, %d楽天ブックス</p></div>',
+                            $result['shelves'], $result['items'], $result['articles'], $result['rakuten_books']
+                        );
+                    }
+                }
+
+                // Start Fresh — clear all data
+                if ( $import_type === 'start_fresh' ) {
+                    $this->db->clear_all_data();
+                    $message = '<div class="notice notice-success"><p>全データをクリアしました。1から作成できます。</p></div>';
+                }
+
                 if ( $import_type === 'json_upload' && ! empty( $_FILES['json_file']['tmp_name'] ) ) {
                     $json_content = file_get_contents( $_FILES['json_file']['tmp_name'] );
                     $data = json_decode( $json_content, true );
@@ -762,13 +781,62 @@ class UZ_Bookshelf_Admin {
             }
         }
 
+        $stats = $this->db->get_stats();
+        $has_data = ( $stats['items'] > 0 || $stats['rakuten_books'] > 0 );
+
         ?>
         <div class="wrap">
             <h1>Import / Export</h1>
             <?php echo $message; ?>
 
-            <h2>Import uz-shelf-data.json</h2>
-            <p>Upload the <code>uz-shelf-data.json</code> file exported from the SQLite database.</p>
+            <!-- ===== Quick Actions ===== -->
+            <div style="display:flex;gap:20px;margin:20px 0;flex-wrap:wrap;">
+
+                <div style="flex:1;min-width:300px;background:#f0f0f1;border-left:4px solid #2271b1;padding:20px;">
+                    <h2 style="margin-top:0;">📚 サンプルデータを読み込む</h2>
+                    <p>全書籍（6棚・212アイテム）、全記事（48件）、楽天ブックス（90冊）を一括読み込み。<br>
+                    カバー画像・アフィリエイトリンクもすべて含まれます。</p>
+                    <form method="post">
+                        <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
+                        <input type="hidden" name="import_type" value="load_sample" />
+                        <?php submit_button( 'サンプルデータを読み込む', 'primary', 'submit', false ); ?>
+                    </form>
+                </div>
+
+                <div style="flex:1;min-width:300px;background:#f0f0f1;border-left:4px solid #d63638;padding:20px;">
+                    <h2 style="margin-top:0;">🆕 1から作る（全データクリア）</h2>
+                    <p>全データを削除して空の状態から始めます。<br>
+                    棚の作成、本の追加、記事の紐付けを管理画面から行えます。</p>
+                    <?php if ( $has_data ) : ?>
+                    <form method="post" onsubmit="return confirm('本当に全データを削除しますか？この操作は取り消せません。');">
+                        <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
+                        <input type="hidden" name="import_type" value="start_fresh" />
+                        <?php submit_button( '全データをクリアして1から作る', 'delete', 'submit', false ); ?>
+                    </form>
+                    <?php else : ?>
+                    <p><strong>現在データは空です。</strong> 上の「Shelf Items」「Articles」メニューから追加を始められます。</p>
+                    <?php endif; ?>
+                </div>
+
+            </div>
+
+            <!-- ===== Current Status ===== -->
+            <div style="background:#fff;border:1px solid #c3c4c7;padding:15px;margin:20px 0;">
+                <h3 style="margin-top:0;">現在のデータ状況</h3>
+                <table>
+                    <tr><td style="padding:2px 15px 2px 0;"><strong>棚数:</strong></td><td><?php echo esc_html( $stats['shelves'] ); ?></td></tr>
+                    <tr><td style="padding:2px 15px 2px 0;"><strong>アイテム数:</strong></td><td><?php echo esc_html( $stats['items'] ); ?></td></tr>
+                    <tr><td style="padding:2px 15px 2px 0;"><strong>記事数:</strong></td><td><?php echo esc_html( $stats['articles'] ); ?></td></tr>
+                    <tr><td style="padding:2px 15px 2px 0;"><strong>楽天ブックス:</strong></td><td><?php echo esc_html( $stats['rakuten_books'] ); ?></td></tr>
+                </table>
+            </div>
+
+            <hr />
+
+            <h2>JSONファイルからインポート</h2>
+
+            <h3>uz-shelf-data.json</h3>
+            <p><code>uz-shelf-data.json</code> をアップロードして棚・アイテム・記事を読み込みます。</p>
             <form method="post" enctype="multipart/form-data">
                 <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
                 <input type="hidden" name="import_type" value="json_upload" />
@@ -783,8 +851,8 @@ class UZ_Bookshelf_Admin {
 
             <hr />
 
-            <h2>Import Rakuten Books JSON</h2>
-            <p>Upload a Rakuten Books API JSON response file (e.g. <code>001005.json</code>).</p>
+            <h3>楽天ブックス JSON</h3>
+            <p>楽天ブックスAPI レスポンスファイル（例: <code>001005.json</code>）をアップロード。</p>
             <form method="post" enctype="multipart/form-data">
                 <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
                 <input type="hidden" name="import_type" value="rakuten_upload" />
@@ -793,9 +861,9 @@ class UZ_Bookshelf_Admin {
                         <th>Genre ID</th>
                         <td>
                             <select name="rakuten_genre_id">
-                                <option value="001005">001005 (IT)</option>
-                                <option value="001006">001006 (Business)</option>
-                                <option value="001010">001010 (Culture)</option>
+                                <option value="001005">001005 (IT・テクノロジー)</option>
+                                <option value="001006">001006 (ビジネス)</option>
+                                <option value="001010">001010 (カルチャー)</option>
                             </select>
                         </td>
                     </tr>
@@ -809,12 +877,12 @@ class UZ_Bookshelf_Admin {
 
             <hr />
 
-            <h2>Export</h2>
-            <p>Use the REST API to export data:</p>
+            <h2>エクスポート</h2>
+            <p>REST APIでデータを取得できます:</p>
             <ul>
-                <li><code>GET /wp-json/uz-bookshelf/v1/shelves</code> - Full shelf data</li>
-                <li><code>GET /wp-json/uz-bookshelf/v1/articles</code> - All articles</li>
-                <li><code>GET /wp-json/uz-bookshelf/v1/rakuten/{genre_id}</code> - Rakuten books</li>
+                <li><code>GET /wp-json/uz-bookshelf/v1/shelves</code> — 全棚データ</li>
+                <li><code>GET /wp-json/uz-bookshelf/v1/articles</code> — 全記事</li>
+                <li><code>GET /wp-json/uz-bookshelf/v1/rakuten/{genre_id}</code> — 楽天ブックス</li>
             </ul>
         </div>
         <?php
