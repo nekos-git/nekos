@@ -87,22 +87,26 @@ class UZ_Bookshelf_Shortcode {
 
         $version = UZ_BOOKSHELF_VERSION;
 
-        // React 18 (CDN)
-        wp_enqueue_script(
-            'react',
-            'https://unpkg.com/react@18/umd/react.production.min.js',
-            array(),
-            '18',
-            true
-        );
-
-        wp_enqueue_script(
-            'react-dom',
-            'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-            array( 'react' ),
-            '18',
-            true
-        );
+        // React 18 — use WP bundled version (WP 6.5+), fallback to CDN for older WP
+        if ( wp_script_is( 'react', 'registered' ) ) {
+            wp_enqueue_script( 'react' );
+            wp_enqueue_script( 'react-dom' );
+        } else {
+            wp_enqueue_script(
+                'react',
+                'https://unpkg.com/react@18/umd/react.production.min.js',
+                array(),
+                '18',
+                true
+            );
+            wp_enqueue_script(
+                'react-dom',
+                'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
+                array( 'react' ),
+                '18',
+                true
+            );
+        }
 
         // Babel standalone for JSX transpilation
         wp_enqueue_script(
