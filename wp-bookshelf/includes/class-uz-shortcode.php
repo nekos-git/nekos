@@ -108,12 +108,12 @@ class UZ_Bookshelf_Shortcode {
             );
         }
 
-        // Babel standalone for JSX transpilation
+        // Bookshelf JS (pre-compiled, no Babel needed)
         wp_enqueue_script(
-            'babel-standalone',
-            'https://unpkg.com/@babel/standalone/babel.min.js',
-            array(),
-            '7',
+            'uz-bookshelf-app',
+            $this->plugin_url . 'assets/js/UzBookshelf.js',
+            array( 'react', 'react-dom' ),
+            $version,
             true
         );
 
@@ -125,62 +125,22 @@ class UZ_Bookshelf_Shortcode {
             $version
         );
 
-        // Output config as inline script before JSX
-        add_action( 'wp_footer', array( $this, 'output_config_script' ), 18 );
-
-        // Bookshelf JSX - loaded as text/babel for Babel transpilation
-        add_action( 'wp_footer', array( $this, 'output_jsx_script' ), 20 );
-    }
-
-    /**
-     * Output the config as an inline script (before Babel scripts)
-     */
-    public function output_config_script() {
-        $config = array(
+        // Pass config to JS
+        wp_localize_script( 'uz-bookshelf-app', 'uzBookshelfConfig', array(
             'apiBase'    => esc_url_raw( rest_url( 'uz-bookshelf/v1' ) ),
             'nonce'      => wp_create_nonce( 'wp_rest' ),
             'coversBase' => $this->plugin_url . 'assets/covers/',
-        );
-        echo '<script>var uzBookshelfConfig = ' . wp_json_encode( $config ) . ';</script>' . "\n";
-    }
+        ) );
 
-    /**
-     * Output the JSX script tag with type="text/babel"
-     * This is needed because wp_enqueue_script doesn't support custom script types.
-     */
-    public function output_jsx_script() {
-        $jsx_url = $this->plugin_url . 'assets/js/UzBookshelf.jsx';
-        $version = UZ_BOOKSHELF_VERSION;
-        echo '<script type="text/babel" data-type="module" src="' . esc_url( $jsx_url ) . '?ver=' . esc_attr( $version ) . '"></script>' . "\n";
-
-        // Initialize: find all containers and mount React
-        ?>
-        <script type="text/babel" data-type="module">
-        (function() {
-            const containers = document.querySelectorAll('.uz-bookshelf-container');
-            containers.forEach(container => {
-                const root = ReactDOM.createRoot(container);
-                const props = {};
-                if (container.dataset.mode) props.initialMode = container.dataset.mode;
-                if (container.dataset.shelf) props.initialShelf = container.dataset.shelf;
-                if (container.dataset.article) props.initialArticle = container.dataset.article;
-                root.render(<UzBookshelf {...props} />);
-            });
-        })();
-        </script>
-        <script>
-        // Babel standalone may have already run; re-process any unprocessed text/babel scripts
-        if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
-            Babel.transformScriptTags();
-        } else {
-            // Babel not yet loaded; wait for it
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
-                    Babel.transformScriptTags();
-                }
-            });
-        }
-        </script>
-        <?php
+        // Mount React app after scripts load
+        wp_add_inline_script( 'uz-bookshelf-app', '
+            (function() {
+                var containers = document.querySelectorAll(".uz-bookshelf-container");
+                containers.forEach(function(container) {
+                    var root = ReactDOM.createRoot(container);
+                    root.render(React.createElement(UzBookshelf));
+                });
+            })();
+        ' );
     }
 }
