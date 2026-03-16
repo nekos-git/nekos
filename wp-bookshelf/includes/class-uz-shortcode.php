@@ -125,7 +125,7 @@ class UZ_Bookshelf_Shortcode {
             $version
         );
 
-        // Hide theme header/footer when bookshelf is displayed (fullscreen mode)
+        // Hide theme header/footer and remove layout constraints for fullscreen bookshelf
         wp_add_inline_style( 'uz-bookshelf', '
             body:has(.uz-bookshelf-container) { margin: 0; padding: 0; }
             body:has(.uz-bookshelf-container) > header,
@@ -134,11 +134,15 @@ class UZ_Bookshelf_Shortcode {
             body:has(.uz-bookshelf-container) .wp-site-blocks > footer,
             body:has(.uz-bookshelf-container) .site-header,
             body:has(.uz-bookshelf-container) .site-footer { display: none !important; }
+            body:has(.uz-bookshelf-container) .wp-site-blocks,
             body:has(.uz-bookshelf-container) .wp-site-blocks > main,
+            body:has(.uz-bookshelf-container) .wp-site-blocks > main > .wp-block-group,
             body:has(.uz-bookshelf-container) .entry-content,
-            body:has(.uz-bookshelf-container) .wp-block-post-content {
+            body:has(.uz-bookshelf-container) .wp-block-post-content,
+            body:has(.uz-bookshelf-container) .wp-block-group {
                 max-width: none !important; padding: 0 !important; margin: 0 !important;
             }
+            body:has(.uz-bookshelf-container) .wp-block-post-title { display: none !important; }
         ' );
 
         // Pass config to JS

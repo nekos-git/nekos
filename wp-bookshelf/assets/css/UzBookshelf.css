@@ -39,16 +39,9 @@
     linear-gradient(160deg, #3a332d 0%, #2c2420 40%, #241e1a 100%);
   background-attachment: fixed;
   min-height: 100vh;
-  /* Break out of theme container */
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
 }
 
-.uz-wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
+.uz-wrap { max-width: 100%; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
 
 /* ---- Header ---- */
 .uz-header {
