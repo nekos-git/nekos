@@ -125,6 +125,22 @@ class UZ_Bookshelf_Shortcode {
             $version
         );
 
+        // Hide theme header/footer when bookshelf is displayed (fullscreen mode)
+        wp_add_inline_style( 'uz-bookshelf', '
+            body:has(.uz-bookshelf-container) { margin: 0; padding: 0; }
+            body:has(.uz-bookshelf-container) > header,
+            body:has(.uz-bookshelf-container) > footer,
+            body:has(.uz-bookshelf-container) .wp-site-blocks > header,
+            body:has(.uz-bookshelf-container) .wp-site-blocks > footer,
+            body:has(.uz-bookshelf-container) .site-header,
+            body:has(.uz-bookshelf-container) .site-footer { display: none !important; }
+            body:has(.uz-bookshelf-container) .wp-site-blocks > main,
+            body:has(.uz-bookshelf-container) .entry-content,
+            body:has(.uz-bookshelf-container) .wp-block-post-content {
+                max-width: none !important; padding: 0 !important; margin: 0 !important;
+            }
+        ' );
+
         // Pass config to JS
         wp_localize_script( 'uz-bookshelf-app', 'uzBookshelfConfig', array(
             'apiBase'    => esc_url_raw( rest_url( 'uz-bookshelf/v1' ) ),

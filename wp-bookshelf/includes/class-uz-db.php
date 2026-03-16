@@ -16,7 +16,7 @@ class UZ_Bookshelf_DB {
     private $prefix;
 
     /** @var string Plugin DB version */
-    const DB_VERSION = '1.0.0';
+    const DB_VERSION = '1.0.1';
 
     /** @var string Option key for DB version tracking */
     const DB_VERSION_OPTION = 'uz_bookshelf_db_version';
@@ -75,17 +75,17 @@ class UZ_Bookshelf_DB {
             item_id VARCHAR(128) NOT NULL,
             shelf_id VARCHAR(64) NOT NULL,
             title VARCHAR(255) NOT NULL,
-            full_title TEXT DEFAULT '',
+            full_title TEXT NOT NULL,
             author VARCHAR(255) DEFAULT '',
             full_author VARCHAR(255) DEFAULT '',
-            cover_url TEXT DEFAULT '',
-            amazon_url TEXT DEFAULT '',
-            rakuten_url TEXT DEFAULT '',
-            affiliate_url TEXT DEFAULT '',
+            cover_url TEXT NOT NULL,
+            amazon_url TEXT NOT NULL,
+            rakuten_url TEXT NOT NULL,
+            affiliate_url TEXT NOT NULL,
             article_id VARCHAR(128) DEFAULT '',
             article_title VARCHAR(255) DEFAULT '',
-            comment TEXT DEFAULT '',
-            tags TEXT DEFAULT '[]',
+            comment TEXT NOT NULL,
+            tags TEXT NOT NULL,
             type VARCHAR(32) DEFAULT 'product',
             format VARCHAR(32) DEFAULT 'standard',
             width INT DEFAULT 128,
@@ -103,10 +103,10 @@ class UZ_Bookshelf_DB {
             id VARCHAR(128) NOT NULL,
             title VARCHAR(255) NOT NULL,
             date VARCHAR(32) DEFAULT '',
-            categories TEXT DEFAULT '[]',
+            categories TEXT NOT NULL,
             shelf VARCHAR(64) DEFAULT '',
             product_count INT DEFAULT 0,
-            url TEXT DEFAULT '',
+            url TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -122,17 +122,17 @@ class UZ_Bookshelf_DB {
             author VARCHAR(255) DEFAULT '',
             publisher VARCHAR(255) DEFAULT '',
             item_price INT DEFAULT 0,
-            item_url TEXT DEFAULT '',
-            large_image_url TEXT DEFAULT '',
-            medium_image_url TEXT DEFAULT '',
-            small_image_url TEXT DEFAULT '',
-            item_caption TEXT DEFAULT '',
+            item_url TEXT NOT NULL,
+            large_image_url TEXT NOT NULL,
+            medium_image_url TEXT NOT NULL,
+            small_image_url TEXT NOT NULL,
+            item_caption TEXT NOT NULL,
             books_genre_id VARCHAR(64) DEFAULT '',
             sales_date VARCHAR(64) DEFAULT '',
             review_average VARCHAR(8) DEFAULT '',
             review_count INT DEFAULT 0,
             availability VARCHAR(32) DEFAULT '',
-            affiliate_url TEXT DEFAULT '',
+            affiliate_url TEXT NOT NULL,
             sort_order INT DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -264,6 +264,16 @@ class UZ_Bookshelf_DB {
 
     public function insert_item( $data ) {
         global $wpdb;
+        // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
+        $text_defaults = array(
+            'full_title' => '', 'cover_url' => '', 'amazon_url' => '',
+            'rakuten_url' => '', 'affiliate_url' => '', 'comment' => '', 'tags' => '[]',
+        );
+        foreach ( $text_defaults as $col => $default ) {
+            if ( ! isset( $data[ $col ] ) ) {
+                $data[ $col ] = $default;
+            }
+        }
         $wpdb->insert( $this->items_table(), $data );
         return $wpdb->insert_id;
     }
@@ -329,6 +339,13 @@ class UZ_Bookshelf_DB {
 
     public function upsert_article( $id, $data ) {
         global $wpdb;
+        // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
+        $text_defaults = array( 'categories' => '[]', 'url' => '' );
+        foreach ( $text_defaults as $col => $default ) {
+            if ( ! isset( $data[ $col ] ) ) {
+                $data[ $col ] = $default;
+            }
+        }
         $existing = $this->get_article( $id );
         if ( $existing ) {
             $wpdb->update(
@@ -370,6 +387,16 @@ class UZ_Bookshelf_DB {
 
     public function insert_rakuten_book( $data ) {
         global $wpdb;
+        // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
+        $text_defaults = array(
+            'item_url' => '', 'large_image_url' => '', 'medium_image_url' => '',
+            'small_image_url' => '', 'item_caption' => '', 'affiliate_url' => '',
+        );
+        foreach ( $text_defaults as $col => $default ) {
+            if ( ! isset( $data[ $col ] ) ) {
+                $data[ $col ] = $default;
+            }
+        }
         $wpdb->insert( $this->rakuten_table(), $data );
         return $wpdb->insert_id;
     }

@@ -16,6 +16,9 @@ var _uzConfig = typeof uzBookshelfConfig !== 'undefined' ? uzBookshelfConfig : {
 
 function uzFetch(endpoint) {
   var url = _uzConfig.apiBase ? _uzConfig.apiBase + endpoint : endpoint;
+  // Cache busting to avoid server-level caching
+  var sep = url.indexOf('?') >= 0 ? '&' : '?';
+  url += sep + '_t=' + Date.now();
   var opts = {};
   if (_uzConfig.nonce) {
     opts.headers = { 'X-WP-Nonce': _uzConfig.nonce };
