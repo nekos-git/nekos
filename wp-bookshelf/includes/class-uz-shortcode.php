@@ -143,6 +143,9 @@ class UZ_Bookshelf_Shortcode {
                 max-width: none !important; padding: 0 !important; margin: 0 !important;
             }
             body:has(.uz-bookshelf-container) .wp-block-post-title { display: none !important; }
+            body:has(.uz-bookshelf-container) .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+                max-width: none !important; margin-left: 0 !important; margin-right: 0 !important;
+            }
         ' );
 
         // Pass config to JS
