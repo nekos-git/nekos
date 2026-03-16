@@ -440,11 +440,9 @@ function UzBookshelf() {
   }, [modal, selectedArticle, filterByArticle, shelfIndex, allShelves.length, showArticles, showFavorites]);
 
   var currentGenres = useMemo(function() {
-    if (mode !== 'rakuten' || !currentShelf) return [];
-    var books = currentShelf.mixedBooks || [];
-    var ids = new Set();
-    books.forEach(function(b) { if (b.genreId) ids.add(b.genreId); });
-    return Array.from(ids).map(function(id) { return { id: id, name: genreMap[id] || id }; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+    // Rakuten shelves are already grouped by genre (tech/biz/culture),
+    // sub-genre filter is not needed
+    return [];
   }, [mode, currentShelf, genreMap]);
 
   var currentItems = useMemo(function() {
