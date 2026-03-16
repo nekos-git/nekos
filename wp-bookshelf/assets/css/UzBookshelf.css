@@ -376,7 +376,8 @@ body {
 .uz-book--poster .uz-book__spine { width: 6px; }
 
 /* ============================================================
-   背表紙コンポーネント v3 — 棚上リアル配置
+   背表紙コンポーネント v4 — リアル書籍背表紙
+   帯・箔押しタイトル・出版社マーク・凹凸テクスチャ
    ============================================================ */
 .uz-spine2 {
   position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
@@ -386,69 +387,138 @@ body {
 }
 .uz-spine2:hover {
   transform: perspective(900px) rotateY(-1deg) translateZ(8px) translateY(-3px);
-  filter: brightness(1.1);
+  filter: brightness(1.12);
   z-index: 10;
 }
 
 .uz-spine2__body {
   position: relative; width: 100%; height: 100%;
   border-radius: 2px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.06);
   box-shadow:
-    0 2px 6px rgba(0,0,0,.25),
-    0 8px 20px rgba(0,0,0,.2),
-    inset 0 0 12px rgba(0,0,0,.15);
+    1px 0 4px rgba(0,0,0,.3),
+    2px 2px 8px rgba(0,0,0,.25),
+    inset -1px 0 6px rgba(0,0,0,.2),
+    inset 1px 0 3px rgba(255,255,255,.06);
   overflow: hidden;
 }
 
-/* 布/紙テクスチャ */
+/* 布/紙テクスチャ — 縦の繊維 */
 .uz-spine2__texture {
   position: absolute; inset: 0;
-  background-image: repeating-linear-gradient(
-    0deg, transparent, transparent 2px, rgba(0,0,0,.04) 2px, rgba(0,0,0,.04) 3px
-  );
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,.03) 1px, rgba(0,0,0,.03) 2px),
+    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,.02) 3px, rgba(255,255,255,.02) 4px);
   pointer-events: none;
 }
 
-/* テキスト */
+/* 上部の装飾帯 */
+.uz-spine2__bandTop {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: .6;
+}
+
+/* 下部の装飾帯 */
+.uz-spine2__bandBottom {
+  position: absolute; bottom: 18px; left: 0; right: 0; height: 2px;
+  opacity: .4;
+}
+
+/* テキスト — 箔押し風 */
 .uz-spine2__text {
-  position: absolute; inset: 6px 3px 6px 3px;
+  position: absolute; top: 8px; left: 2px; right: 2px; bottom: 22px;
   writing-mode: vertical-rl; text-orientation: mixed;
-  display: flex; gap: 4px; align-items: center; justify-content: space-between;
+  display: flex; gap: 3px; align-items: center; justify-content: flex-start;
   overflow: hidden;
 }
 .uz-spine2__title {
-  font-size: 7px; letter-spacing: .04em; font-weight: 600;
-  color: rgba(255,255,255,.92);
-  text-shadow: 0 1px 3px rgba(0,0,0,.4);
-  line-height: 1.2; max-height: 100%; overflow: hidden;
+  font-size: 7.5px; letter-spacing: .06em; font-weight: 700;
+  text-shadow:
+    0 0 1px rgba(0,0,0,.6),
+    0 1px 2px rgba(0,0,0,.5);
+  line-height: 1.25; max-height: 100%; overflow: hidden;
+  /* embossed effect */
+  filter: drop-shadow(0 0.5px 0 rgba(255,255,255,.15));
 }
 .uz-spine2__author {
-  font-size: 5px; color: rgba(255,255,255,.6);
-  max-height: 60%; overflow: hidden;
+  font-size: 5.5px; color: rgba(255,255,255,.55);
+  letter-spacing: .02em; font-weight: 400;
+  max-height: 45%; overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
 }
 
-/* 端のエッジライト */
+/* 出版社マーク（底部） */
+.uz-spine2__pub {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 10px; height: 10px;
+  border: 1px solid; border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .5;
+}
+.uz-spine2__pub span {
+  font-size: 5px; font-weight: 800;
+  line-height: 1;
+}
+
+/* 端のエッジライト — 本の丸み */
 .uz-spine2__edge {
   position: absolute; top: 0; right: 0; bottom: 0; width: 3px;
-  background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(0,0,0,.2));
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.18) 0%,
+    rgba(255,255,255,.06) 30%,
+    rgba(0,0,0,.1) 70%,
+    rgba(0,0,0,.2) 100%
+  );
   border-radius: 0 2px 2px 0;
 }
 
-/* 光沢 */
+/* 光沢 — 微妙な反射 */
 .uz-spine2__gloss {
   position: absolute; inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255,255,255,.12) 0%,
-    transparent 25%,
-    transparent 80%,
-    rgba(0,0,0,.08) 100%
+    rgba(255,255,255,.14) 0%,
+    rgba(255,255,255,.04) 15%,
+    transparent 40%,
+    transparent 85%,
+    rgba(0,0,0,.1) 100%
   );
   pointer-events: none;
 }
 
+/* === バリエーション（5種） === */
+/* v0: デフォルト（帯+マーク） */
+.uz-spine2--v0 .uz-spine2__bandTop { height: 3px; }
+
+/* v1: 上下に太帯 */
+.uz-spine2--v1 .uz-spine2__bandTop { height: 5px; opacity: .5; }
+.uz-spine2--v1 .uz-spine2__bandBottom { height: 4px; opacity: .35; }
+
+/* v2: 帯なし、テキスト中央 */
+.uz-spine2--v2 .uz-spine2__bandTop { display: none; }
+.uz-spine2--v2 .uz-spine2__bandBottom { display: none; }
+.uz-spine2--v2 .uz-spine2__text { justify-content: center; top: 6px; bottom: 18px; }
+
+/* v3: 上に細線2本 */
+.uz-spine2--v3 .uz-spine2__bandTop {
+  height: 1px; top: 4px;
+  box-shadow: 0 3px 0 currentColor;
+  opacity: .35;
+}
+.uz-spine2--v3 .uz-spine2__text { top: 14px; }
+
+/* v4: 全面帯（背表紙全体に淡い色） */
+.uz-spine2--v4 .uz-spine2__bandTop {
+  top: 0; bottom: 0; height: auto;
+  opacity: .08;
+}
+.uz-spine2--v4 .uz-spine2__bandBottom { display: none; }
+.uz-spine2--v4 .uz-spine2__pub { opacity: .7; }
+
 .uz-spine2--disc .uz-spine2__body { border-radius: 4px; }
+.uz-spine2--disc .uz-spine2__bandTop,
+.uz-spine2--disc .uz-spine2__bandBottom,
+.uz-spine2--disc .uz-spine2__pub { display: none; }
 
 /* ============================================================
    ハイライト

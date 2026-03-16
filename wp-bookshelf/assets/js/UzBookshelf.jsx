@@ -176,24 +176,50 @@ const BookFace = React.memo(({ item, isHighlighted, isFav, onClick, onMouseEnter
 // ============================================================
 // 背表紙コンポーネント — リアルな質感（親の外に定義して再マウント防止）
 // ============================================================
+
+// 背表紙の装飾パターンを生成（本ごとにユニーク）
+function spineDecor(title) {
+  const h = stableHash(title);
+  const variant = h % 5; // 5種類のデザインバリエーション
+  const c = spineColorFromTitle(title);
+  const accent = `hsl(${(c.h + 30) % 360} ${c.s + 10}% ${c.l + 20}%)`;
+  const gold = `hsl(${40 + (h % 20)} ${50 + (h % 20)}% ${55 + (h % 15)}%)`;
+  return { variant, accent, gold };
+}
+
 const BookSpine = React.memo(({ item, isHighlighted, onClick, onMouseEnter, onMouseLeave }) => {
   const dim = getBookDimensions(item);
   const isDisc = dim.format === 'disc' || dim.format === 'poster';
   const thickness = isDisc ? 8 : dim.thickness;
+  const decor = spineDecor(item.fullTitle || item.title);
+  const title = item.fullTitle || item.title || '';
+  const author = item.fullAuthor || item.author || '';
+
+  // Determine max chars based on spine height
+  const maxTitleChars = Math.floor(dim.height / 10);
+  const maxAuthorChars = Math.floor(dim.height / 16);
 
   return (
     <a
-      className={`uz-spine2 ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-spine2--disc' : ''}`}
+      className={`uz-spine2 uz-spine2--v${decor.variant} ${isHighlighted ? 'uz-highlight' : ''} ${isDisc ? 'uz-spine2--disc' : ''}`}
       href="#" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
       style={{ width: thickness, height: dim.height }}
     >
-      <div className="uz-spine2__body" style={{ background: spineGradient(item.fullTitle || item.title) }}>
+      <div className="uz-spine2__body" style={{ background: spineGradient(title) }}>
         <div className="uz-spine2__texture" />
+        {/* Top band */}
+        <div className="uz-spine2__bandTop" style={{ background: decor.gold }} />
         <div className="uz-spine2__text">
-          <span className="uz-spine2__title">{truncate(item.fullTitle || item.title, 16)}</span>
-          {(item.author || item.fullAuthor) && (
-            <span className="uz-spine2__author">{truncate(item.fullAuthor || item.author, 10)}</span>
+          <span className="uz-spine2__title" style={{ color: decor.gold }}>{truncate(title, maxTitleChars)}</span>
+          {author && (
+            <span className="uz-spine2__author">{truncate(author, maxAuthorChars)}</span>
           )}
+        </div>
+        {/* Bottom band */}
+        <div className="uz-spine2__bandBottom" style={{ background: decor.gold }} />
+        {/* Publisher mark */}
+        <div className="uz-spine2__pub" style={{ borderColor: decor.gold }}>
+          <span style={{ color: decor.gold }}>{(author || title).charAt(0)}</span>
         </div>
         <div className="uz-spine2__edge" />
         <div className="uz-spine2__gloss" />
@@ -320,7 +346,7 @@ function UzBookshelf() {
     return rakutenData.map(s => {
       const books = s.books.slice(0, 30).map(b => ({
         ...b,
-        type: b.coverUrl ? 'featured' : 'spine',
+        type: b.type || (b.coverUrl ? 'featured' : 'spine'),
       }));
       return { ...s, mixedBooks: books };
     });
@@ -330,13 +356,24 @@ function UzBookshelf() {
     if (!uzData) return [];
     return uzData.shelves.filter(s => s.items.length > 0).map(s => {
       const isFilm = s.id === 'film';
-      const items = s.items.map((item) => ({
-        ...item,
-        type: item.coverUrl ? 'featured' : 'spine',
-        source: 'uz',
-        shelfId: s.id,
-        format: isFilm ? 'poster' : (item.format || detectFormat(item.fullTitle || item.title)),
-      }));
+      const items = s.items.map((item) => {
+        // Respect the type field from DB: 'spine' stays spine even with cover
+        // 'featured' or 'product' with cover → face display
+        // No cover → always spine
+        let displayType = item.type || 'product';
+        if (displayType === 'spine') {
+          displayType = 'spine';
+        } else {
+          displayType = item.coverUrl ? 'featured' : 'spine';
+        }
+        return {
+          ...item,
+          type: displayType,
+          source: 'uz',
+          shelfId: s.id,
+          format: isFilm ? 'poster' : (item.format || detectFormat(item.fullTitle || item.title)),
+        };
+      });
       return { ...s, mixedItems: items };
     });
   }, [uzData]);
@@ -431,9 +468,13 @@ function UzBookshelf() {
     uzData.shelves.forEach(s => {
       s.items.forEach(item => {
         if (item.articleId === articleId) {
+          let displayType = item.type || 'product';
+          if (displayType !== 'spine') {
+            displayType = item.coverUrl ? 'featured' : 'spine';
+          }
           books.push({
             ...item,
-            type: item.coverUrl ? 'featured' : 'spine',
+            type: displayType,
             source: 'uz',
             shelfId: s.id,
             format: s.id === 'film' ? 'poster' : (item.format || detectFormat(item.fullTitle || item.title)),
