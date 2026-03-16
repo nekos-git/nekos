@@ -121,16 +121,23 @@ class UZ_Bookshelf_Shortcode {
             $version
         );
 
-        // Bookshelf JSX - loaded as text/babel for Babel transpilation
-        // We use a custom approach since wp_enqueue_script sets type="text/javascript"
-        add_action( 'wp_footer', array( $this, 'output_jsx_script' ), 20 );
+        // Output config as inline script before JSX
+        add_action( 'wp_footer', array( $this, 'output_config_script' ), 18 );
 
-        // Pass config to JS
-        wp_localize_script( 'react-dom', 'uzBookshelfConfig', array(
-            'apiBase'  => esc_url_raw( rest_url( 'uz-bookshelf/v1' ) ),
-            'nonce'    => wp_create_nonce( 'wp_rest' ),
+        // Bookshelf JSX - loaded as text/babel for Babel transpilation
+        add_action( 'wp_footer', array( $this, 'output_jsx_script' ), 20 );
+    }
+
+    /**
+     * Output the config as an inline script (before Babel scripts)
+     */
+    public function output_config_script() {
+        $config = array(
+            'apiBase'    => esc_url_raw( rest_url( 'uz-bookshelf/v1' ) ),
+            'nonce'      => wp_create_nonce( 'wp_rest' ),
             'coversBase' => $this->plugin_url . 'assets/covers/',
-        ) );
+        );
+        echo '<script>var uzBookshelfConfig = ' . wp_json_encode( $config ) . ';</script>' . "\n";
     }
 
     /**
@@ -140,11 +147,11 @@ class UZ_Bookshelf_Shortcode {
     public function output_jsx_script() {
         $jsx_url = $this->plugin_url . 'assets/js/UzBookshelf.jsx';
         $version = UZ_BOOKSHELF_VERSION;
-        echo '<script type="text/babel" src="' . esc_url( $jsx_url ) . '?ver=' . esc_attr( $version ) . '"></script>' . "\n";
+        echo '<script type="text/babel" data-type="module" src="' . esc_url( $jsx_url ) . '?ver=' . esc_attr( $version ) . '"></script>' . "\n";
 
         // Initialize: find all containers and mount React
         ?>
-        <script type="text/babel">
+        <script type="text/babel" data-type="module">
         (function() {
             const containers = document.querySelectorAll('.uz-bookshelf-container');
             containers.forEach(container => {
@@ -156,6 +163,19 @@ class UZ_Bookshelf_Shortcode {
                 root.render(<UzBookshelf {...props} />);
             });
         })();
+        </script>
+        <script>
+        // Babel standalone may have already run; re-process any unprocessed text/babel scripts
+        if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
+            Babel.transformScriptTags();
+        } else {
+            // Babel not yet loaded; wait for it
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
+                    Babel.transformScriptTags();
+                }
+            });
+        }
         </script>
         <?php
     }
