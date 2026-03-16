@@ -173,6 +173,12 @@ class UZ_Bookshelf_DB {
         if ( version_compare( $installed_version, self::DB_VERSION, '<' ) ) {
             $this->create_tables();
         }
+
+        // Auto-load sample data if tables exist but are empty
+        // (handles DB volume reset while WP still considers plugin active)
+        if ( $this->is_empty() ) {
+            $this->load_sample_data( true );
+        }
     }
 
     // =========================================================================
