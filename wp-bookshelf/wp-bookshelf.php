@@ -236,6 +236,7 @@ final class UZ_Bookshelf_Plugin {
 
             // Assign to matching articles by slug
             foreach ( $theme['articles'] as $article_slug ) {
+                // First try posts with _uz_article meta
                 $posts = get_posts( array(
                     'post_type'   => 'post',
                     'name'        => $article_slug,
@@ -244,6 +245,19 @@ final class UZ_Bookshelf_Plugin {
                     'meta_key'    => '_uz_article',
                     'meta_value'  => '1',
                 ) );
+                // Fallback: any post with matching slug
+                if ( empty( $posts ) ) {
+                    $posts = get_posts( array(
+                        'post_type'   => 'post',
+                        'name'        => $article_slug,
+                        'post_status' => array( 'publish', 'draft', 'private' ),
+                        'numberposts' => 1,
+                    ) );
+                    // Set _uz_article meta for matched post
+                    if ( ! empty( $posts ) ) {
+                        update_post_meta( $posts[0]->ID, '_uz_article', '1' );
+                    }
+                }
                 if ( ! empty( $posts ) ) {
                     wp_set_object_terms( $posts[0]->ID, $term_id, 'critique_theme', true );
                 }

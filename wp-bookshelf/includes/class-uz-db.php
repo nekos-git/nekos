@@ -708,11 +708,20 @@ class UZ_Bookshelf_DB {
                 $cats = array();
             }
 
+            $themes = array();
+            if ( ! empty( $a['post_id'] ) && taxonomy_exists( 'critique_theme' ) ) {
+                $theme_terms = wp_get_object_terms( $a['post_id'], 'critique_theme', array( 'fields' => 'slugs' ) );
+                if ( is_array( $theme_terms ) ) {
+                    $themes = $theme_terms;
+                }
+            }
+
             $result_articles[] = array(
                 'id'           => $a['id'],
                 'title'        => $a['title'],
                 'date'         => $a['date'] ?: '',
                 'categories'   => $cats,
+                'themes'       => $themes,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
                 'url'          => $a['url'] ?: '',

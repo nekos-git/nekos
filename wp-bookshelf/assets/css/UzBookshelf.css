@@ -602,6 +602,9 @@
 .uz-searchInput::placeholder { color: var(--muted); }
 
 .uz-shelfFilter { display: flex; gap: 6px; flex-wrap: wrap; }
+.uz-themeFilter { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+.uz-filterBtn--theme { font-size: 11px; padding: 3px 10px; }
+.uz-filterBtn--theme.active { background: var(--accent2); border-color: var(--accent2); }
 .uz-filterBtn {
   background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.12);
   color: var(--muted); padding: 4px 12px; border-radius: 14px;

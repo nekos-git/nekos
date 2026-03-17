@@ -256,6 +256,7 @@ function UzBookshelf() {
   var _showFavorites = useState(false); var showFavorites = _showFavorites[0]; var setShowFavorites = _showFavorites[1];
   var _selectedArticle = useState(null); var selectedArticle = _selectedArticle[0]; var setSelectedArticle = _selectedArticle[1];
   var _activeCategory = useState(null); var activeCategory = _activeCategory[0]; var setActiveCategory = _activeCategory[1];
+  var _activeTheme = useState(null); var activeTheme = _activeTheme[0]; var setActiveTheme = _activeTheme[1];
   var _filterByArticle = useState(null); var filterByArticle = _filterByArticle[0]; var setFilterByArticle = _filterByArticle[1];
 
   useEffect(function() { saveFavorites(favorites); }, [favorites]);
@@ -399,8 +400,9 @@ function UzBookshelf() {
     }
     if (activeShelf && activeShelf !== 'all') articles = articles.filter(function(a) { return a.shelf === activeShelf; });
     if (activeCategory) articles = articles.filter(function(a) { return a.categories && a.categories.includes(activeCategory); });
+    if (activeTheme) articles = articles.filter(function(a) { return a.themes && a.themes.includes(activeTheme); });
     return articles;
-  }, [uzData, searchQuery, activeShelf, activeCategory]);
+  }, [uzData, searchQuery, activeShelf, activeCategory, activeTheme]);
 
   var allCategories = useMemo(function() {
     if (!uzData) return [];
@@ -408,6 +410,27 @@ function UzBookshelf() {
     uzData.articles.forEach(function(a) { (a.categories || []).forEach(function(c) { if (c) cats.add(c); }); });
     return Array.from(cats).sort();
   }, [uzData]);
+
+  var allThemes = useMemo(function() {
+    if (!uzData) return [];
+    var themeMap = {};
+    uzData.articles.forEach(function(a) {
+      (a.themes || []).forEach(function(t) {
+        if (t) themeMap[t] = (themeMap[t] || 0) + 1;
+      });
+    });
+    return Object.keys(themeMap).sort(function(a, b) { return themeMap[b] - themeMap[a]; });
+  }, [uzData]);
+
+  // テーマ名のマッピング（slug -> 日本語名）
+  var _themeNames = useState({}); var themeNames = _themeNames[0]; var setThemeNames = _themeNames[1];
+  useEffect(function() {
+    uzFetch('/themes').then(function(themes) {
+      var map = {};
+      themes.forEach(function(t) { map[t.slug] = t.name; });
+      setThemeNames(map);
+    }).catch(function() {});
+  }, []);
 
   // --- 棚ナビゲーション ---
   var allShelves = useMemo(function() {
@@ -669,12 +692,13 @@ function UzBookshelf() {
     });
     headChildren.push(h('div', { key: 'sf', className: 'uz-shelfFilter' }, shelfFilterBtns));
 
-    if (allCategories.length > 0) {
-      var catBtns = [h('button', { key: 'all', className: 'uz-filterBtn' + (!activeCategory ? ' active' : ''), onClick: function() { setActiveCategory(null); } }, '全カテゴリ')];
-      allCategories.forEach(function(c) {
-        catBtns.push(h('button', { key: c, className: 'uz-filterBtn' + (activeCategory === c ? ' active' : ''), onClick: function() { setActiveCategory(c); } }, c));
+    if (allThemes.length > 0) {
+      var themeBtns = [h('button', { key: 'all', className: 'uz-filterBtn uz-filterBtn--theme' + (!activeTheme ? ' active' : ''), onClick: function() { setActiveTheme(null); } }, '全テーマ')];
+      allThemes.forEach(function(t) {
+        var label = themeNames[t] || t;
+        themeBtns.push(h('button', { key: t, className: 'uz-filterBtn uz-filterBtn--theme' + (activeTheme === t ? ' active' : ''), onClick: function() { setActiveTheme(t); } }, label));
       });
-      headChildren.push(h('div', { key: 'cf', className: 'uz-categoryFilter' }, catBtns));
+      headChildren.push(h('div', { key: 'tf', className: 'uz-themeFilter' }, themeBtns));
     }
     artPanelChildren.push(h('div', { key: 'head', className: 'uz-articlesPanelHead' }, headChildren));
 
