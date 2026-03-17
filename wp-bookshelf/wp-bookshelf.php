@@ -92,6 +92,9 @@ final class UZ_Bookshelf_Plugin {
         register_activation_hook( UZ_BOOKSHELF_FILE, array( $this, 'activate' ) );
         register_deactivation_hook( UZ_BOOKSHELF_FILE, array( $this, 'deactivate' ) );
 
+        // Register custom taxonomy
+        add_action( 'init', array( $this, 'register_taxonomies' ) );
+
         // REST API routes
         add_action( 'rest_api_init', array( $this->api, 'register_routes' ) );
 
@@ -119,10 +122,37 @@ final class UZ_Bookshelf_Plugin {
     }
 
     /**
+     * Register critique_theme taxonomy for cross-genre article discovery
+     */
+    public function register_taxonomies() {
+        register_taxonomy( 'critique_theme', 'post', array(
+            'labels' => array(
+                'name'              => '批評テーマ',
+                'singular_name'     => '批評テーマ',
+                'search_items'      => '批評テーマを検索',
+                'all_items'         => 'すべての批評テーマ',
+                'edit_item'         => '批評テーマを編集',
+                'update_item'       => '批評テーマを更新',
+                'add_new_item'      => '新しい批評テーマを追加',
+                'new_item_name'     => '新しい批評テーマ名',
+                'menu_name'         => '批評テーマ',
+            ),
+            'public'            => true,
+            'hierarchical'      => false,
+            'show_in_rest'      => true,
+            'show_admin_column' => true,
+            'rewrite'           => array( 'slug' => 'theme' ),
+        ) );
+    }
+
+    /**
      * Plugin activation
      */
     public function activate() {
         $this->db->maybe_upgrade();
+
+        // Register taxonomy before seeding
+        $this->register_taxonomies();
 
         // Auto-import articles if no bookshelf posts exist
         $existing = get_posts( array(
@@ -134,6 +164,11 @@ final class UZ_Bookshelf_Plugin {
         if ( empty( $existing ) ) {
             $this->import_articles_on_activate();
         }
+
+        // Seed critique themes if none exist
+        $this->seed_critique_themes();
+
+        flush_rewrite_rules();
     }
 
     /**
@@ -163,10 +198,64 @@ final class UZ_Bookshelf_Plugin {
     }
 
     /**
+     * Seed critique themes from bundled JSON data.
+     * Creates taxonomy terms and assigns them to matching articles.
+     */
+    public function seed_critique_themes() {
+        $theme_file = UZ_BOOKSHELF_PATH . 'data/critique-themes.json';
+        if ( ! file_exists( $theme_file ) ) {
+            return;
+        }
+
+        $data = json_decode( file_get_contents( $theme_file ), true );
+        if ( empty( $data['themes'] ) ) {
+            return;
+        }
+
+        // Skip if themes already seeded
+        $existing = get_terms( array(
+            'taxonomy'   => 'critique_theme',
+            'hide_empty' => false,
+            'number'     => 1,
+        ) );
+        if ( ! empty( $existing ) && ! is_wp_error( $existing ) ) {
+            return;
+        }
+
+        foreach ( $data['themes'] as $theme ) {
+            $term = wp_insert_term( $theme['name'], 'critique_theme', array(
+                'slug'        => $theme['slug'],
+                'description' => $theme['description'],
+            ) );
+
+            if ( is_wp_error( $term ) ) {
+                continue;
+            }
+
+            $term_id = $term['term_id'];
+
+            // Assign to matching articles by slug
+            foreach ( $theme['articles'] as $article_slug ) {
+                $posts = get_posts( array(
+                    'post_type'   => 'post',
+                    'name'        => $article_slug,
+                    'post_status' => array( 'publish', 'draft', 'private' ),
+                    'numberposts' => 1,
+                    'meta_key'    => '_uz_article',
+                    'meta_value'  => '1',
+                ) );
+                if ( ! empty( $posts ) ) {
+                    wp_set_object_terms( $posts[0]->ID, $term_id, 'critique_theme', true );
+                }
+            }
+        }
+    }
+
+    /**
      * Plugin deactivation
      */
     public function deactivate() {
-        // Nothing to clean up
+        flush_rewrite_rules();
     }
 }
 

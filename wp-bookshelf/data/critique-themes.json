@@ -1,0 +1,348 @@
+{
+  "themes": [
+    {
+      "name": "言語と世界構築",
+      "slug": "language-and-world-building",
+      "description": "言語が現実を生成・運搬・書き換える力を持つという認識と、物語・フィクションが真実に到達する機能を問う。",
+      "articles": [
+        "1q84",
+        "fiction-reality-truth-why-stories-born",
+        "endoftheworld-and-city",
+        "taiwa-souzou-ai-writing",
+        "murakami-origin",
+        "typing-or-writing",
+        "umibe-no-kafka-ajiwau-1",
+        "tokyo-kitansyu-murakami-haruki-2",
+        "murakami-haruki-sotsugyou",
+        "writing-device",
+        "kimi-tachi-wa-douikiruka",
+        "david-lynch",
+        "jinsei-kaeru-8-mahousyo",
+        "jinseikan-kaeru-8-manga"
+      ]
+    },
+    {
+      "name": "AIと人間の境界",
+      "slug": "ai-and-human-boundary",
+      "description": "生成AI・人工知能の登場が人間の自我・創造性・存在意義をどう揺るがすかを探る。",
+      "articles": [
+        "1q84",
+        "ghost-in-the-shell",
+        "eva-jinruihokankeikaku",
+        "ai-jidai-movie-5",
+        "ai-robot-movie",
+        "taiwa-souzou-ai-writing",
+        "claude45-chatgpt5-hikaku",
+        "suno-ai",
+        "sora2-imageshare",
+        "the-3rd-wave",
+        "2025-it-kakumei",
+        "know-nozaki-mado",
+        "itou-keikaku-harmony",
+        "macos-miryoku1-terminal"
+      ]
+    },
+    {
+      "name": "監視・管理と自由",
+      "slug": "surveillance-control-and-freedom",
+      "description": "管理社会・全体主義・ディストピア的秩序に対して個人の自由と意識がいかに抵抗しうるかを問う。",
+      "articles": [
+        "dystopian-food",
+        "itou-keikaku-harmony",
+        "ghost-in-the-shell",
+        "eva-jinruihokankeikaku",
+        "2026-03-16-205312",
+        "miyazaki-hayao-nausicaa",
+        "shinjitsu-ayahuya-movie-5",
+        "the-3rd-wave",
+        "2025-it-kakumei",
+        "christopher-nolan-best5"
+      ]
+    },
+    {
+      "name": "喪失と不在の手触り",
+      "slug": "loss-and-absence",
+      "description": "取り返しのつかない喪失、不可逆な別れ、記憶の中の不在が人間をどう形成するかを描く。",
+      "articles": [
+        "murakami-haruki-sotsugyou",
+        "endoftheworld-and-city",
+        "murakami-and-pauro",
+        "murakamiharuki-the-best-5",
+        "sousou-no-frieren-nijyusei",
+        "fishmans-longseason",
+        "wong-kar-wai",
+        "before-love3",
+        "inside-head-inside-out",
+        "new-yars-eve",
+        "gogh-the-last-letter",
+        "sakamoto-ryuichi-seijyaku",
+        "sakanaction-iranai",
+        "mikan-nana-subaru",
+        "koi-yoru-movie-5",
+        "umibe-no-kafka-ajiwau-1",
+        "tokyo-kitansyu-murakami-haruki-2",
+        "ryutosobakasunohime"
+      ]
+    },
+    {
+      "name": "身体性と実存",
+      "slug": "body-and-existence",
+      "description": "身体の痛み・病・脆弱さを通じて存在の根拠を問い、テクノロジーによる身体の拡張や喪失を考察する。",
+      "articles": [
+        "kawakami-mieko-itami",
+        "mieko-kawakami",
+        "ai-robot-movie",
+        "apple-product",
+        "apple-watch-se-preview",
+        "apple-watch-se-preview2",
+        "typing-or-writing",
+        "reading-paper-or-device",
+        "writing-device",
+        "macbook-neo-hoshii-iphone-chip",
+        "murakami-ryu-nagureru-jidai"
+      ]
+    },
+    {
+      "name": "権力の構造と「悪」の生成",
+      "slug": "power-structure-and-evil",
+      "description": "権力がいかに「善悪」のラベルを作り出し、個人を体系的に抑圧するかという構造的暴力の問題。",
+      "articles": [
+        "2026-03-16-205312",
+        "2026-shinshun-movie",
+        "bananafish-gensaku",
+        "chainsawman-shihonsyugi",
+        "kusuriyanohitorigoto",
+        "kawakami-mieko-itami",
+        "mieko-kawakami",
+        "zootopia",
+        "zootopia-saihou",
+        "senkou-hathaway-kirkes-witch-new-type",
+        "kiriya-kazuaki",
+        "kiriya-kazuaki-goemon-sekainoowarikara",
+        "shinjitsu-ayahuya-movie-5",
+        "zetsubou-kibou-movie-6"
+      ]
+    },
+    {
+      "name": "暴力の連鎖と断絶",
+      "slug": "cycle-of-violence",
+      "description": "暴力がいかに世代や社会を貫いて連鎖し、その連鎖をいかに断ち切りうるかを問う。",
+      "articles": [
+        "endless-scarlet",
+        "akira-naruto-jyujyutsu",
+        "bananafish-gensaku",
+        "murakami-ryu-nagureru-jidai",
+        "arai-hideki-the-world-is-mine-2025-kuma",
+        "centuria-kibou-zetsubou",
+        "darkfantasy-2",
+        "ryutosobakasunohime",
+        "hosodamamoru",
+        "hosodamamoru-hatan-kagayaki"
+      ]
+    },
+    {
+      "name": "時間の多層性",
+      "slug": "layers-of-time",
+      "description": "時間の逆行・円環・停止・遅延など、線形でない時間認識が作品と人間存在にもたらす意味を探る。",
+      "articles": [
+        "christopher-nolan-best5",
+        "sousou-no-frieren-nijyusei",
+        "fishmans-longseason",
+        "wong-kar-wai",
+        "before-love3",
+        "tezuka-osamu-fujiko-f-fujio-souzouryoku",
+        "mikan-nana-subaru",
+        "endoftheworld-and-city",
+        "new-yars-eve",
+        "kimi-tachi-wa-douikiruka",
+        "unnamed-memory"
+      ]
+    },
+    {
+      "name": "個と全体の相克",
+      "slug": "individual-vs-collective",
+      "description": "集団・社会・ネットワークの中で「個」としての自我をいかに保つか、あるいはその溶解をどう引き受けるか。",
+      "articles": [
+        "eva-jinruihokankeikaku",
+        "ghost-in-the-shell",
+        "itou-keikaku-harmony",
+        "seisyunbutayarou",
+        "sakanaction-kodoku",
+        "chainsawman-shihonsyugi",
+        "senkou-hathaway-kirkes-witch-new-type",
+        "2026-shinshun-movie",
+        "kimi-tachi-wa-douikiruka",
+        "know-nozaki-mado",
+        "john-lennon-ongaku-keizai-mujun",
+        "zootopia",
+        "zootopia-saihou",
+        "eva-gundam-saihakken",
+        "jump-plus-next"
+      ]
+    },
+    {
+      "name": "創造と狂気の代償",
+      "slug": "creation-and-madness",
+      "description": "芸術的創造が要求する犠牲、天才の孤絶、表現衝動と自己破壊の表裏一体の関係を問う。",
+      "articles": [
+        "gogh-the-last-letter",
+        "mikan-nana-subaru",
+        "hosodamamoru",
+        "hosodamamoru-hatan-kagayaki",
+        "session-nuovo-cinema-paradiso",
+        "know-nozaki-mado",
+        "ongakumanga-best-5",
+        "like-a-music-movie-5",
+        "david-lynch",
+        "francis-ford-coppola-megalopolis",
+        "radwimps-noda-youjirou-sakushi-sekai",
+        "john-lennon-ongaku-keizai-mujun",
+        "christopher-nolan-best5"
+      ]
+    },
+    {
+      "name": "ユートピアの不可能性",
+      "slug": "impossible-utopia",
+      "description": "理想社会の構想が必然的に孕む矛盾と暴力性、および既存の論理の「外側」に未来を描く試み。",
+      "articles": [
+        "francis-ford-coppola-megalopolis",
+        "itou-keikaku-harmony",
+        "dystopian-food",
+        "miyazaki-hayao-nausicaa",
+        "2026-03-16-205312",
+        "kiriya-kazuaki",
+        "kiriya-kazuaki-goemon-sekainoowarikara",
+        "steve-jobs-future-apple"
+      ]
+    },
+    {
+      "name": "継承と遡及的再発見",
+      "slug": "inheritance-and-rediscovery",
+      "description": "後続の作品や批評が先行作品の意味を遡及的に更新し、文化的価値が世代を超えて継承・変容する力学。",
+      "articles": [
+        "eva-gundam-saihakken",
+        "akira-naruto-jyujyutsu",
+        "murakami-origin",
+        "jump-plus-next",
+        "tezuka-osamu-fujiko-f-fujio-souzouryoku",
+        "bananafish-gensaku",
+        "oasis-live-forever",
+        "radiohead-best-5",
+        "hosodamamoru",
+        "hosodamamoru-hatan-kagayaki",
+        "kusuriyanohitorigoto"
+      ]
+    },
+    {
+      "name": "自然と人間の境界崩壊",
+      "slug": "nature-human-boundary",
+      "description": "自然が管理不能な力として人間社会に侵入する事態、および人工と自然の区別が崩れる世界を描く。",
+      "articles": [
+        "arai-hideki-the-world-is-mine-2025-kuma",
+        "miyazaki-hayao-nausicaa",
+        "unnamed-memory",
+        "pauro-witch"
+      ]
+    },
+    {
+      "name": "テクノロジーと道具の思想",
+      "slug": "technology-as-philosophy",
+      "description": "デバイス・ソフトウェア・メディアの設計思想が人間の思考・創作・生活をどう規定するかを問う。",
+      "articles": [
+        "apple-product",
+        "apple-watch-se-preview",
+        "apple-watch-se-preview2",
+        "mac-or-win-2025",
+        "macbook-neo-hoshii-iphone-chip",
+        "macos-miryoku1-terminal",
+        "steve-jobs-future-apple",
+        "writing-device",
+        "typing-or-writing",
+        "reading-paper-or-device",
+        "suno-ai",
+        "sora2-imageshare",
+        "claude45-chatgpt5-hikaku"
+      ]
+    },
+    {
+      "name": "物語が現実を予見する",
+      "slug": "fiction-predicts-reality",
+      "description": "フィクションが未来の社会現象を先取りし、現実がやがて物語に追いつくという予見的機能の考察。",
+      "articles": [
+        "arai-hideki-the-world-is-mine-2025-kuma",
+        "ai-jidai-movie-5",
+        "ghost-in-the-shell",
+        "eva-jinruihokankeikaku",
+        "akira-naruto-jyujyutsu",
+        "the-3rd-wave",
+        "fiction-reality-truth-why-stories-born",
+        "singularity-jon-hopkins",
+        "dystopian-food",
+        "unnamed-memory"
+      ]
+    },
+    {
+      "name": "絶望の中の希望",
+      "slug": "hope-within-despair",
+      "description": "絶望的状況の中で人間がなお希望を見出す契機、および光と闇が表裏一体である構造を探る。",
+      "articles": [
+        "murakami-and-pauro",
+        "pauro-witch",
+        "centuria-kibou-zetsubou",
+        "darkfantasy-2",
+        "zetsubou-kibou-movie-6",
+        "kiriya-kazuaki",
+        "kiriya-kazuaki-goemon-sekainoowarikara",
+        "endless-scarlet",
+        "jinsei-kaeru-8-mahousyo",
+        "jinseikan-kaeru-8-manga",
+        "apple-product",
+        "underrated-masterpiece",
+        "underrated-masterpiece-movie-4",
+        "murakamiharuki-the-best-5"
+      ]
+    },
+    {
+      "name": "音楽と意識の変容",
+      "slug": "music-and-consciousness",
+      "description": "音楽が人間の意識・時間感覚・感情を変容させ、言語では到達できない領域に触れる力を考察する。",
+      "articles": [
+        "fishmans-longseason",
+        "sakamoto-ryuichi-seijyaku",
+        "radiohead-best-5",
+        "singularity-jon-hopkins",
+        "oasis-live-forever",
+        "sakanaction-iranai",
+        "sakanaction-kodoku",
+        "radwimps-noda-youjirou-sakushi-sekai",
+        "utadahikaru-6",
+        "john-lennon-ongaku-keizai-mujun",
+        "ongakumanga-best-5",
+        "like-a-music-movie-5",
+        "david-lynch"
+      ]
+    },
+    {
+      "name": "愛と他者への接近",
+      "slug": "love-and-otherness",
+      "description": "恋愛・友情・師弟関係を通じて他者に近づくことの困難さと、それでもなお他者を求める人間の条件。",
+      "articles": [
+        "before-love3",
+        "koi-yoru-movie-5",
+        "wong-kar-wai",
+        "session-nuovo-cinema-paradiso",
+        "murakami-and-pauro",
+        "utadahikaru-6",
+        "ryutosobakasunohime",
+        "seisyunbutayarou",
+        "sakanaction-iranai",
+        "new-yars-eve",
+        "centuria-kibou-zetsubou",
+        "akira-naruto-jyujyutsu",
+        "inside-head-inside-out",
+        "underrated-masterpiece",
+        "underrated-masterpiece-movie-4"
+      ]
+    }
+  ]
+}

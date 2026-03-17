@@ -92,6 +92,33 @@ class UZ_Bookshelf_API {
             ),
         ) );
 
+        // GET /themes - All critique themes with article counts
+        register_rest_route( self::NAMESPACE, '/themes', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( $this, 'get_themes' ),
+            'permission_callback' => '__return_true',
+        ) );
+
+        // GET /themes/{slug} - Single theme with full article list
+        register_rest_route( self::NAMESPACE, '/themes/(?P<slug>[a-z0-9-]+)', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( $this, 'get_theme' ),
+            'permission_callback' => '__return_true',
+            'args'                => array(
+                'slug' => array(
+                    'required'          => true,
+                    'sanitize_callback' => 'sanitize_title',
+                ),
+            ),
+        ) );
+
+        // POST /seed-themes - Re-seed critique themes (admin)
+        register_rest_route( self::NAMESPACE, '/seed-themes', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'seed_themes' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
         // GET /stats - Dashboard statistics
         register_rest_route( self::NAMESPACE, '/stats', array(
             'methods'             => WP_REST_Server::READABLE,
@@ -221,11 +248,21 @@ class UZ_Bookshelf_API {
                 $cats = array();
             }
 
+            // Include critique themes if available
+            $themes = array();
+            if ( ! empty( $a['post_id'] ) ) {
+                $theme_terms = wp_get_object_terms( $a['post_id'], 'critique_theme', array( 'fields' => 'slugs' ) );
+                if ( is_array( $theme_terms ) ) {
+                    $themes = $theme_terms;
+                }
+            }
+
             $result[] = array(
                 'id'           => $a['id'],
                 'title'        => $a['title'],
                 'date'         => $a['date'] ?: '',
                 'categories'   => $cats,
+                'themes'       => $themes,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
                 'url'          => $a['url'] ?: '',  // Now WP permalink
@@ -405,6 +442,120 @@ class UZ_Bookshelf_API {
         }
 
         return rest_ensure_response( array( 'success' => true, 'updated' => $updated ) );
+    }
+
+    // =========================================================================
+    // Critique Themes
+    // =========================================================================
+
+    /**
+     * GET /themes - All critique themes with article counts and descriptions
+     */
+    public function get_themes( WP_REST_Request $request ) {
+        $terms = get_terms( array(
+            'taxonomy'   => 'critique_theme',
+            'hide_empty' => false,
+            'orderby'    => 'name',
+        ) );
+
+        if ( is_wp_error( $terms ) ) {
+            return rest_ensure_response( array() );
+        }
+
+        $result = array();
+        foreach ( $terms as $term ) {
+            $result[] = array(
+                'slug'         => $term->slug,
+                'name'         => $term->name,
+                'description'  => $term->description,
+                'articleCount' => (int) $term->count,
+            );
+        }
+
+        return rest_ensure_response( $result );
+    }
+
+    /**
+     * GET /themes/{slug} - Single theme with full article list
+     */
+    public function get_theme( WP_REST_Request $request ) {
+        $slug = $request->get_param( 'slug' );
+        $term = get_term_by( 'slug', $slug, 'critique_theme' );
+
+        if ( ! $term ) {
+            return new WP_Error(
+                'theme_not_found',
+                'Theme not found',
+                array( 'status' => 404 )
+            );
+        }
+
+        $posts = get_posts( array(
+            'post_type'   => 'post',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'tax_query'   => array(
+                array(
+                    'taxonomy' => 'critique_theme',
+                    'field'    => 'term_id',
+                    'terms'    => $term->term_id,
+                ),
+            ),
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
+        ) );
+
+        $articles = array();
+        foreach ( $posts as $post ) {
+            $themes = wp_get_object_terms( $post->ID, 'critique_theme', array( 'fields' => 'slugs' ) );
+            $articles[] = array(
+                'id'     => $post->post_name,
+                'title'  => $post->post_title,
+                'date'   => $post->post_date ? gmdate( 'Y-m-d', strtotime( $post->post_date ) ) : '',
+                'url'    => get_permalink( $post->ID ),
+                'themes' => is_array( $themes ) ? $themes : array(),
+            );
+        }
+
+        return rest_ensure_response( array(
+            'slug'         => $term->slug,
+            'name'         => $term->name,
+            'description'  => $term->description,
+            'articleCount' => count( $articles ),
+            'articles'     => $articles,
+        ) );
+    }
+
+    /**
+     * POST /seed-themes - Re-seed critique themes from bundled data (deletes existing first)
+     */
+    public function seed_themes( WP_REST_Request $request ) {
+        // Remove existing terms
+        $existing = get_terms( array(
+            'taxonomy'   => 'critique_theme',
+            'hide_empty' => false,
+            'fields'     => 'ids',
+        ) );
+        if ( ! is_wp_error( $existing ) ) {
+            foreach ( $existing as $term_id ) {
+                wp_delete_term( $term_id, 'critique_theme' );
+            }
+        }
+
+        // Re-seed
+        uz_bookshelf()->seed_critique_themes();
+
+        $terms = get_terms( array(
+            'taxonomy'   => 'critique_theme',
+            'hide_empty' => false,
+        ) );
+
+        $count = is_wp_error( $terms ) ? 0 : count( $terms );
+
+        return rest_ensure_response( array(
+            'success' => true,
+            'seeded'  => $count,
+        ) );
     }
 
     // =========================================================================

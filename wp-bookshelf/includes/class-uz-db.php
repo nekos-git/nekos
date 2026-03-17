@@ -922,10 +922,17 @@ class UZ_Bookshelf_DB {
              INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_uz_article' AND pm.meta_value = '1'
              WHERE p.post_type = 'post' AND p.post_status = 'publish'"
         );
+        $theme_count = 0;
+        if ( taxonomy_exists( 'critique_theme' ) ) {
+            $themes = get_terms( array( 'taxonomy' => 'critique_theme', 'hide_empty' => false, 'fields' => 'count' ) );
+            $theme_count = is_wp_error( $themes ) ? 0 : (int) $themes;
+        }
+
         return array(
             'shelves'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->shelves_table()}" ),
             'items'         => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'uz'" ),
             'articles'      => $article_count,
+            'themes'        => $theme_count,
             'rakuten_books' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'rakuten'" ),
         );
     }
