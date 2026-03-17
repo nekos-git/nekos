@@ -126,26 +126,17 @@ class UZ_Bookshelf_Shortcode {
             $version
         );
 
-        // Hide theme header/footer and remove layout constraints for fullscreen bookshelf
+        // Hide theme header/footer on bookshelf pages, widen content to site width
         wp_add_inline_style( 'uz-bookshelf', '
-            body:has(.uz-bookshelf-container) { margin: 0; padding: 0; }
             body:has(.uz-bookshelf-container) > header,
             body:has(.uz-bookshelf-container) > footer,
             body:has(.uz-bookshelf-container) .wp-site-blocks > header,
             body:has(.uz-bookshelf-container) .wp-site-blocks > footer,
             body:has(.uz-bookshelf-container) .site-header,
             body:has(.uz-bookshelf-container) .site-footer { display: none !important; }
-            body:has(.uz-bookshelf-container) .wp-site-blocks,
-            body:has(.uz-bookshelf-container) .wp-site-blocks > main,
-            body:has(.uz-bookshelf-container) .wp-site-blocks > main > .wp-block-group,
-            body:has(.uz-bookshelf-container) .entry-content,
-            body:has(.uz-bookshelf-container) .wp-block-post-content,
-            body:has(.uz-bookshelf-container) .wp-block-group {
-                max-width: none !important; padding: 0 !important; margin: 0 !important;
-            }
             body:has(.uz-bookshelf-container) .wp-block-post-title { display: none !important; }
             body:has(.uz-bookshelf-container) .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
-                max-width: none !important; margin-left: 0 !important; margin-right: 0 !important;
+                max-width: var(--wp--style--global--wide-size, 1340px) !important;
             }
         ' );
 

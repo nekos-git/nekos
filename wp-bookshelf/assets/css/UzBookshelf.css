@@ -41,7 +41,7 @@
   min-height: 100vh;
 }
 
-.uz-wrap { max-width: 100%; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
+.uz-wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
 
 /* ---- Header ---- */
 .uz-header {
