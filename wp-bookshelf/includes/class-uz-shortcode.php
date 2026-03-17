@@ -85,7 +85,8 @@ class UZ_Bookshelf_Shortcode {
         }
         $this->enqueued = true;
 
-        $version = UZ_BOOKSHELF_VERSION;
+        $js_file = UZ_BOOKSHELF_PATH . 'assets/js/UzBookshelf.js';
+        $version  = UZ_BOOKSHELF_VERSION . '.' . ( file_exists( $js_file ) ? filemtime( $js_file ) : '' );
 
         // React 18 — use WP bundled version (WP 6.5+), fallback to CDN for older WP
         if ( wp_script_is( 'react', 'registered' ) ) {
