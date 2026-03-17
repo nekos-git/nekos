@@ -321,8 +321,42 @@ function UzBookshelf() {
 
   // --- uzデータ ---
   useEffect(function() {
-    uzFetch('/shelves').then(function(data) { setUzData(data); })
-      .catch(function(e) { console.error('uz data:', e); setLoadError('本棚データの読み込みに失敗しました'); });
+    uzFetch('/shelves').then(function(data) {
+      // Enrich articles with thumbnail URLs from WP REST API
+      if (data && data.articles && data.articles.length > 0) {
+        var needsThumbs = data.articles.some(function(a) { return !a.thumbnailUrl; });
+        if (needsThumbs) {
+          // Fetch posts with embedded featured media from WP standard API
+          var wpBase = _uzConfig.apiBase ? _uzConfig.apiBase.replace(/\/uz-bookshelf\/v1$/, '') : '/wp-json';
+          wpBase = wpBase.replace(/\/uz-bookshelf\/v1$/, '');
+          var wpUrl = wpBase.replace(/\/uz-bookshelf\/v1/, '') + '/wp/v2/posts?per_page=100&_fields=id,slug,featured_media,_links&_embed=wp:featuredmedia';
+          fetch(wpUrl).then(function(r) { return r.json(); }).then(function(posts) {
+            var thumbMap = {};
+            posts.forEach(function(p) {
+              var embedded = p._embedded && p._embedded['wp:featuredmedia'];
+              if (embedded && embedded[0] && embedded[0].source_url) {
+                thumbMap[p.slug] = embedded[0].source_url;
+              } else if (embedded && embedded[0] && embedded[0].media_details && embedded[0].media_details.sizes) {
+                var sizes = embedded[0].media_details.sizes;
+                var url = (sizes.medium && sizes.medium.source_url) || (sizes.thumbnail && sizes.thumbnail.source_url) || (sizes.full && sizes.full.source_url);
+                if (url) thumbMap[p.slug] = url;
+              }
+            });
+            data.articles = data.articles.map(function(a) {
+              if (!a.thumbnailUrl && thumbMap[a.id]) {
+                return Object.assign({}, a, { thumbnailUrl: thumbMap[a.id] });
+              }
+              return a;
+            });
+            setUzData(data);
+          }).catch(function() { setUzData(data); });
+        } else {
+          setUzData(data);
+        }
+      } else {
+        setUzData(data);
+      }
+    }).catch(function(e) { console.error('uz data:', e); setLoadError('本棚データの読み込みに失敗しました'); });
   }, []);
 
   // --- 棚データ構築 ---
