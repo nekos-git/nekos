@@ -411,6 +411,18 @@ class UZ_Bookshelf_DB {
         $wpdb->delete( $this->rakuten_table(), array( 'genre_id' => $genre_id ) );
     }
 
+    public function search_rakuten_books( $query ) {
+        global $wpdb;
+        $like = '%' . $wpdb->esc_like( $query ) . '%';
+        return $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$this->rakuten_table()} WHERE title LIKE %s OR author LIKE %s OR publisher LIKE %s ORDER BY review_count DESC LIMIT 30",
+                $like, $like, $like
+            ),
+            ARRAY_A
+        );
+    }
+
     // =========================================================================
     // Import from SQLite JSON export
     // =========================================================================

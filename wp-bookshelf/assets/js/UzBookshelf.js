@@ -459,19 +459,58 @@ function UzBookshelf() {
     return art ? art.title : filterByArticle;
   }, [filterByArticle, uzData]);
 
-  var searchResults = useMemo(function() {
-    if (!bookSearch.trim()) return null;
+  // uz: local search
+  var uzSearchResults = useMemo(function() {
+    if (mode !== 'uz' || !bookSearch.trim()) return null;
     var q = bookSearch.toLowerCase();
     var allItems = [];
-    var shelves = mode === 'uz' ? uzShelves : rakutenShelves;
-    shelves.forEach(function(s) {
+    uzShelves.forEach(function(s) {
       (s.mixedItems || s.mixedBooks || []).forEach(function(item) {
         if ((item.fullTitle || item.title || '').toLowerCase().includes(q) ||
             (item.fullAuthor || item.author || '').toLowerCase().includes(q)) allItems.push(item);
       });
     });
     return allItems;
-  }, [bookSearch, mode, uzShelves, rakutenShelves]);
+  }, [bookSearch, mode, uzShelves]);
+
+  // rakuten: API search with debounce
+  var _rakutenSearchResults = useState(null); var rakutenSearchResults = _rakutenSearchResults[0]; var setRakutenSearchResults = _rakutenSearchResults[1];
+  var _rakutenSearching = useState(false); var rakutenSearching = _rakutenSearching[0]; var setRakutenSearching = _rakutenSearching[1];
+  var rakutenSearchTimer = useRef(null);
+
+  useEffect(function() {
+    if (mode !== 'rakuten' || !bookSearch.trim()) {
+      setRakutenSearchResults(null);
+      setRakutenSearching(false);
+      return;
+    }
+    setRakutenSearching(true);
+    if (rakutenSearchTimer.current) clearTimeout(rakutenSearchTimer.current);
+    rakutenSearchTimer.current = setTimeout(function() {
+      uzFetch('/rakuten-search?q=' + encodeURIComponent(bookSearch.trim()))
+        .then(function(data) {
+          var items = (data.Items || []).map(function(entry) {
+            var b = entry.Item;
+            return {
+              id: b.isbn, title: truncate(b.title, 20), fullTitle: b.title,
+              author: truncate(b.author, 16), fullAuthor: b.author,
+              coverUrl: b.largeImageUrl, url: b.itemUrl,
+              isbn: b.isbn, price: b.itemPrice,
+              reviewAverage: b.reviewAverage, reviewCount: b.reviewCount,
+              caption: b.itemCaption || '', publisher: b.publisherName || '',
+              salesDate: b.salesDate || '', source: 'rakuten',
+              format: detectFormat(b.title),
+            };
+          });
+          setRakutenSearchResults(items);
+          setRakutenSearching(false);
+        })
+        .catch(function() { setRakutenSearchResults([]); setRakutenSearching(false); });
+    }, 500);
+    return function() { if (rakutenSearchTimer.current) clearTimeout(rakutenSearchTimer.current); };
+  }, [bookSearch, mode]);
+
+  var searchResults = mode === 'uz' ? uzSearchResults : (mode === 'rakuten' && bookSearch.trim() ? rakutenSearchResults : null);
 
   var favoriteItems = useMemo(function() {
     if (!showFavorites) return null;
@@ -531,7 +570,7 @@ function UzBookshelf() {
       h('div', { key: 'search', className: 'uz-bookSearchBar' },
         h('input', {
           className: 'uz-bookSearchInput', type: 'text',
-          placeholder: mode === 'uz' ? 'タイトル・著者で検索...' : '楽天書籍を検索...',
+          placeholder: mode === 'uz' ? 'タイトル・著者で検索...' : '楽天ブックスをタイトル・著者で検索...',
           value: bookSearch, onChange: function(e) { setBookSearch(e.target.value); }
         }),
         bookSearch ? h('button', { className: 'uz-bookSearchClear', onClick: function() { setBookSearch(''); } }, '\u2715') : null
@@ -691,23 +730,32 @@ function UzBookshelf() {
   }
 
   // 検索結果
-  if (!showArticles && !showFavorites && searchResults) {
+  if (!showArticles && !showFavorites && (searchResults || (mode === 'rakuten' && rakutenSearching && bookSearch.trim()))) {
+    var searchContent;
+    if (rakutenSearching && mode === 'rakuten') {
+      searchContent = h('div', { className: 'uz-emptyState' },
+        h('div', { className: 'uz-emptyState__icon' }, '\uD83D\uDD0D'),
+        h('div', { className: 'uz-emptyState__text' }, '楽天ブックスを検索中...')
+      );
+    } else if (searchResults && searchResults.length > 0) {
+      searchContent = h('div', { className: 'uz-rack' },
+        h('div', { className: 'uz-plank', 'aria-hidden': 'true' }),
+        h('div', { className: 'uz-mixedRow' }, searchResults.map(function(item, idx) { return renderBookItem(item, idx, 'sr'); }))
+      );
+    } else {
+      searchContent = h('div', { className: 'uz-emptyState' },
+        h('div', { className: 'uz-emptyState__icon' }, '\uD83D\uDD0D'),
+        h('div', { className: 'uz-emptyState__text' }, '該当する本が見つかりませんでした')
+      );
+    }
     children.push(
       h('div', { key: 'searchRes', className: 'uz-singleShelf' },
         h('section', { className: 'uz-shelf' },
           h('div', { className: 'uz-shelfHead' },
             h('h2', { className: 'uz-shelfTitle' }, h('span', { className: 'uz-shelfIcon' }, '\uD83D\uDD0D'), ' 「' + bookSearch + '」の検索結果'),
-            h('div', { className: 'uz-shelfMeta' }, searchResults.length + ' items')
+            searchResults ? h('div', { className: 'uz-shelfMeta' }, searchResults.length + ' items') : null
           ),
-          searchResults.length > 0
-            ? h('div', { className: 'uz-rack' },
-                h('div', { className: 'uz-plank', 'aria-hidden': 'true' }),
-                h('div', { className: 'uz-mixedRow' }, searchResults.map(function(item, idx) { return renderBookItem(item, idx, 'sr'); }))
-              )
-            : h('div', { className: 'uz-emptyState' },
-                h('div', { className: 'uz-emptyState__icon' }, '\uD83D\uDD0D'),
-                h('div', { className: 'uz-emptyState__text' }, '該当する本が見つかりませんでした')
-              )
+          searchContent
         )
       )
     );

@@ -66,6 +66,19 @@ class UZ_Bookshelf_API {
             ),
         ) );
 
+        // GET /rakuten-search?q=... - Search Rakuten Books API
+        register_rest_route( self::NAMESPACE, '/rakuten-search', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( $this, 'rakuten_search' ),
+            'permission_callback' => '__return_true',
+            'args'                => array(
+                'q' => array(
+                    'required'          => true,
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+            ),
+        ) );
+
         // GET /search?q=... - Cross-shelf search
         register_rest_route( self::NAMESPACE, '/search', array(
             'methods'             => WP_REST_Server::READABLE,
@@ -215,6 +228,98 @@ class UZ_Bookshelf_API {
         $genre_id = $request->get_param( 'genre_id' );
         $data     = $this->db->export_rakuten_data( $genre_id );
         return rest_ensure_response( $data );
+    }
+
+    /**
+     * GET /rakuten-search?q=... - Search Rakuten Books API by keyword
+     */
+    public function rakuten_search( WP_REST_Request $request ) {
+        $query  = $request->get_param( 'q' );
+
+        if ( empty( $query ) || mb_strlen( $query ) < 2 ) {
+            return new WP_Error(
+                'query_too_short',
+                '検索キーワードは2文字以上入力してください',
+                array( 'status' => 400 )
+            );
+        }
+
+        $app_id = get_option( 'uz_bookshelf_rakuten_app_id', '' );
+
+        // If API key is set, search via Rakuten API
+        if ( ! empty( $app_id ) ) {
+            $cache_key = 'uz_rksearch_' . md5( $query );
+            $cached    = get_transient( $cache_key );
+            if ( false !== $cached ) {
+                return rest_ensure_response( $cached );
+            }
+
+            $api_url = add_query_arg( array(
+                'format'        => 'json',
+                'applicationId' => $app_id,
+                'keyword'       => $query,
+                'hits'          => 20,
+                'sort'          => 'reviewCount',
+                'outOfStockFlag' => 0,
+            ), 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404' );
+
+            $response = wp_remote_get( $api_url, array( 'timeout' => 10 ) );
+
+            if ( ! is_wp_error( $response ) ) {
+                $body = json_decode( wp_remote_retrieve_body( $response ), true );
+                if ( ! empty( $body ) && ! isset( $body['error'] ) ) {
+                    $result = array( 'Items' => array() );
+                    foreach ( $body['Items'] ?? array() as $entry ) {
+                        $item = $entry['Item'] ?? $entry;
+                        $result['Items'][] = array(
+                            'Item' => array(
+                                'isbn'           => $item['isbn'] ?? '',
+                                'title'          => $item['title'] ?? '',
+                                'author'         => $item['author'] ?? '',
+                                'publisherName'  => $item['publisherName'] ?? '',
+                                'itemPrice'      => $item['itemPrice'] ?? 0,
+                                'itemUrl'        => $item['itemUrl'] ?? '',
+                                'largeImageUrl'  => $item['largeImageUrl'] ?? '',
+                                'mediumImageUrl' => $item['mediumImageUrl'] ?? '',
+                                'smallImageUrl'  => $item['smallImageUrl'] ?? '',
+                                'itemCaption'    => $item['itemCaption'] ?? '',
+                                'salesDate'      => $item['salesDate'] ?? '',
+                                'reviewAverage'  => $item['reviewAverage'] ?? '',
+                                'reviewCount'    => $item['reviewCount'] ?? 0,
+                                'booksGenreId'   => $item['booksGenreId'] ?? '',
+                            ),
+                        );
+                    }
+                    set_transient( $cache_key, $result, 30 * MINUTE_IN_SECONDS );
+                    return rest_ensure_response( $result );
+                }
+            }
+        }
+
+        // Fallback: search local DB
+        $books  = $this->db->search_rakuten_books( $query );
+        $result = array( 'Items' => array() );
+        foreach ( $books as $book ) {
+            $result['Items'][] = array(
+                'Item' => array(
+                    'isbn'           => $book['isbn'] ?: '',
+                    'title'          => $book['title'] ?: '',
+                    'author'         => $book['author'] ?: '',
+                    'publisherName'  => $book['publisher'] ?: '',
+                    'itemPrice'      => (int) $book['item_price'],
+                    'itemUrl'        => $book['item_url'] ?: '',
+                    'largeImageUrl'  => $book['large_image_url'] ?: '',
+                    'mediumImageUrl' => $book['medium_image_url'] ?: '',
+                    'smallImageUrl'  => $book['small_image_url'] ?: '',
+                    'itemCaption'    => $book['item_caption'] ?: '',
+                    'salesDate'      => $book['sales_date'] ?: '',
+                    'reviewAverage'  => $book['review_average'] ?: '',
+                    'reviewCount'    => (int) $book['review_count'],
+                    'booksGenreId'   => $book['books_genre_id'] ?: '',
+                ),
+            );
+        }
+        return rest_ensure_response( $result );
     }
 
     /**
