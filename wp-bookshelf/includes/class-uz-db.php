@@ -417,6 +417,16 @@ class UZ_Bookshelf_DB {
             $post->post_name
         ) );
 
+        // Get thumbnail URL
+        $thumbnail_url = '';
+        if ( has_post_thumbnail( $post->ID ) ) {
+            $thumb_id  = get_post_thumbnail_id( $post->ID );
+            $thumb_arr = wp_get_attachment_image_src( $thumb_id, 'medium' );
+            if ( $thumb_arr ) {
+                $thumbnail_url = $thumb_arr[0];
+            }
+        }
+
         return array(
             'id'            => $post->post_name,
             'title'         => $post->post_title,
@@ -425,6 +435,7 @@ class UZ_Bookshelf_DB {
             'shelf'         => $shelf ?: '',
             'product_count' => $product_count,
             'url'           => get_permalink( $post->ID ),
+            'thumbnail_url' => $thumbnail_url,
             'post_id'       => $post->ID,
         );
     }
@@ -704,7 +715,8 @@ class UZ_Bookshelf_DB {
                 'categories'   => $cats,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
-                'url'          => $a['url'] ?: '',  // Now returns WP permalink
+                'url'          => $a['url'] ?: '',
+                'thumbnailUrl' => $a['thumbnail_url'] ?: '',
             );
         }
 

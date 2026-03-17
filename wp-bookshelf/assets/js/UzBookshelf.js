@@ -644,21 +644,63 @@ function UzBookshelf() {
     }
     artPanelChildren.push(h('div', { key: 'head', className: 'uz-articlesPanelHead' }, headChildren));
 
-    var artCards = filteredArticles.map(function(art) {
-      return h('div', { key: art.id, className: 'uz-articleCard', onClick: function() { openArticleDetail(art); } },
-        h('div', { className: 'uz-articleCard__icon' }, shelfIcons[art.shelf] || '\uD83D\uDCC4'),
-        h('div', { className: 'uz-articleCard__body' },
-          h('div', { className: 'uz-articleCard__title' }, art.title),
-          h('div', { className: 'uz-articleCard__meta' },
-            h('span', null, formatDate(art.date)),
-            art.categories.map(function(c) { return h('span', { key: c, className: 'uz-articleCard__cat' }, c); }),
-            h('span', { className: 'uz-articleCard__count' }, art.productCount + '点')
+    // --- 本棚風記事カード ---
+    var artBooks = filteredArticles.map(function(art) {
+      var coverChildren = [];
+      if (art.thumbnailUrl) {
+        coverChildren.push(
+          h('img', { key: 'img', className: 'uz-artBook__img', src: art.thumbnailUrl, alt: '', loading: 'lazy' })
+        );
+      }
+      coverChildren.push(
+        h('div', { key: 'overlay', className: 'uz-artBook__overlay' },
+          h('div', { className: 'uz-artBook__titleText' }, truncate(art.title, 30)),
+          h('div', { className: 'uz-artBook__metaText' },
+            formatDate(art.date),
+            art.productCount > 0 ? ' \u00B7 ' + art.productCount + '冊' : ''
           )
-        ),
-        h('a', { href: art.url, className: 'uz-articleCard__link', onClick: function(e) { e.stopPropagation(); } }, '記事を読む →')
+        )
+      );
+      if (!art.thumbnailUrl) {
+        coverChildren.push(
+          h('div', { key: 'ph', className: 'uz-artBook__placeholder', style: { background: spineGradient(art.title) } },
+            h('span', { className: 'uz-artBook__phTitle' }, truncate(art.title, 20))
+          )
+        );
+      }
+      coverChildren.push(h('div', { key: 'gloss', className: 'uz-book__gloss' }));
+
+      var bodyChildren = [
+        h('div', { key: 'front', className: 'uz-book__front' }, coverChildren),
+        h('div', { key: 'spine', className: 'uz-book__spine', style: { background: spineGradient(art.title), width: 18 } }),
+        h('div', { key: 'pages', className: 'uz-book__pages', style: { height: 18 } }),
+      ];
+
+      return h('a', {
+        key: art.id, className: 'uz-book uz-artBook', href: '#',
+        style: { width: 128, height: 182 },
+        onClick: function(e) { e.preventDefault(); openArticleDetail(art); },
+        onMouseEnter: function(e) {
+          if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+          var el = e.currentTarget;
+          tooltipTimeoutRef.current = setTimeout(function() {
+            var rect = el.getBoundingClientRect();
+            setTooltip({ x: rect.left + rect.width / 2, y: rect.top, item: { fullTitle: art.title, author: art.categories.join(', '), comment: formatDate(art.date) } });
+          }, 350);
+        },
+        onMouseLeave: handleMouseLeave,
+      },
+        h('div', { className: 'uz-book__body' }, bodyChildren),
+        h('div', { className: 'uz-book__shadow' })
       );
     });
-    artPanelChildren.push(h('div', { key: 'list', className: 'uz-articlesList' }, artCards));
+
+    artPanelChildren.push(
+      h('div', { key: 'shelf', className: 'uz-rack' },
+        h('div', { className: 'uz-plank', 'aria-hidden': 'true' }),
+        h('div', { className: 'uz-mixedRow uz-artBookRow' }, artBooks)
+      )
+    );
     children.push(h('div', { key: 'artPanel', className: 'uz-articlesPanel' }, artPanelChildren));
   }
 
@@ -668,7 +710,11 @@ function UzBookshelf() {
     var detailChildren = [
       h('button', { key: 'back', className: 'uz-articleDetail__back', onClick: backToArticleList }, '← 記事一覧に戻る'),
       h('div', { key: 'hdr', className: 'uz-articleDetail__header' },
-        h('div', { className: 'uz-articleDetail__icon' }, shelfIcons[selectedArticle.shelf] || '\uD83D\uDCC4'),
+        selectedArticle.thumbnailUrl
+          ? h('div', { className: 'uz-articleDetail__thumb' },
+              h('img', { src: selectedArticle.thumbnailUrl, alt: '' })
+            )
+          : h('div', { className: 'uz-articleDetail__icon' }, shelfIcons[selectedArticle.shelf] || '\uD83D\uDCC4'),
         h('div', null,
           h('h2', { className: 'uz-articleDetail__title' }, selectedArticle.title),
           h('div', { className: 'uz-articleDetail__meta' },

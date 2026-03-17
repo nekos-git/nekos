@@ -265,7 +265,8 @@ class UZ_Bookshelf_API {
                 'themes'       => $themes,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
-                'url'          => $a['url'] ?: '',  // Now WP permalink
+                'url'          => $a['url'] ?: '',
+                'thumbnailUrl' => $a['thumbnail_url'] ?: '',
             );
         }
 
