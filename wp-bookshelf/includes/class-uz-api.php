@@ -147,6 +147,13 @@ class UZ_Bookshelf_API {
             'permission_callback' => array( $this, 'check_admin_permission' ),
         ) );
 
+        // POST /upload-thumbnails - Upload cover images to articles (admin)
+        register_rest_route( self::NAMESPACE, '/upload-thumbnails', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'upload_thumbnails' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
         // --- CRUD for shelf items (admin) ---
         register_rest_route( self::NAMESPACE, '/items', array(
             'methods'             => WP_REST_Server::CREATABLE,
@@ -568,6 +575,99 @@ class UZ_Bookshelf_API {
      */
     public function get_stats( WP_REST_Request $request ) {
         return rest_ensure_response( $this->db->get_stats() );
+    }
+
+    /**
+     * POST /upload-thumbnails - Upload cover images as featured images for articles.
+     * Accepts JSON: { "articles": [ { "slug": "...", "image_url": "https://..." }, ... ] }
+     * Downloads each image and sets it as the article's featured image.
+     */
+    public function upload_thumbnails( WP_REST_Request $request ) {
+        $body     = $request->get_json_params();
+        $articles = $body['articles'] ?? array();
+
+        if ( empty( $articles ) ) {
+            return new WP_Error( 'no_data', 'No articles provided', array( 'status' => 400 ) );
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $results = array();
+        foreach ( $articles as $entry ) {
+            $slug      = sanitize_title( $entry['slug'] ?? '' );
+            $image_url = esc_url_raw( $entry['image_url'] ?? '' );
+            $image_b64 = $entry['image_base64'] ?? '';
+
+            if ( ! $slug ) {
+                $results[] = array( 'slug' => $slug, 'status' => 'skip', 'reason' => 'no slug' );
+                continue;
+            }
+
+            $posts = get_posts( array(
+                'post_type'   => 'post',
+                'name'        => $slug,
+                'post_status' => 'publish',
+                'numberposts' => 1,
+                'meta_key'    => '_uz_article',
+                'meta_value'  => '1',
+            ) );
+
+            if ( empty( $posts ) ) {
+                $results[] = array( 'slug' => $slug, 'status' => 'skip', 'reason' => 'post not found' );
+                continue;
+            }
+
+            $post = $posts[0];
+
+            if ( has_post_thumbnail( $post->ID ) ) {
+                $results[] = array( 'slug' => $slug, 'status' => 'skip', 'reason' => 'already has thumbnail' );
+                continue;
+            }
+
+            // Handle base64 image data
+            if ( ! empty( $image_b64 ) ) {
+                $decoded = base64_decode( $image_b64 );
+                if ( ! $decoded ) {
+                    $results[] = array( 'slug' => $slug, 'status' => 'error', 'reason' => 'invalid base64' );
+                    continue;
+                }
+                $tmp = wp_tempnam( $slug . '-cover.jpg' );
+                file_put_contents( $tmp, $decoded );
+            } elseif ( ! empty( $image_url ) ) {
+                $tmp = download_url( $image_url, 30 );
+                if ( is_wp_error( $tmp ) ) {
+                    $results[] = array( 'slug' => $slug, 'status' => 'error', 'reason' => $tmp->get_error_message() );
+                    continue;
+                }
+            } else {
+                $results[] = array( 'slug' => $slug, 'status' => 'skip', 'reason' => 'no image source' );
+                continue;
+            }
+
+            $file_array = array(
+                'name'     => $slug . '-cover.jpg',
+                'tmp_name' => $tmp,
+            );
+
+            $att_id = media_handle_sideload( $file_array, $post->ID, $post->post_title . ' カバー画像' );
+
+            if ( is_wp_error( $att_id ) ) {
+                $results[] = array( 'slug' => $slug, 'status' => 'error', 'reason' => $att_id->get_error_message() );
+                @unlink( $tmp );
+                continue;
+            }
+
+            set_post_thumbnail( $post->ID, $att_id );
+            $results[] = array( 'slug' => $slug, 'status' => 'ok', 'attachment_id' => $att_id );
+        }
+
+        return rest_ensure_response( array(
+            'uploaded' => count( array_filter( $results, function( $r ) { return $r['status'] === 'ok'; } ) ),
+            'total'    => count( $articles ),
+            'results'  => $results,
+        ) );
     }
 
     /**
