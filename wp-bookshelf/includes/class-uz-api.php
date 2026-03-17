@@ -389,7 +389,7 @@ class UZ_Bookshelf_API {
         }
 
         global $wpdb;
-        $table   = $wpdb->prefix . 'uz_shelf_items';
+        $table   = $wpdb->prefix . 'uz_items';
         $updated = 0;
 
         foreach ( $updates as $entry ) {
@@ -398,7 +398,7 @@ class UZ_Bookshelf_API {
             if ( ! $title || ! $author ) continue;
 
             $rows = $wpdb->query( $wpdb->prepare(
-                "UPDATE {$table} SET author = %s, full_author = %s WHERE (full_title = %s OR title = %s) AND (author = '' OR author IS NULL)",
+                "UPDATE {$table} SET author = %s, full_author = %s WHERE source = 'uz' AND (full_title = %s OR title = %s) AND (author = '' OR author IS NULL)",
                 $author, $author, $title, $title
             ) );
             $updated += (int) $rows;

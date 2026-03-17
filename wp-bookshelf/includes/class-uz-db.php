@@ -2,8 +2,8 @@
 /**
  * UZ Bookshelf - Database Layer
  *
- * Custom tables via dbDelta() for shelves, shelf_items, articles, rakuten_books.
- * Designed for self-use with variable-based config for future generalization.
+ * Custom tables via dbDelta() for shelves and items (unified).
+ * Items are distinguished by `source` column ('uz' or 'rakuten').
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,7 +16,7 @@ class UZ_Bookshelf_DB {
     private $prefix;
 
     /** @var string Plugin DB version */
-    const DB_VERSION = '1.0.1';
+    const DB_VERSION = '2.0.0';
 
     /** @var string Option key for DB version tracking */
     const DB_VERSION_OPTION = 'uz_bookshelf_db_version';
@@ -38,15 +38,7 @@ class UZ_Bookshelf_DB {
     }
 
     public function items_table() {
-        return $this->table( 'shelf_items' );
-    }
-
-    public function articles_table() {
-        return $this->table( 'articles' );
-    }
-
-    public function rakuten_table() {
-        return $this->table( 'rakuten_books' );
+        return $this->table( 'items' );
     }
 
     /**
@@ -69,11 +61,12 @@ class UZ_Bookshelf_DB {
             PRIMARY KEY (id)
         ) $charset_collate;";
 
-        // --- shelf_items ---
+        // --- unified items (source: 'uz' or 'rakuten') ---
         $sql_items = "CREATE TABLE {$this->items_table()} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            item_id VARCHAR(128) NOT NULL,
-            shelf_id VARCHAR(64) NOT NULL,
+            source VARCHAR(16) NOT NULL DEFAULT 'uz',
+            item_id VARCHAR(128) DEFAULT '',
+            shelf_id VARCHAR(64) DEFAULT '',
             title VARCHAR(255) NOT NULL,
             full_title TEXT NOT NULL,
             author VARCHAR(255) DEFAULT '',
@@ -90,36 +83,8 @@ class UZ_Bookshelf_DB {
             format VARCHAR(32) DEFAULT 'standard',
             width INT DEFAULT 128,
             height INT DEFAULT 182,
-            sort_order INT DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_shelf_id (shelf_id),
-            KEY idx_article_id (article_id)
-        ) $charset_collate;";
-
-        // --- articles ---
-        $sql_articles = "CREATE TABLE {$this->articles_table()} (
-            id VARCHAR(128) NOT NULL,
-            title VARCHAR(255) NOT NULL,
-            date VARCHAR(32) DEFAULT '',
-            categories TEXT NOT NULL,
-            shelf VARCHAR(64) DEFAULT '',
-            product_count INT DEFAULT 0,
-            url TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_shelf (shelf)
-        ) $charset_collate;";
-
-        // --- rakuten_books ---
-        $sql_rakuten = "CREATE TABLE {$this->rakuten_table()} (
-            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            genre_id VARCHAR(32) NOT NULL,
+            genre_id VARCHAR(32) DEFAULT '',
             isbn VARCHAR(32) DEFAULT '',
-            title VARCHAR(255) NOT NULL,
-            author VARCHAR(255) DEFAULT '',
             publisher VARCHAR(255) DEFAULT '',
             item_price INT DEFAULT 0,
             item_url TEXT NOT NULL,
@@ -132,18 +97,18 @@ class UZ_Bookshelf_DB {
             review_average VARCHAR(8) DEFAULT '',
             review_count INT DEFAULT 0,
             availability VARCHAR(32) DEFAULT '',
-            affiliate_url TEXT NOT NULL,
             sort_order INT DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
+            KEY idx_source (source),
+            KEY idx_shelf_id (shelf_id),
+            KEY idx_article_id (article_id),
             KEY idx_genre_id (genre_id)
         ) $charset_collate;";
 
         dbDelta( $sql_shelves );
         dbDelta( $sql_items );
-        dbDelta( $sql_articles );
-        dbDelta( $sql_rakuten );
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
     }
@@ -155,8 +120,6 @@ class UZ_Bookshelf_DB {
         global $wpdb;
         $tables = array(
             $this->items_table(),
-            $this->articles_table(),
-            $this->rakuten_table(),
             $this->shelves_table(),
         );
         foreach ( $tables as $table ) {
@@ -172,6 +135,9 @@ class UZ_Bookshelf_DB {
         $installed_version = get_option( self::DB_VERSION_OPTION, '0' );
         if ( version_compare( $installed_version, self::DB_VERSION, '<' ) ) {
             $this->create_tables();
+            if ( $installed_version !== '0' && version_compare( $installed_version, '2.0.0', '<' ) ) {
+                $this->migrate_v2();
+            }
         }
 
         // Auto-load sample data if tables exist but are empty
@@ -179,6 +145,64 @@ class UZ_Bookshelf_DB {
         if ( $this->is_empty() ) {
             $this->load_sample_data( true );
         }
+    }
+
+    /**
+     * Migrate from v1 (separate shelf_items + rakuten_books) to v2 (unified items table)
+     */
+    private function migrate_v2() {
+        global $wpdb;
+        $old_items   = $this->prefix . 'shelf_items';
+        $old_rakuten = $this->prefix . 'rakuten_books';
+        $new_table   = $this->items_table();
+
+        // Skip if new table already has data
+        $count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $new_table" );
+        if ( $count > 0 ) {
+            return;
+        }
+
+        // Migrate UZ items
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '$old_items'" ) ) {
+            $wpdb->query(
+                "INSERT INTO $new_table
+                    (source, item_id, shelf_id, title, full_title, author, full_author,
+                     cover_url, amazon_url, rakuten_url, affiliate_url, article_id,
+                     article_title, comment, tags, type, format, width, height,
+                     sort_order, created_at, updated_at)
+                 SELECT 'uz', item_id, shelf_id, title, full_title, author, full_author,
+                     cover_url, amazon_url, rakuten_url, affiliate_url, article_id,
+                     article_title, comment, tags, type, format, width, height,
+                     sort_order, created_at, updated_at
+                 FROM $old_items"
+            );
+            $wpdb->query( "DROP TABLE IF EXISTS $old_items" );
+        }
+
+        // Migrate Rakuten books
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '$old_rakuten'" ) ) {
+            $wpdb->query(
+                "INSERT INTO $new_table
+                    (source, title, author, affiliate_url, genre_id, isbn, publisher,
+                     item_price, item_url, large_image_url, medium_image_url,
+                     small_image_url, item_caption, books_genre_id, sales_date,
+                     review_average, review_count, availability, sort_order,
+                     created_at, updated_at,
+                     full_title, cover_url, amazon_url, rakuten_url, comment, tags)
+                 SELECT 'rakuten', title, author, affiliate_url, genre_id, isbn, publisher,
+                     item_price, item_url, large_image_url, medium_image_url,
+                     small_image_url, item_caption, books_genre_id, sales_date,
+                     review_average, review_count, availability, sort_order,
+                     created_at, updated_at,
+                     '', '', '', '', '', '[]'
+                 FROM $old_rakuten"
+            );
+            $wpdb->query( "DROP TABLE IF EXISTS $old_rakuten" );
+        }
+
+        // Drop old articles table (now using WP posts)
+        $old_articles = $this->prefix . 'articles';
+        $wpdb->query( "DROP TABLE IF EXISTS $old_articles" );
     }
 
     // =========================================================================
@@ -218,7 +242,10 @@ class UZ_Bookshelf_DB {
 
     public function delete_shelf( $id ) {
         global $wpdb;
-        $wpdb->delete( $this->items_table(), array( 'shelf_id' => $id ) );
+        $wpdb->query( $wpdb->prepare(
+            "DELETE FROM {$this->items_table()} WHERE source = 'uz' AND shelf_id = %s",
+            $id
+        ) );
         $wpdb->delete( $this->shelves_table(), array( 'id' => $id ) );
     }
 
@@ -231,14 +258,14 @@ class UZ_Bookshelf_DB {
         if ( $shelf_id ) {
             return $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT * FROM {$this->items_table()} WHERE shelf_id = %s ORDER BY $order_by",
+                    "SELECT * FROM {$this->items_table()} WHERE source = 'uz' AND shelf_id = %s ORDER BY $order_by",
                     $shelf_id
                 ),
                 ARRAY_A
             );
         }
         return $wpdb->get_results(
-            "SELECT * FROM {$this->items_table()} ORDER BY $order_by",
+            "SELECT * FROM {$this->items_table()} WHERE source = 'uz' ORDER BY $order_by",
             ARRAY_A
         );
     }
@@ -255,7 +282,7 @@ class UZ_Bookshelf_DB {
         global $wpdb;
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$this->items_table()} WHERE article_id = %s ORDER BY sort_order ASC",
+                "SELECT * FROM {$this->items_table()} WHERE source = 'uz' AND article_id = %s ORDER BY sort_order ASC",
                 $article_id
             ),
             ARRAY_A
@@ -264,10 +291,15 @@ class UZ_Bookshelf_DB {
 
     public function insert_item( $data ) {
         global $wpdb;
+        if ( ! isset( $data['source'] ) ) {
+            $data['source'] = 'uz';
+        }
         // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
         $text_defaults = array(
             'full_title' => '', 'cover_url' => '', 'amazon_url' => '',
             'rakuten_url' => '', 'affiliate_url' => '', 'comment' => '', 'tags' => '[]',
+            'item_url' => '', 'large_image_url' => '', 'medium_image_url' => '',
+            'small_image_url' => '', 'item_caption' => '',
         );
         foreach ( $text_defaults as $col => $default ) {
             if ( ! isset( $data[ $col ] ) ) {
@@ -297,12 +329,12 @@ class UZ_Bookshelf_DB {
         if ( $shelf_id ) {
             return (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$this->items_table()} WHERE shelf_id = %s",
+                    "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'uz' AND shelf_id = %s",
                     $shelf_id
                 )
             );
         }
-        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()}" );
+        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'uz'" );
     }
 
     public function search_items( $query ) {
@@ -310,7 +342,7 @@ class UZ_Bookshelf_DB {
         $like = '%' . $wpdb->esc_like( $query ) . '%';
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$this->items_table()} WHERE title LIKE %s OR full_title LIKE %s OR author LIKE %s ORDER BY sort_order ASC",
+                "SELECT * FROM {$this->items_table()} WHERE source = 'uz' AND (title LIKE %s OR full_title LIKE %s OR author LIKE %s) ORDER BY sort_order ASC",
                 $like, $like, $like
             ),
             ARRAY_A
@@ -381,7 +413,7 @@ class UZ_Bookshelf_DB {
         // Count items linked to this article
         global $wpdb;
         $product_count = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$this->items_table()} WHERE article_id = %s",
+            "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'uz' AND article_id = %s",
             $post->post_name
         ) );
 
@@ -495,42 +527,34 @@ class UZ_Bookshelf_DB {
         if ( $genre_id ) {
             return $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT * FROM {$this->rakuten_table()} WHERE genre_id = %s ORDER BY $order_by",
+                    "SELECT * FROM {$this->items_table()} WHERE source = 'rakuten' AND genre_id = %s ORDER BY $order_by",
                     $genre_id
                 ),
                 ARRAY_A
             );
         }
         return $wpdb->get_results(
-            "SELECT * FROM {$this->rakuten_table()} ORDER BY $order_by",
+            "SELECT * FROM {$this->items_table()} WHERE source = 'rakuten' ORDER BY $order_by",
             ARRAY_A
         );
     }
 
     public function insert_rakuten_book( $data ) {
-        global $wpdb;
-        // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
-        $text_defaults = array(
-            'item_url' => '', 'large_image_url' => '', 'medium_image_url' => '',
-            'small_image_url' => '', 'item_caption' => '', 'affiliate_url' => '',
-        );
-        foreach ( $text_defaults as $col => $default ) {
-            if ( ! isset( $data[ $col ] ) ) {
-                $data[ $col ] = $default;
-            }
-        }
-        $wpdb->insert( $this->rakuten_table(), $data );
-        return $wpdb->insert_id;
+        $data['source'] = 'rakuten';
+        return $this->insert_item( $data );
     }
 
     public function delete_rakuten_book( $id ) {
         global $wpdb;
-        $wpdb->delete( $this->rakuten_table(), array( 'id' => $id ) );
+        $wpdb->delete( $this->items_table(), array( 'id' => $id ) );
     }
 
     public function delete_rakuten_by_genre( $genre_id ) {
         global $wpdb;
-        $wpdb->delete( $this->rakuten_table(), array( 'genre_id' => $genre_id ) );
+        $wpdb->query( $wpdb->prepare(
+            "DELETE FROM {$this->items_table()} WHERE source = 'rakuten' AND genre_id = %s",
+            $genre_id
+        ) );
     }
 
     public function search_rakuten_books( $query ) {
@@ -538,7 +562,7 @@ class UZ_Bookshelf_DB {
         $like = '%' . $wpdb->esc_like( $query ) . '%';
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$this->rakuten_table()} WHERE title LIKE %s OR author LIKE %s OR publisher LIKE %s ORDER BY review_count DESC LIMIT 30",
+                "SELECT * FROM {$this->items_table()} WHERE source = 'rakuten' AND (title LIKE %s OR author LIKE %s OR publisher LIKE %s) ORDER BY review_count DESC LIMIT 30",
                 $like, $like, $like
             ),
             ARRAY_A
@@ -744,8 +768,6 @@ class UZ_Bookshelf_DB {
     public function clear_all_data() {
         global $wpdb;
         $wpdb->query( "TRUNCATE TABLE {$this->items_table()}" );
-        $wpdb->query( "TRUNCATE TABLE {$this->articles_table()}" );
-        $wpdb->query( "TRUNCATE TABLE {$this->rakuten_table()}" );
         $wpdb->query( "TRUNCATE TABLE {$this->shelves_table()}" );
     }
 
@@ -863,14 +885,14 @@ class UZ_Bookshelf_DB {
         if ( $direction === 'up' ) {
             $neighbor = $wpdb->get_row(
                 $wpdb->prepare(
-                    "SELECT * FROM {$this->items_table()} WHERE shelf_id = %s AND sort_order < %d ORDER BY sort_order DESC LIMIT 1",
+                    "SELECT * FROM {$this->items_table()} WHERE source = 'uz' AND shelf_id = %s AND sort_order < %d ORDER BY sort_order DESC LIMIT 1",
                     $shelf_id, $current_order
                 ), ARRAY_A
             );
         } else {
             $neighbor = $wpdb->get_row(
                 $wpdb->prepare(
-                    "SELECT * FROM {$this->items_table()} WHERE shelf_id = %s AND sort_order > %d ORDER BY sort_order ASC LIMIT 1",
+                    "SELECT * FROM {$this->items_table()} WHERE source = 'uz' AND shelf_id = %s AND sort_order > %d ORDER BY sort_order ASC LIMIT 1",
                     $shelf_id, $current_order
                 ), ARRAY_A
             );
@@ -902,9 +924,9 @@ class UZ_Bookshelf_DB {
         );
         return array(
             'shelves'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->shelves_table()}" ),
-            'items'         => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()}" ),
+            'items'         => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'uz'" ),
             'articles'      => $article_count,
-            'rakuten_books' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->rakuten_table()}" ),
+            'rakuten_books' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()} WHERE source = 'rakuten'" ),
         );
     }
 
@@ -916,7 +938,7 @@ class UZ_Bookshelf_DB {
         return $wpdb->get_results(
             "SELECT s.id, s.title, COUNT(si.id) as item_count
              FROM {$this->shelves_table()} s
-             LEFT JOIN {$this->items_table()} si ON s.id = si.shelf_id
+             LEFT JOIN {$this->items_table()} si ON s.id = si.shelf_id AND si.source = 'uz'
              GROUP BY s.id
              ORDER BY s.sort_order",
             ARRAY_A
