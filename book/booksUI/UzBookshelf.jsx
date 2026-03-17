@@ -213,7 +213,7 @@ function UzBookshelf() {
     let articles = uzData.articles;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      articles = articles.filter(a => a.title.toLowerCase().includes(q) || a.categories.some(c => c.toLowerCase().includes(q)));
+      articles = articles.filter(a => a.title.toLowerCase().includes(q) || a.categories.some(c => c.toLowerCase().includes(q)) || (a.themes && a.themes.some(t => t.toLowerCase().includes(q))));
     }
     if (activeShelf && activeShelf !== 'all') articles = articles.filter(a => a.shelf === activeShelf);
     return articles;
@@ -398,6 +398,11 @@ function UzBookshelf() {
                     {art.categories.map(c => <span key={c} className="uz-articleCard__cat">{c}</span>)}
                     <span className="uz-articleCard__count">{art.productCount}点</span>
                   </div>
+                  {art.themes && art.themes.length > 0 && (
+                    <div className="uz-articleCard__themes">
+                      {art.themes.map(t => <span key={t} className="uz-articleCard__theme">{t}</span>)}
+                    </div>
+                  )}
                 </div>
                 <a href={art.url} target="_blank" rel="noopener noreferrer" className="uz-articleCard__link" onClick={e => e.stopPropagation()}>記事を読む →</a>
               </div>

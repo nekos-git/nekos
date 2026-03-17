@@ -3748,28 +3748,51 @@
       "id": "zootopia",
       "title": "『ズートピア』再訪 ― 続編公開前に見つめ直す、多様性とバディの物語構造",
       "date": "11/12/2025 18:34:21",
-      "categories": [],
+      "categories": [
+        "映画",
+        "マンガ・アニメ"
+      ],
       "shelf": "culture",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/zootopia"
+      "url": "https://uz-media.com/entry/zootopia",
+      "themes": [
+        "権力の構造と「悪」の生成",
+        "個と全体の相克"
+      ]
     },
     {
       "id": "eva-jinruihokankeikaku",
       "title": "AIと人類補完計画——エヴァンゲリオンが予言したネットワーク時代の終着点",
       "date": "11/11/2025 14:44:22",
-      "categories": [],
+      "categories": [
+        "マンガ・アニメ",
+        "IT・テクノロジー"
+      ],
       "shelf": "culture",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/eva-jinruihokankeikaku"
+      "url": "https://uz-media.com/entry/eva-jinruihokankeikaku",
+      "themes": [
+        "AIと人間の境界",
+        "監視・管理と自由",
+        "個と全体の相克",
+        "物語が現実を予見する"
+      ]
     },
     {
       "id": "murakami-and-pauro",
       "title": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと",
       "date": "11/11/2025 02:54:08",
-      "categories": [],
+      "categories": [
+        "小説"
+      ],
       "shelf": "books",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/murakami-and-pauro"
+      "url": "https://uz-media.com/entry/murakami-and-pauro",
+      "themes": [
+        "喪失と不在の手触り",
+        "絶望の中の希望",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "reading-paper-or-device",
@@ -3781,7 +3804,11 @@
       ],
       "shelf": "books",
       "productCount": 1,
-      "url": "https://uz-media.com/entry/reading-paper-or-device"
+      "url": "https://uz-media.com/entry/reading-paper-or-device",
+      "themes": [
+        "身体性と実存",
+        "テクノロジーと道具の思想"
+      ]
     },
     {
       "id": "dystopian-food",
@@ -3795,25 +3822,44 @@
       ],
       "shelf": "manga",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/dystopian-food"
+      "url": "https://uz-media.com/entry/dystopian-food",
+      "themes": [
+        "監視・管理と自由",
+        "ユートピアの不可能性",
+        "物語が現実を予見する"
+      ]
     },
     {
       "id": "kiriya-kazuaki",
       "title": "紀里谷和明を「観る」のではない、「浴びる」のだ。――なぜ今、『GOEMON』と『世界の終わりから』が私たちに突き刺さるのか",
       "date": "11/08/2025 23:42:18",
-      "categories": [],
+      "categories": [
+        "映画"
+      ],
       "shelf": "culture",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/kiriya-kazuaki"
+      "url": "https://uz-media.com/entry/kiriya-kazuaki",
+      "themes": [
+        "権力の構造と「悪」の生成",
+        "ユートピアの不可能性",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "ai-robot-movie",
       "title": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論",
       "date": "11/14/2025 20:00:00",
-      "categories": [],
+      "categories": [
+        "映画",
+        "IT・テクノロジー"
+      ],
       "shelf": "film",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/ai-robot-movie"
+      "url": "https://uz-media.com/entry/ai-robot-movie",
+      "themes": [
+        "AIと人間の境界",
+        "身体性と実存"
+      ]
     },
     {
       "id": "murakami-haruki-sotsugyou",
@@ -3824,7 +3870,11 @@
       ],
       "shelf": "books",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/murakami-haruki-sotsugyou"
+      "url": "https://uz-media.com/entry/murakami-haruki-sotsugyou",
+      "themes": [
+        "言語と世界構築",
+        "喪失と不在の手触り"
+      ]
     },
     {
       "id": "writing-device",
@@ -3836,34 +3886,61 @@
       ],
       "shelf": "books",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/writing-device"
+      "url": "https://uz-media.com/entry/writing-device",
+      "themes": [
+        "言語と世界構築",
+        "身体性と実存",
+        "テクノロジーと道具の思想"
+      ]
     },
     {
       "id": "mieko-kawakami",
       "title": "川上未映子が描く「痛み」は、村上春樹の「喪失」とどう違うのか？『ヘヴン』と『すべて真夜中の恋人たち』が直視する「身体」と「体系」",
       "date": "11/07/2025 18:57:23",
-      "categories": [],
+      "categories": [
+        "小説"
+      ],
       "shelf": "books",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/mieko-kawakami"
+      "url": "https://uz-media.com/entry/mieko-kawakami",
+      "themes": [
+        "身体性と実存",
+        "権力の構造と「悪」の生成"
+      ]
     },
     {
       "id": "underrated-masterpiece",
       "title": "心に問いを残す、隠れた名作映画4選",
       "date": "11/06/2025 22:13:05",
-      "categories": [],
+      "categories": [
+        "映画"
+      ],
       "shelf": "film",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/underrated-masterpiece"
+      "url": "https://uz-media.com/entry/underrated-masterpiece",
+      "themes": [
+        "絶望の中の希望",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "ghost-in-the-shell",
       "title": "『攻殻機動隊』とChatGPT時代の「ゴースト」 模倣される自我の臨界点",
       "date": "11/12/2025 21:00:00",
-      "categories": [],
+      "categories": [
+        "マンガ・アニメ",
+        "映画",
+        "IT・テクノロジー"
+      ],
       "shelf": "culture",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/ghost-in-the-shell"
+      "url": "https://uz-media.com/entry/ghost-in-the-shell",
+      "themes": [
+        "AIと人間の境界",
+        "監視・管理と自由",
+        "個と全体の相克",
+        "物語が現実を予見する"
+      ]
     },
     {
       "id": "fishmans-longseason",
@@ -3874,7 +3951,12 @@
       ],
       "shelf": "music",
       "productCount": 3,
-      "url": "https://uz-media.com/entry/fishmans-longseason"
+      "url": "https://uz-media.com/entry/fishmans-longseason",
+      "themes": [
+        "喪失と不在の手触り",
+        "時間の多層性",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "sakanaction-kodoku",
@@ -3885,7 +3967,11 @@
       ],
       "shelf": "music",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/sakanaction-kodoku"
+      "url": "https://uz-media.com/entry/sakanaction-kodoku",
+      "themes": [
+        "個と全体の相克",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "wong-kar-wai",
@@ -3896,25 +3982,44 @@
       ],
       "shelf": "film",
       "productCount": 2,
-      "url": "https://uz-media.com/entry/wong-kar-wai"
+      "url": "https://uz-media.com/entry/wong-kar-wai",
+      "themes": [
+        "喪失と不在の手触り",
+        "時間の多層性",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "pauro-witch",
       "title": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光",
       "date": "11/03/2025 04:55:05",
-      "categories": [],
+      "categories": [
+        "小説"
+      ],
       "shelf": "books",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/pauro-witch"
+      "url": "https://uz-media.com/entry/pauro-witch",
+      "themes": [
+        "自然と人間の境界崩壊",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "hosodamamoru",
       "title": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家",
       "date": "11/13/2025 20:30:00",
-      "categories": [],
+      "categories": [
+        "マンガ・アニメ",
+        "映画"
+      ],
       "shelf": "culture",
       "productCount": 0,
-      "url": "https://uz-media.com/entry/hosodamamoru"
+      "url": "https://uz-media.com/entry/hosodamamoru",
+      "themes": [
+        "暴力の連鎖と断絶",
+        "創造と狂気の代償",
+        "継承と遡及的再発見"
+      ]
     },
     {
       "id": "kusuriyanohitorigoto",
@@ -3926,7 +4031,11 @@
       ],
       "shelf": "manga",
       "productCount": 3,
-      "url": "https://uz-media.com/entry/kusuriyanohitorigoto"
+      "url": "https://uz-media.com/entry/kusuriyanohitorigoto",
+      "themes": [
+        "権力の構造と「悪」の生成",
+        "継承と遡及的再発見"
+      ]
     },
     {
       "id": "itou-keikaku-harmony",
@@ -3938,7 +4047,13 @@
       ],
       "shelf": "books",
       "productCount": 4,
-      "url": "https://uz-media.com/entry/itou-keikaku-harmony"
+      "url": "https://uz-media.com/entry/itou-keikaku-harmony",
+      "themes": [
+        "AIと人間の境界",
+        "監視・管理と自由",
+        "個と全体の相克",
+        "ユートピアの不可能性"
+      ]
     },
     {
       "id": "steve-jobs-future-apple",
@@ -3949,7 +4064,11 @@
       ],
       "shelf": "tech",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/steve-jobs-future-apple"
+      "url": "https://uz-media.com/entry/steve-jobs-future-apple",
+      "themes": [
+        "ユートピアの不可能性",
+        "テクノロジーと道具の思想"
+      ]
     },
     {
       "id": "the-3rd-wave",
@@ -3961,7 +4080,12 @@
       ],
       "shelf": "books",
       "productCount": 4,
-      "url": "https://uz-media.com/entry/the-3rd-wave"
+      "url": "https://uz-media.com/entry/the-3rd-wave",
+      "themes": [
+        "AIと人間の境界",
+        "監視・管理と自由",
+        "物語が現実を予見する"
+      ]
     },
     {
       "id": "christopher-nolan-best5",
@@ -3972,7 +4096,12 @@
       ],
       "shelf": "film",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/christopher-nolan-best5"
+      "url": "https://uz-media.com/entry/christopher-nolan-best5",
+      "themes": [
+        "監視・管理と自由",
+        "時間の多層性",
+        "創造と狂気の代償"
+      ]
     },
     {
       "id": "david-lynch",
@@ -3983,7 +4112,12 @@
       ],
       "shelf": "film",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/david-lynch"
+      "url": "https://uz-media.com/entry/david-lynch",
+      "themes": [
+        "言語と世界構築",
+        "創造と狂気の代償",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "oasis-live-forever",
@@ -3994,7 +4128,11 @@
       ],
       "shelf": "music",
       "productCount": 4,
-      "url": "https://uz-media.com/entry/oasis-live-forever"
+      "url": "https://uz-media.com/entry/oasis-live-forever",
+      "themes": [
+        "継承と遡及的再発見",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "gogh-the-last-letter",
@@ -4005,7 +4143,11 @@
       ],
       "shelf": "film",
       "productCount": 5,
-      "url": "https://uz-media.com/entry/gogh-the-last-letter"
+      "url": "https://uz-media.com/entry/gogh-the-last-letter",
+      "themes": [
+        "喪失と不在の手触り",
+        "創造と狂気の代償"
+      ]
     },
     {
       "id": "seisyunbutayarou",
@@ -4017,7 +4159,11 @@
       ],
       "shelf": "manga",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/seisyunbutayarou"
+      "url": "https://uz-media.com/entry/seisyunbutayarou",
+      "themes": [
+        "個と全体の相克",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "chainsawman-shihonsyugi",
@@ -4028,7 +4174,11 @@
       ],
       "shelf": "manga",
       "productCount": 4,
-      "url": "https://uz-media.com/entry/chainsawman-shihonsyugi"
+      "url": "https://uz-media.com/entry/chainsawman-shihonsyugi",
+      "themes": [
+        "権力の構造と「悪」の生成",
+        "個と全体の相克"
+      ]
     },
     {
       "id": "jump-plus-next",
@@ -4039,7 +4189,11 @@
       ],
       "shelf": "manga",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/jump-plus-next"
+      "url": "https://uz-media.com/entry/jump-plus-next",
+      "themes": [
+        "個と全体の相克",
+        "継承と遡及的再発見"
+      ]
     },
     {
       "id": "centuria-kibou-zetsubou",
@@ -4050,7 +4204,12 @@
       ],
       "shelf": "manga",
       "productCount": 3,
-      "url": "https://uz-media.com/entry/centuria-kibou-zetsubou"
+      "url": "https://uz-media.com/entry/centuria-kibou-zetsubou",
+      "themes": [
+        "暴力の連鎖と断絶",
+        "絶望の中の希望",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "shinjitsu-ayahuya-movie-5",
@@ -4061,7 +4220,11 @@
       ],
       "shelf": "film",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/shinjitsu-ayahuya-movie-5"
+      "url": "https://uz-media.com/entry/shinjitsu-ayahuya-movie-5",
+      "themes": [
+        "監視・管理と自由",
+        "権力の構造と「悪」の生成"
+      ]
     },
     {
       "id": "Mac-or-win-2025",
@@ -4072,7 +4235,8 @@
       ],
       "shelf": "tech",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/Mac-or-win-2025"
+      "url": "https://uz-media.com/entry/Mac-or-win-2025",
+      "themes": []
     },
     {
       "id": "sora2-imageshare",
@@ -4083,7 +4247,11 @@
       ],
       "shelf": "tech",
       "productCount": 2,
-      "url": "https://uz-media.com/entry/sora2-imageshare"
+      "url": "https://uz-media.com/entry/sora2-imageshare",
+      "themes": [
+        "AIと人間の境界",
+        "テクノロジーと道具の思想"
+      ]
     },
     {
       "id": "sakamoto-ryuichi-seijyaku",
@@ -4094,7 +4262,11 @@
       ],
       "shelf": "music",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/sakamoto-ryuichi-seijyaku"
+      "url": "https://uz-media.com/entry/sakamoto-ryuichi-seijyaku",
+      "themes": [
+        "喪失と不在の手触り",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "miyazaki-hayao-nausicaa",
@@ -4105,7 +4277,12 @@
       ],
       "shelf": "manga",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/miyazaki-hayao-nausicaa"
+      "url": "https://uz-media.com/entry/miyazaki-hayao-nausicaa",
+      "themes": [
+        "監視・管理と自由",
+        "ユートピアの不可能性",
+        "自然と人間の境界崩壊"
+      ]
     },
     {
       "id": "utadahikaru-6",
@@ -4116,7 +4293,11 @@
       ],
       "shelf": "music",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/utadahikaru-6"
+      "url": "https://uz-media.com/entry/utadahikaru-6",
+      "themes": [
+        "音楽と意識の変容",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "darkfantasy-2",
@@ -4127,7 +4308,11 @@
       ],
       "shelf": "manga",
       "productCount": 4,
-      "url": "https://uz-media.com/entry/darkfantasy-2"
+      "url": "https://uz-media.com/entry/darkfantasy-2",
+      "themes": [
+        "暴力の連鎖と断絶",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "radiohead-best-5",
@@ -4138,7 +4323,11 @@
       ],
       "shelf": "music",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/radiohead-best-5"
+      "url": "https://uz-media.com/entry/radiohead-best-5",
+      "themes": [
+        "継承と遡及的再発見",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "jinsei-kaeru-8-mahousyo",
@@ -4149,7 +4338,11 @@
       ],
       "shelf": "books",
       "productCount": 9,
-      "url": "https://uz-media.com/entry/jinsei-kaeru-8-mahousyo"
+      "url": "https://uz-media.com/entry/jinsei-kaeru-8-mahousyo",
+      "themes": [
+        "言語と世界構築",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "ongakumanga-best-5",
@@ -4161,7 +4354,11 @@
       ],
       "shelf": "manga",
       "productCount": 8,
-      "url": "https://uz-media.com/entry/ongakumanga-best-5"
+      "url": "https://uz-media.com/entry/ongakumanga-best-5",
+      "themes": [
+        "創造と狂気の代償",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "like-a-music-movie-5",
@@ -4173,7 +4370,11 @@
       ],
       "shelf": "film",
       "productCount": 8,
-      "url": "https://uz-media.com/entry/like-a-music-movie-5"
+      "url": "https://uz-media.com/entry/like-a-music-movie-5",
+      "themes": [
+        "創造と狂気の代償",
+        "音楽と意識の変容"
+      ]
     },
     {
       "id": "murakamiharuki-the-best-5",
@@ -4184,7 +4385,11 @@
       ],
       "shelf": "books",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/murakamiharuki-the-best-5"
+      "url": "https://uz-media.com/entry/murakamiharuki-the-best-5",
+      "themes": [
+        "喪失と不在の手触り",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "zetsubou-kibou-movie-6",
@@ -4195,7 +4400,11 @@
       ],
       "shelf": "film",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/zetsubou-kibou-movie-6"
+      "url": "https://uz-media.com/entry/zetsubou-kibou-movie-6",
+      "themes": [
+        "権力の構造と「悪」の生成",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "before-love3",
@@ -4206,7 +4415,12 @@
       ],
       "shelf": "film",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/before-love3"
+      "url": "https://uz-media.com/entry/before-love3",
+      "themes": [
+        "喪失と不在の手触り",
+        "時間の多層性",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "2025-it-kakumei",
@@ -4217,7 +4431,11 @@
       ],
       "shelf": "tech",
       "productCount": 2,
-      "url": "https://uz-media.com/entry/2025-it-kakumei"
+      "url": "https://uz-media.com/entry/2025-it-kakumei",
+      "themes": [
+        "AIと人間の境界",
+        "監視・管理と自由"
+      ]
     },
     {
       "id": "claude45-chatgpt5-hikaku",
@@ -4228,7 +4446,11 @@
       ],
       "shelf": "tech",
       "productCount": 3,
-      "url": "https://uz-media.com/entry/claude45-chatgpt5-hikaku"
+      "url": "https://uz-media.com/entry/claude45-chatgpt5-hikaku",
+      "themes": [
+        "AIと人間の境界",
+        "テクノロジーと道具の思想"
+      ]
     },
     {
       "id": "jinseikan-kaeru-8-manga",
@@ -4239,7 +4461,11 @@
       ],
       "shelf": "manga",
       "productCount": 13,
-      "url": "https://uz-media.com/entry/jinseikan-kaeru-8-manga"
+      "url": "https://uz-media.com/entry/jinseikan-kaeru-8-manga",
+      "themes": [
+        "言語と世界構築",
+        "絶望の中の希望"
+      ]
     },
     {
       "id": "koi-yoru-movie-5",
@@ -4250,7 +4476,11 @@
       ],
       "shelf": "film",
       "productCount": 7,
-      "url": "https://uz-media.com/entry/koi-yoru-movie-5"
+      "url": "https://uz-media.com/entry/koi-yoru-movie-5",
+      "themes": [
+        "喪失と不在の手触り",
+        "愛と他者への接近"
+      ]
     },
     {
       "id": "ai-jidai-movie-5",
@@ -4262,7 +4492,11 @@
       ],
       "shelf": "film",
       "productCount": 6,
-      "url": "https://uz-media.com/entry/ai-jidai-movie-5"
+      "url": "https://uz-media.com/entry/ai-jidai-movie-5",
+      "themes": [
+        "AIと人間の境界",
+        "物語が現実を予見する"
+      ]
     }
   ]
 }

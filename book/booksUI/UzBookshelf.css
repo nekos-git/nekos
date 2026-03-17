@@ -457,6 +457,14 @@ body {
   padding: 1px 7px; border-radius: 8px; font-size: 10px;
 }
 .uz-articleCard__count { color: var(--muted); font-size: 10px; }
+.uz-articleCard__themes {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
+}
+.uz-articleCard__theme {
+  background: rgba(168,130,255,.12); color: #a882ff;
+  padding: 1px 7px; border-radius: 8px; font-size: 10px;
+  white-space: nowrap;
+}
 .uz-articleCard__link {
   color: var(--accent); text-decoration: none; font-size: 12px;
   white-space: nowrap; flex-shrink: 0; transition: color .12s;
