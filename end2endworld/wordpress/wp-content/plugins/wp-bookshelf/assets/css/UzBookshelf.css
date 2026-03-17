@@ -1,0 +1,1097 @@
+/* ============================================================
+   UZ Bookshelf v3 — リアル木製本棚CSS
+   booklog.jp風: 木目テクスチャ, 棚板厚み, 側板, 前板リップ
+   ============================================================ */
+
+:root {
+  --bg: #2c2420;
+  --wall: #3a332d;
+  --panel: #1e1a16;
+  --panel2: #15120f;
+  --text: #ede6dc;
+  --muted: #a89882;
+  --line: rgba(255,255,255,.08);
+  --shadow: rgba(0,0,0,.55);
+  /* 木目カラー */
+  --wood-dark: #3d2b1a;
+  --wood-mid: #5a3d25;
+  --wood-light: #7a5535;
+  --wood-highlight: #8e6840;
+  --wood-edge: #2e1e10;
+  --plank: #5a3d25;
+  --plank-light: #7a5535;
+  --accent: #c49a6c;
+  --accent2: #d4764e;
+  --rakuten: #bf0000;
+  --amazon: #ff9900;
+  --wood: linear-gradient(180deg, #4a3220 0%, #3d2b1a 50%, #2e1e10 100%);
+}
+
+* { box-sizing: border-box; }
+
+/* WordPress theme override: bookshelf takes full width */
+.uz-bookshelf-container {
+  color: var(--text);
+  font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0px, transparent 1px, transparent 40px),
+    linear-gradient(160deg, #3a332d 0%, #2c2420 40%, #241e1a 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.uz-wrap { max-width: 100%; margin: 0 auto; padding: 28px 20px 56px; overflow-x: hidden; }
+
+/* ---- Header ---- */
+.uz-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 12px 20px 14px;
+  background: linear-gradient(180deg, #3d2b1a, #2e1e10);
+  border-radius: 12px 12px 0 0;
+  border-bottom: 2px solid var(--wood-edge);
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.uz-kicker { font-size: 10px; letter-spacing: .22em; color: var(--accent); text-transform: uppercase; font-weight: 600; }
+.uz-title { margin: 4px 0 0; font-size: 24px; letter-spacing: .03em; font-weight: 800; color: #f0e6d8; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.uz-headerActions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.uz-tabBtn {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  color: var(--muted); padding: 7px 18px; border-radius: 22px;
+  font-size: 13px; cursor: pointer; transition: all .15s ease; font-weight: 500;
+}
+.uz-tabBtn:hover { background: rgba(255,255,255,.15); color: var(--text); }
+.uz-tabBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 700; }
+
+/* ---- 棚セレクター ---- */
+.uz-shelfNav {
+  display: flex; gap: 4px; margin-top: 0; padding: 8px 16px;
+  background: linear-gradient(180deg, #2e1e10, #3d2b1a);
+  border-bottom: 2px solid var(--wood-edge);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.uz-shelfNav::-webkit-scrollbar { display: none; }
+.uz-shelfNav__btn {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid transparent;
+  color: var(--muted); padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; cursor: pointer; transition: all .15s ease; font-weight: 500;
+  white-space: nowrap;
+}
+.uz-shelfNav__btn:hover {
+  background: rgba(255,255,255,.08); color: var(--text);
+}
+.uz-shelfNav__btn.active {
+  background: rgba(196,154,108,.2); color: var(--accent);
+  border-color: rgba(196,154,108,.3); font-weight: 700;
+}
+.uz-shelfNav__icon { font-size: 16px; }
+.uz-shelfNav__label {}
+
+/* ---- 1ページ1棚 ---- */
+.uz-singleShelf { margin-top: 22px; }
+
+/* ---- ページャー ---- */
+.uz-shelfPager {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-top: 28px; padding: 16px 0;
+  border-top: 1px solid rgba(196,154,108,.1);
+}
+.uz-shelfPager__btn {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
+  color: var(--text); padding: 12px 24px; border-radius: 12px;
+  font-size: 14px; cursor: pointer; transition: all .15s ease;
+  font-weight: 500; min-width: 140px;
+}
+.uz-shelfPager__btn:hover:not(:disabled) {
+  background: rgba(196,154,108,.15); border-color: rgba(196,154,108,.3);
+  color: var(--accent);
+}
+.uz-shelfPager__btn:disabled {
+  opacity: .25; cursor: default;
+}
+.uz-shelfPager__pos {
+  font-size: 13px; color: var(--muted); font-weight: 600;
+  letter-spacing: .05em;
+}
+
+/* ---- Shelf (木製本棚フレーム) ---- */
+.uz-shelf {
+  position: relative;
+  background:
+    /* 木目テクスチャ */
+    repeating-linear-gradient(92deg, rgba(0,0,0,.03) 0px, transparent 2px, transparent 12px, rgba(0,0,0,.02) 14px),
+    repeating-linear-gradient(88deg, rgba(255,255,255,.02) 0px, transparent 3px, transparent 20px),
+    var(--wood);
+  border: none; border-radius: 0;
+  padding: 0; overflow: visible;
+  box-shadow:
+    8px 0 20px rgba(0,0,0,.3),
+    -8px 0 20px rgba(0,0,0,.3),
+    0 8px 30px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+/* 棚の左側板 */
+.uz-shelf::before {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 18px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.04) 0px, transparent 2px, transparent 8px),
+    linear-gradient(90deg, #2e1e10 0%, var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: inset -2px 0 4px rgba(0,0,0,.2), inset 1px 0 0 rgba(255,255,255,.05);
+  z-index: 2;
+}
+/* 棚の右側板 */
+.uz-shelf::after {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.04) 0px, transparent 2px, transparent 8px),
+    linear-gradient(270deg, #2e1e10 0%, var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: inset 2px 0 4px rgba(0,0,0,.2), inset -1px 0 0 rgba(255,255,255,.05);
+  z-index: 2;
+}
+/* カテゴリ色は側板のアクセントラインで表現 */
+.uz-shelf--film::before { border-left: 3px solid rgba(255,107,74,.3); }
+.uz-shelf--music::before { border-left: 3px solid rgba(100,160,255,.3); }
+.uz-shelf--manga::before { border-left: 3px solid rgba(255,200,60,.3); }
+.uz-shelf--books::before { border-left: 3px solid rgba(120,200,120,.3); }
+
+.uz-shelfHead {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 36px; background: linear-gradient(180deg, rgba(0,0,0,.15), transparent);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.uz-shelfTitle { margin: 0; font-size: 15px; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; font-weight: 700; color: #f0e6d8; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.uz-shelfIcon { font-size: 18px; }
+.uz-shelfMeta { font-size: 11px; color: var(--muted); opacity: .7; }
+
+/* ---- Rack (本が並ぶ一段) ---- */
+.uz-rack {
+  position: relative;
+  padding: 20px 36px 40px;
+  /* 棚の奥壁 */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 30%, rgba(0,0,0,.12) 100%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.01) 0px, transparent 1px, transparent 30px),
+    linear-gradient(180deg, #3d2b1a 0%, #4a3525 50%, #3d2b1a 100%);
+  border: none; border-radius: 0;
+  min-height: 180px;
+}
+
+/* 棚板 — リアルな厚みのある木製板 */
+.uz-plank {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 28px;
+  background:
+    /* 木目テクスチャ */
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, transparent 3px, transparent 15px, rgba(0,0,0,.03) 18px),
+    /* 立体感 */
+    linear-gradient(180deg,
+      var(--wood-highlight) 0%,
+      var(--wood-light) 15%,
+      var(--wood-mid) 50%,
+      var(--wood-dark) 85%,
+      var(--wood-edge) 100%
+    );
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.4),
+    0 2px 4px rgba(0,0,0,.3),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(0,0,0,.3);
+  /* 前板リップ: 少し手前に傾けて棚板の厚みを見せる */
+  transform: none;
+  transform-origin: bottom;
+  z-index: 3;
+}
+/* 棚板の前面（リップ） — 手前に見える厚みの部分 */
+.uz-plank::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, transparent 2px, transparent 12px),
+    linear-gradient(180deg, var(--wood-dark) 0%, var(--wood-edge) 60%, #1a0f06 100%);
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.uz-mixedRow {
+  display: flex; gap: 8px 6px; align-items: flex-end;
+  flex-wrap: wrap; min-height: 140px;
+  padding-bottom: 8px;
+  justify-content: center;
+  position: relative; z-index: 1;
+}
+
+/* ============================================================
+   表紙コンポーネント — 3Dブック（棚上リアル配置）
+   ============================================================ */
+.uz-book {
+  position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
+  transform-style: preserve-3d;
+  transform: perspective(900px) rotateY(-6deg) rotateX(1deg);
+  transform-origin: left bottom;
+  transition: transform .28s cubic-bezier(.25,.46,.45,.94), filter .2s, box-shadow .28s;
+  margin-bottom: 0;
+}
+.uz-book:hover {
+  transform: perspective(900px) rotateY(-2deg) translateZ(16px) translateY(-6px);
+  filter: brightness(1.08);
+  z-index: 10;
+}
+
+.uz-book__body {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* 表紙面 */
+.uz-book__front {
+  position: absolute; inset: 0;
+  border-radius: 2px 4px 4px 2px;
+  overflow: hidden;
+  box-shadow:
+    2px 2px 6px rgba(0,0,0,.35),
+    4px 4px 16px rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.06);
+  background: #2a1f14;
+}
+
+.uz-book__img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .4s ease;
+}
+.uz-book__img.loaded { opacity: 1; }
+
+/* 表紙のないとき */
+.uz-book__placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 10px 6px; text-align: center;
+}
+.uz-book__placeholderText {
+  font-size: 8px; font-weight: 700; color: rgba(255,255,255,.85);
+  line-height: 1.3; writing-mode: vertical-rl; text-orientation: mixed;
+  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  max-height: 80%;
+}
+.uz-book__placeholderAuthor {
+  font-size: 6px; color: rgba(255,255,255,.55);
+  margin-top: 6px; writing-mode: vertical-rl;
+}
+
+/* 光沢オーバーレイ */
+.uz-book__gloss {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,.18) 0%,
+    rgba(255,255,255,.05) 25%,
+    transparent 50%,
+    rgba(0,0,0,.06) 75%,
+    rgba(0,0,0,.12) 100%
+  );
+  pointer-events: none;
+  border-radius: 2px;
+}
+.uz-book:hover .uz-book__gloss {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,.25) 0%,
+    rgba(255,255,255,.08) 30%,
+    transparent 55%
+  );
+}
+
+/* 背表紙面（右端の厚み） */
+.uz-book__spine {
+  position: absolute; top: 0; right: -12px; bottom: 0;
+  border-radius: 0 10px 10px 0;
+  transform: rotateY(90deg); transform-origin: left;
+  box-shadow: inset 0 0 8px rgba(0,0,0,.3);
+}
+
+/* ページ断面（底部） */
+.uz-book__pages {
+  position: absolute; left: 2px; right: 0; bottom: -6px;
+  background: linear-gradient(90deg,
+    #e8e0d4 0%, #f5f0e8 20%, #ece5da 40%, #f0ebe2 60%, #e8e0d4 80%, #ede6dc 100%
+  );
+  border-radius: 0 0 2px 2px;
+  transform: rotateX(90deg); transform-origin: top;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  opacity: .7;
+}
+
+/* レビューバッジ */
+.uz-book__badge {
+  position: absolute; top: 4px; left: 4px;
+  background: rgba(0,0,0,.75); color: #ffd700;
+  font-size: 8px; padding: 2px 5px; border-radius: 6px;
+  backdrop-filter: blur(4px); letter-spacing: -1px;
+  border: 1px solid rgba(255,215,0,.2);
+  z-index: 2;
+}
+
+/* 判型ラベル */
+.uz-book__format {
+  position: absolute; bottom: 4px; right: 4px;
+  background: rgba(0,0,0,.6); color: rgba(255,255,255,.7);
+  font-size: 7px; padding: 1px 4px; border-radius: 4px;
+  backdrop-filter: blur(4px); z-index: 2;
+}
+
+/* 影（棚板上に落ちる自然な影） */
+.uz-book__shadow {
+  position: absolute; left: 2px; right: -4px; bottom: -4px; height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.5) 0%, transparent 70%);
+  filter: blur(3px);
+  pointer-events: none;
+  transition: all .28s;
+}
+.uz-book:hover .uz-book__shadow {
+  bottom: -8px; height: 12px;
+  filter: blur(5px);
+  opacity: .6;
+}
+
+/* ディスク（正方形） */
+.uz-book--disc .uz-book__front { border-radius: 4px; }
+.uz-book--disc .uz-book__pages { display: none; }
+.uz-book--disc .uz-book__spine { width: 6px; }
+
+/* ============================================================
+   映画ポスター — 表紙画像を常時表示
+   ============================================================ */
+.uz-book--poster .uz-book__front {
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.35),
+    0 8px 24px rgba(0,0,0,.3);
+}
+.uz-book--poster .uz-book__img {
+  border-radius: 4px;
+}
+.uz-book--poster .uz-book__pages { display: none; }
+.uz-book--poster .uz-book__spine { width: 6px; }
+
+/* ============================================================
+   背表紙コンポーネント v4 — リアル書籍背表紙
+   帯・箔押しタイトル・出版社マーク・凹凸テクスチャ
+   ============================================================ */
+.uz-spine2 {
+  position: relative; text-decoration: none; color: inherit; flex-shrink: 0;
+  transform: perspective(900px) rotateY(-5deg);
+  transform-origin: left bottom;
+  transition: transform .2s cubic-bezier(.25,.46,.45,.94), filter .18s;
+}
+.uz-spine2:hover {
+  transform: perspective(900px) rotateY(-1deg) translateZ(8px) translateY(-3px);
+  filter: brightness(1.12);
+  z-index: 10;
+}
+
+.uz-spine2__body {
+  position: relative; width: 100%; height: 100%;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow:
+    1px 0 4px rgba(0,0,0,.3),
+    2px 2px 8px rgba(0,0,0,.25),
+    inset -1px 0 6px rgba(0,0,0,.2),
+    inset 1px 0 3px rgba(255,255,255,.06);
+  overflow: hidden;
+}
+
+/* 布/紙テクスチャ — 縦の繊維 */
+.uz-spine2__texture {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,.03) 1px, rgba(0,0,0,.03) 2px),
+    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,.02) 3px, rgba(255,255,255,.02) 4px);
+  pointer-events: none;
+}
+
+/* 上部の装飾帯 */
+.uz-spine2__bandTop {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: .6;
+}
+
+/* 下部の装飾帯 */
+.uz-spine2__bandBottom {
+  position: absolute; bottom: 18px; left: 0; right: 0; height: 2px;
+  opacity: .4;
+}
+
+/* テキスト — 箔押し風 */
+.uz-spine2__text {
+  position: absolute; top: 8px; left: 2px; right: 2px; bottom: 22px;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  display: flex; gap: 3px; align-items: center; justify-content: flex-start;
+  overflow: hidden;
+}
+.uz-spine2__title {
+  font-size: 7.5px; letter-spacing: .06em; font-weight: 700;
+  text-shadow:
+    0 0 1px rgba(0,0,0,.6),
+    0 1px 2px rgba(0,0,0,.5);
+  line-height: 1.25; max-height: 100%; overflow: hidden;
+  /* embossed effect */
+  filter: drop-shadow(0 0.5px 0 rgba(255,255,255,.15));
+}
+.uz-spine2__author {
+  font-size: 5.5px; color: rgba(255,255,255,.55);
+  letter-spacing: .02em; font-weight: 400;
+  max-height: 45%; overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+
+/* 出版社マーク（底部） */
+.uz-spine2__pub {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 10px; height: 10px;
+  border: 1px solid; border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .5;
+}
+.uz-spine2__pub span {
+  font-size: 5px; font-weight: 800;
+  line-height: 1;
+}
+
+/* 端のエッジライト — 本の丸み */
+.uz-spine2__edge {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.18) 0%,
+    rgba(255,255,255,.06) 30%,
+    rgba(0,0,0,.1) 70%,
+    rgba(0,0,0,.2) 100%
+  );
+  border-radius: 0 2px 2px 0;
+}
+
+/* 光沢 — 微妙な反射 */
+.uz-spine2__gloss {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.14) 0%,
+    rgba(255,255,255,.04) 15%,
+    transparent 40%,
+    transparent 85%,
+    rgba(0,0,0,.1) 100%
+  );
+  pointer-events: none;
+}
+
+/* === バリエーション（5種） === */
+/* v0: デフォルト（帯+マーク） */
+.uz-spine2--v0 .uz-spine2__bandTop { height: 3px; }
+
+/* v1: 上下に太帯 */
+.uz-spine2--v1 .uz-spine2__bandTop { height: 5px; opacity: .5; }
+.uz-spine2--v1 .uz-spine2__bandBottom { height: 4px; opacity: .35; }
+
+/* v2: 帯なし、テキスト中央 */
+.uz-spine2--v2 .uz-spine2__bandTop { display: none; }
+.uz-spine2--v2 .uz-spine2__bandBottom { display: none; }
+.uz-spine2--v2 .uz-spine2__text { justify-content: center; top: 6px; bottom: 18px; }
+
+/* v3: 上に細線2本 */
+.uz-spine2--v3 .uz-spine2__bandTop {
+  height: 1px; top: 4px;
+  box-shadow: 0 3px 0 currentColor;
+  opacity: .35;
+}
+.uz-spine2--v3 .uz-spine2__text { top: 14px; }
+
+/* v4: 全面帯（背表紙全体に淡い色） */
+.uz-spine2--v4 .uz-spine2__bandTop {
+  top: 0; bottom: 0; height: auto;
+  opacity: .08;
+}
+.uz-spine2--v4 .uz-spine2__bandBottom { display: none; }
+.uz-spine2--v4 .uz-spine2__pub { opacity: .7; }
+
+.uz-spine2--disc .uz-spine2__body { border-radius: 4px; }
+.uz-spine2--disc .uz-spine2__bandTop,
+.uz-spine2--disc .uz-spine2__bandBottom,
+.uz-spine2--disc .uz-spine2__pub { display: none; }
+
+/* ============================================================
+   ハイライト
+   ============================================================ */
+.uz-highlight { animation: uzGlow 1.5s ease-in-out 2; }
+@keyframes uzGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,154,108,0); }
+  50% { box-shadow: 0 0 24px 8px rgba(196,154,108,.6); }
+}
+
+/* ============================================================
+   ツールチップ — 本棚に重なるオーバーレイカード
+   ============================================================ */
+.uz-tooltip {
+  background: rgba(20,14,8,.92); color: #f0e6d8;
+  padding: 14px 18px 12px; border-radius: 10px;
+  font-size: 12px; width: 260px;
+  border: 1px solid rgba(196,154,108,.25);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.2);
+  animation: uzTooltipIn .15s ease;
+}
+@keyframes uzTooltipIn {
+  from { opacity: 0; transform: translate(-50%, -100%) translateY(6px); }
+  to { opacity: 1; transform: translate(-50%, -100%) translateY(0); }
+}
+.uz-tooltip__arrow {
+  position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-top: 7px solid rgba(20,14,8,.92);
+}
+.uz-tooltip__title {
+  font-weight: 700; font-size: 13px; line-height: 1.45;
+  margin-bottom: 4px; color: #fff;
+}
+.uz-tooltip__author {
+  color: var(--muted); font-size: 11px; margin-bottom: 6px;
+}
+.uz-tooltip__comment {
+  font-size: 11px; color: #d4c4a8; line-height: 1.5;
+  margin-bottom: 8px; padding: 6px 8px;
+  background: rgba(255,255,255,.05); border-radius: 6px;
+  border-left: 2px solid var(--accent);
+}
+.uz-tooltip__tags {
+  display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px;
+}
+.uz-tooltip__tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: rgba(196,154,108,.18); color: var(--accent);
+  border: 1px solid rgba(196,154,108,.25);
+  font-weight: 600; letter-spacing: .02em;
+}
+.uz-tooltip__article {
+  font-size: 10px; color: var(--muted); margin-top: 4px;
+  padding-top: 6px; border-top: 1px solid rgba(255,255,255,.06);
+}
+
+/* ============================================================
+   記事一覧パネル
+   ============================================================ */
+.uz-articlesPanel {
+  margin-top: 22px; padding: 18px;
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.12); border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+.uz-articlesPanelHead {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.uz-articlesPanelHead h2 { margin: 0; font-size: 16px; font-weight: 700; }
+
+.uz-searchInput {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
+  color: var(--text); padding: 7px 16px; border-radius: 18px;
+  font-size: 13px; outline: none; min-width: 180px; transition: border-color .15s;
+}
+.uz-searchInput:focus { border-color: var(--accent); }
+.uz-searchInput::placeholder { color: var(--muted); }
+
+.uz-shelfFilter { display: flex; gap: 6px; flex-wrap: wrap; }
+.uz-filterBtn {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.12);
+  color: var(--muted); padding: 4px 12px; border-radius: 14px;
+  font-size: 12px; cursor: pointer; transition: all .12s;
+}
+.uz-filterBtn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.uz-filterBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 600; }
+
+.uz-articlesList {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 520px; overflow-y: auto;
+}
+.uz-articleCard {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 10px;
+  background: rgba(255,255,255,.02); border: 1px solid transparent;
+  cursor: pointer; transition: all .12s;
+}
+.uz-articleCard:hover { background: rgba(255,255,255,.05); border-color: var(--line); }
+.uz-articleCard__icon { font-size: 20px; flex-shrink: 0; }
+.uz-articleCard__body { flex: 1; min-width: 0; }
+.uz-articleCard__title {
+  font-size: 13px; font-weight: 600; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.uz-articleCard__meta {
+  display: flex; gap: 8px; align-items: center; margin-top: 3px;
+  font-size: 11px; color: var(--muted);
+}
+.uz-articleCard__cat {
+  background: rgba(196,154,108,.12); color: var(--accent);
+  padding: 1px 7px; border-radius: 8px; font-size: 10px;
+}
+.uz-articleCard__count { color: var(--muted); font-size: 10px; }
+.uz-articleCard__link {
+  color: var(--accent); text-decoration: none; font-size: 12px;
+  white-space: nowrap; flex-shrink: 0; transition: color .12s;
+}
+.uz-articleCard__link:hover { color: #fff; }
+
+/* ============================================================
+   モーダル
+   ============================================================ */
+.uz-modalOverlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(15,10,5,.78); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.uz-modal {
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.15);
+  border-radius: 16px; max-width: 700px; width: 100%;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.3);
+  position: relative; animation: slideUp .2s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.uz-modal__close {
+  position: absolute; top: 14px; right: 16px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(196,154,108,.15);
+  color: var(--text); width: 34px; height: 34px;
+  border-radius: 50%; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s; z-index: 1;
+}
+.uz-modal__close:hover { background: rgba(255,255,255,.15); }
+
+.uz-modal__inner { display: flex; gap: 24px; padding: 30px; }
+@media (max-width: 600px) { .uz-modal__inner { flex-direction: column; align-items: center; } }
+
+.uz-modal__cover { flex-shrink: 0; width: 200px; }
+.uz-modal__cover img {
+  width: 100%; border-radius: 4px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.45);
+}
+.uz-modal__noCover {
+  width: 200px; height: 280px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; text-align: center; font-size: 14px;
+  color: rgba(255,255,255,.8); writing-mode: vertical-rl;
+}
+
+.uz-modal__details { flex: 1; min-width: 0; }
+.uz-modal__title { margin: 0 0 6px; font-size: 19px; line-height: 1.35; font-weight: 700; }
+.uz-modal__author { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
+.uz-modal__meta { color: var(--muted); margin: 2px 0; font-size: 13px; }
+.uz-modal__price { color: var(--accent2); font-size: 22px; font-weight: 800; margin: 12px 0; }
+.uz-modal__review { margin: 8px 0; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.uz-modal__stars { color: #ffd700; font-size: 16px; }
+.uz-modal__caption {
+  margin: 14px 0; font-size: 13px; line-height: 1.6; color: var(--muted);
+  border-left: 3px solid var(--line); padding-left: 12px;
+}
+
+.uz-modal__articleLink {
+  margin: 16px 0; padding: 12px 16px;
+  background: rgba(196,154,108,.08); border: 1px solid rgba(196,154,108,.15);
+  border-radius: 12px;
+}
+.uz-modal__articleLabel {
+  display: block; font-size: 10px; color: var(--accent); margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: .1em; font-weight: 600;
+}
+.uz-modal__articleLink a {
+  color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600;
+  transition: color .12s;
+}
+.uz-modal__articleLink a:hover { color: var(--accent); }
+
+.uz-modal__actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.uz-modal__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 11px 24px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; text-decoration: none; color: #fff;
+  transition: all .15s ease;
+}
+.uz-modal__btn--rakuten { background: var(--rakuten); }
+.uz-modal__btn--rakuten:hover { background: #d40000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(191,0,0,.4); }
+.uz-modal__btn--amazon { background: var(--amazon); color: #111; }
+.uz-modal__btn--amazon:hover { background: #ffaa22; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,153,0,.4); }
+
+/* ---- Scrollbar ---- */
+.uz-articlesList::-webkit-scrollbar, .uz-modal::-webkit-scrollbar { width: 5px; }
+.uz-articlesList::-webkit-scrollbar-track, .uz-modal::-webkit-scrollbar-track { background: transparent; }
+.uz-articlesList::-webkit-scrollbar-thumb, .uz-modal::-webkit-scrollbar-thumb { background: rgba(196,154,108,.2); border-radius: 3px; }
+
+/* ============================================================
+   検索バー (A1)
+   ============================================================ */
+.uz-bookSearchBar {
+  position: relative; margin-top: 14px;
+}
+.uz-bookSearchInput {
+  width: 100%; padding: 10px 40px 10px 16px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
+  color: var(--text); border-radius: 14px;
+  font-size: 14px; outline: none; transition: border-color .15s;
+}
+.uz-bookSearchInput:focus { border-color: var(--accent); }
+.uz-bookSearchInput::placeholder { color: var(--muted); }
+.uz-bookSearchClear {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.1); border: none; color: var(--muted);
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+  font-size: 12px; display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.uz-bookSearchClear:hover { background: rgba(255,255,255,.2); color: var(--text); }
+
+/* ============================================================
+   ジャンルフィルタ (A2)
+   ============================================================ */
+.uz-genreFilter {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+  padding: 8px; background: rgba(255,255,255,.03);
+  border: 1px solid rgba(196,154,108,.1); border-radius: 12px;
+}
+.uz-genreBtn {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.1);
+  color: var(--muted); padding: 4px 12px; border-radius: 14px;
+  font-size: 11px; cursor: pointer; transition: all .12s;
+  white-space: nowrap;
+}
+.uz-genreBtn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.uz-genreBtn.active { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 600; }
+
+/* ============================================================
+   ローディング / エラー (A4)
+   ============================================================ */
+.uz-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; gap: 16px;
+}
+.uz-loading__spinner {
+  width: 40px; height: 40px; border: 3px solid rgba(196,154,108,.15);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: uzSpin 1s linear infinite;
+}
+@keyframes uzSpin { to { transform: rotate(360deg); } }
+.uz-loading__text { font-size: 14px; color: var(--muted); }
+
+.uz-error {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 12px;
+}
+.uz-error__icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(212,118,78,.15); color: var(--accent2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700;
+}
+.uz-error__text { font-size: 14px; color: var(--muted); }
+.uz-error__retry {
+  background: var(--accent); color: #fff; border: none;
+  padding: 8px 20px; border-radius: 10px; font-size: 13px;
+  cursor: pointer; transition: background .12s;
+}
+.uz-error__retry:hover { background: #3a8aee; }
+
+/* ============================================================
+   お気に入り (A6)
+   ============================================================ */
+.uz-favCount {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent2); color: #fff;
+  font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+  border-radius: 9px; margin-left: 6px; padding: 0 5px;
+}
+
+.uz-book__favBadge {
+  position: absolute; bottom: 4px; left: 4px;
+  background: rgba(255,107,74,.85); color: #fff;
+  font-size: 10px; padding: 1px 4px; border-radius: 6px;
+  z-index: 2;
+}
+
+.uz-modal__btn--fav {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,154,108,.15);
+  cursor: pointer; transition: all .15s;
+}
+.uz-modal__btn--fav:hover {
+  background: rgba(212,118,78,.15); border-color: rgba(212,118,78,.3);
+}
+.uz-modal__btn--fav.active {
+  background: var(--accent2); border-color: var(--accent2);
+}
+
+/* ============================================================
+   空状態
+   ============================================================ */
+.uz-emptyState {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; gap: 8px;
+}
+.uz-emptyState__icon { font-size: 36px; opacity: .4; }
+.uz-emptyState__text { font-size: 15px; color: var(--muted); font-weight: 600; }
+.uz-emptyState__hint { font-size: 12px; color: var(--muted); opacity: .6; }
+
+/* ============================================================
+   A1: 記事詳細ビュー
+   ============================================================ */
+.uz-articleDetail {
+  margin-top: 22px; padding: 24px;
+  background: linear-gradient(180deg, #1e1a16, #15120f);
+  border: 1px solid rgba(196,154,108,.12); border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+.uz-articleDetail__back {
+  background: none; border: none; color: var(--accent); cursor: pointer;
+  font-size: 13px; padding: 0; margin-bottom: 16px; transition: color .12s;
+}
+.uz-articleDetail__back:hover { color: #fff; }
+.uz-articleDetail__header {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px;
+}
+.uz-articleDetail__icon { font-size: 28px; flex-shrink: 0; }
+.uz-articleDetail__title {
+  margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4;
+}
+.uz-articleDetail__meta {
+  display: flex; gap: 8px; align-items: center; margin-top: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.uz-articleDetail__actions {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.uz-articleDetail__readLink {
+  display: inline-flex; align-items: center;
+  color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600;
+  padding: 8px 18px; border: 1px solid rgba(196,154,108,.25);
+  border-radius: 10px; transition: all .12s;
+}
+.uz-articleDetail__readLink:hover {
+  background: rgba(196,154,108,.1); color: #f0e6d8;
+}
+.uz-articleDetail__shelfBtn {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(196,154,108,.12);
+  color: var(--muted); padding: 8px 18px; border-radius: 10px;
+  font-size: 14px; cursor: pointer; transition: all .12s;
+}
+.uz-articleDetail__shelfBtn:hover {
+  background: rgba(255,255,255,.1); color: var(--text);
+}
+.uz-articleDetail__booksSection {
+  border-top: 1px solid var(--line); padding-top: 18px;
+}
+.uz-articleDetail__booksTitle {
+  margin: 0 0 14px; font-size: 14px; color: var(--muted); font-weight: 600;
+}
+.uz-articleDetail__miniShelf {
+  display: flex; gap: 10px 6px; align-items: flex-end;
+  flex-wrap: wrap; min-height: 120px;
+  padding: 18px 14px 32px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0px, transparent 2px, transparent 20px),
+    linear-gradient(180deg, #3d2b1a 0%, #4a3525 50%, #3d2b1a 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(196,154,108,.1);
+  justify-content: center;
+  position: relative;
+}
+/* ミニ棚板 */
+.uz-articleDetail__miniShelf::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, transparent 3px, transparent 12px),
+    linear-gradient(180deg, var(--wood-highlight), var(--wood-mid) 40%, var(--wood-dark) 100%);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ============================================================
+   A2: モーダル内関連コンテンツ
+   ============================================================ */
+.uz-modal__articleSection { margin-top: 16px; }
+.uz-modal__articleLinkRow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.uz-modal__articleDetailBtn {
+  background: rgba(196,154,108,.1); border: 1px solid rgba(196,154,108,.2);
+  color: var(--accent); padding: 4px 10px; border-radius: 8px;
+  font-size: 11px; cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.uz-modal__articleDetailBtn:hover {
+  background: rgba(196,154,108,.2); color: #f0e6d8;
+}
+.uz-modal__relatedBooks { margin-top: 12px; }
+.uz-modal__relatedLabel {
+  display: block; font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  font-weight: 600;
+}
+.uz-modal__relatedList {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.uz-modal__relatedThumb {
+  width: 48px; height: 68px; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--line); cursor: pointer;
+  transition: all .15s; background: none; padding: 0; flex-shrink: 0;
+}
+.uz-modal__relatedThumb:hover {
+  border-color: var(--accent); transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(196,154,108,.25);
+}
+.uz-modal__relatedThumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.uz-modal__relatedPlaceholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  padding: 4px; text-align: center;
+}
+.uz-modal__relatedPlaceholder span {
+  font-size: 6px; color: rgba(255,255,255,.8); writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* ============================================================
+   A3: 記事カテゴリフィルタ
+   ============================================================ */
+.uz-categoryFilter {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+  padding-top: 8px; border-top: 1px solid var(--line);
+}
+
+/* ============================================================
+   A4: 持続フィルタバー
+   ============================================================ */
+.uz-articleFilterBar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 12px; padding: 10px 16px;
+  background: rgba(196,154,108,.1); border: 1px solid rgba(196,154,108,.2);
+  border-radius: 12px;
+}
+.uz-articleFilterBar__label {
+  font-size: 13px; color: var(--accent); font-weight: 600;
+}
+.uz-articleFilterBar__clear {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(196,154,108,.2);
+  color: var(--muted); padding: 4px 12px; border-radius: 8px;
+  font-size: 12px; cursor: pointer; transition: all .12s;
+}
+.uz-articleFilterBar__clear:hover {
+  background: rgba(255,255,255,.15); color: var(--text);
+}
+
+/* ---- タッチデバイス: ツールチップ無効化 ---- */
+@media (hover: none), (pointer: coarse) {
+  .uz-tooltip { display: none !important; }
+}
+
+/* ---- Tablet (768px以下) ---- */
+@media (max-width: 768px) {
+  .uz-wrap { padding: 20px 14px 40px; }
+  .uz-title { font-size: 20px; }
+
+  .uz-shelf::before, .uz-shelf::after { width: 12px; }
+  .uz-shelfHead { padding: 10px 24px; }
+  .uz-rack { padding: 14px 24px 36px; }
+  .uz-mixedRow { gap: 8px 5px; min-height: 110px; }
+  .uz-plank { height: 22px; }
+  .uz-plank::after { height: 6px; bottom: -6px; }
+
+  .uz-book { transform: perspective(800px) rotateY(-5deg) rotateX(1deg) scale(.88); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(800px) rotateY(-1deg) translateZ(12px) translateY(-4px) scale(.88); }
+  .uz-spine2 { transform: perspective(800px) rotateY(-4deg) scale(.88); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(800px) rotateY(-1deg) translateZ(6px) translateY(-2px) scale(.88); }
+
+  .uz-shelfPager__btn { min-width: 120px; padding: 10px 18px; font-size: 13px; }
+
+  .uz-modal { max-width: 90vw; }
+  .uz-modal__inner { padding: 24px; }
+}
+
+/* ---- Phone (600px以下) ---- */
+@media (max-width: 600px) {
+  .uz-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 10px 10px 0 0; }
+  .uz-headerActions { width: 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .uz-headerActions::-webkit-scrollbar { display: none; }
+  .uz-tabBtn { padding: 6px 14px; font-size: 12px; flex-shrink: 0; }
+  .uz-bookSearchInput { font-size: 13px; padding: 8px 36px 8px 12px; }
+  .uz-genreFilter { gap: 4px; padding: 6px; }
+
+  .uz-articleDetail { padding: 16px; margin-top: 14px; }
+  .uz-articleDetail__title { font-size: 15px; }
+  .uz-articleDetail__miniShelf { gap: 8px 5px; padding: 12px 8px 24px; }
+  .uz-modal__relatedThumb { width: 40px; height: 56px; }
+  .uz-articleFilterBar { flex-direction: column; gap: 8px; text-align: center; }
+
+  .uz-shelfNav { gap: 4px; padding: 4px 10px; }
+  .uz-shelfNav__btn { padding: 6px 12px; font-size: 12px; border-radius: 8px; gap: 4px; }
+  .uz-shelfNav__icon { font-size: 14px; }
+
+  .uz-singleShelf { margin-top: 14px; }
+  .uz-shelf::before, .uz-shelf::after { width: 8px; }
+  .uz-shelfHead { padding: 10px 20px; }
+  .uz-shelfTitle { font-size: 14px; }
+  .uz-rack { padding: 12px 20px 32px; }
+  .uz-mixedRow { gap: 6px 4px; min-height: 90px; }
+  .uz-plank { height: 18px; }
+  .uz-plank::after { height: 5px; bottom: -5px; }
+
+  .uz-book { transform: perspective(700px) rotateY(-4deg) rotateX(1deg) scale(.78); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(700px) rotateY(-1deg) translateZ(8px) translateY(-3px) scale(.78); }
+  .uz-spine2 { transform: perspective(700px) rotateY(-3deg) scale(.78); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(700px) rotateY(0deg) translateZ(4px) translateY(-2px) scale(.78); }
+
+  .uz-shelfPager { gap: 8px; margin-top: 20px; padding: 12px 0; }
+  .uz-shelfPager__btn { min-width: 0; flex: 1; padding: 10px 12px; font-size: 12px; text-align: center; }
+  .uz-shelfPager__pos { font-size: 12px; flex-shrink: 0; }
+
+  .uz-modal { border-radius: 14px; max-height: 90vh; }
+  .uz-modal__inner { flex-direction: column; align-items: center; padding: 20px 16px; gap: 16px; }
+  .uz-modal__cover { width: 140px; }
+  .uz-modal__title { font-size: 16px; }
+  .uz-modal__price { font-size: 18px; }
+  .uz-modal__actions { flex-direction: column; }
+  .uz-modal__btn { width: 100%; text-align: center; }
+
+  .uz-articlesPanel { padding: 12px; margin-top: 14px; }
+  .uz-articlesPanelHead { gap: 8px; }
+  .uz-searchInput { min-width: 0; width: 100%; }
+  .uz-articleCard { padding: 8px 10px; gap: 8px; }
+  .uz-articleCard__link { font-size: 11px; }
+}
+
+/* ---- Small Phone (400px以下) ---- */
+@media (max-width: 400px) {
+  .uz-wrap { padding: 14px 10px 32px; }
+  .uz-title { font-size: 18px; }
+  .uz-kicker { font-size: 9px; }
+
+  .uz-book { transform: perspective(600px) rotateY(-3deg) scale(.68); transform-origin: left bottom; }
+  .uz-book:hover { transform: perspective(600px) rotateY(0deg) translateZ(6px) scale(.68); }
+  .uz-spine2 { transform: perspective(600px) rotateY(-3deg) scale(.68); transform-origin: left bottom; }
+  .uz-spine2:hover { transform: perspective(600px) rotateY(0deg) translateZ(3px) scale(.68); }
+
+  .uz-mixedRow { gap: 5px 3px; }
+  .uz-shelf::before, .uz-shelf::after { width: 6px; }
+  .uz-shelfHead { padding: 8px 16px; }
+  .uz-rack { padding: 10px 16px 28px; }
+  .uz-shelfTitle { font-size: 13px; }
+  .uz-shelfMeta { font-size: 10px; }
+  .uz-plank { height: 16px; }
+  .uz-plank::after { height: 4px; bottom: -4px; }
+
+  .uz-modal__cover { width: 120px; }
+  .uz-modal__inner { padding: 16px 12px; }
+}
