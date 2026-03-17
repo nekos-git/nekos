@@ -467,7 +467,8 @@ function UzBookshelf() {
     uzShelves.forEach(function(s) {
       (s.mixedItems || s.mixedBooks || []).forEach(function(item) {
         if ((item.fullTitle || item.title || '').toLowerCase().includes(q) ||
-            (item.fullAuthor || item.author || '').toLowerCase().includes(q)) allItems.push(item);
+            (item.fullAuthor || item.author || '').toLowerCase().includes(q) ||
+            (item.articleTitle || '').toLowerCase().includes(q)) allItems.push(item);
       });
     });
     return allItems;
