@@ -106,6 +106,13 @@ class UZ_Bookshelf_API {
             'permission_callback' => array( $this, 'check_admin_permission' ),
         ) );
 
+        // POST /batch-update-authors - Batch update authors by title
+        register_rest_route( self::NAMESPACE, '/batch-update-authors', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'batch_update_authors' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
         // --- CRUD for shelf items (admin) ---
         register_rest_route( self::NAMESPACE, '/items', array(
             'methods'             => WP_REST_Server::CREATABLE,
@@ -363,6 +370,34 @@ class UZ_Bookshelf_API {
         }
 
         return rest_ensure_response( $result );
+    }
+
+    /**
+     * POST /batch-update-authors - Update authors for items matching by full_title
+     */
+    public function batch_update_authors( WP_REST_Request $request ) {
+        $updates = $request->get_json_params();
+        if ( ! is_array( $updates ) ) {
+            return new WP_Error( 'invalid_data', 'Expected array of {title, author}', array( 'status' => 400 ) );
+        }
+
+        global $wpdb;
+        $table   = $wpdb->prefix . 'uz_shelf_items';
+        $updated = 0;
+
+        foreach ( $updates as $entry ) {
+            $title  = sanitize_text_field( $entry['title'] ?? '' );
+            $author = sanitize_text_field( $entry['author'] ?? '' );
+            if ( ! $title || ! $author ) continue;
+
+            $rows = $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table} SET author = %s, full_author = %s WHERE (full_title = %s OR title = %s) AND (author = '' OR author IS NULL)",
+                $author, $author, $title, $title
+            ) );
+            $updated += (int) $rows;
+        }
+
+        return rest_ensure_response( array( 'success' => true, 'updated' => $updated ) );
     }
 
     // =========================================================================
