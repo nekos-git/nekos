@@ -97,6 +97,14 @@ final class UZ_Bookshelf_Plugin {
         // REST API routes
         add_action( 'rest_api_init', array( $this->api, 'register_routes' ) );
 
+        // Disable page cache on bookshelf pages
+        add_action( 'template_redirect', function () {
+            if ( is_singular() && has_shortcode( get_post()->post_content ?? '', 'uz_bookshelf' ) ) {
+                header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
+                header( 'Pragma: no-cache' );
+            }
+        } );
+
         // Admin menus
         if ( is_admin() ) {
             add_action( 'admin_menu', array( $this->admin, 'register_menus' ) );
