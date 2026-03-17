@@ -433,7 +433,7 @@ body {
 
 .uz-articlesList {
   display: flex; flex-direction: column; gap: 4px;
-  max-height: 520px; overflow-y: auto;
+  max-height: 70vh; overflow-y: auto;
 }
 .uz-articleCard {
   display: flex; align-items: center; gap: 12px;
@@ -465,11 +465,67 @@ body {
   padding: 1px 7px; border-radius: 8px; font-size: 10px;
   white-space: nowrap;
 }
+.uz-articleCard__wrap {
+  border-radius: 10px; transition: all .15s;
+}
+.uz-articleCard__wrap.expanded {
+  background: rgba(255,255,255,.03); border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.uz-articleCard__actions {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;
+}
 .uz-articleCard__link {
   color: var(--accent); text-decoration: none; font-size: 12px;
-  white-space: nowrap; flex-shrink: 0; transition: color .12s;
+  white-space: nowrap; transition: color .12s;
 }
 .uz-articleCard__link:hover { color: #fff; }
+.uz-articleCard__expand {
+  font-size: 10px; color: var(--muted); transition: transform .2s;
+  display: inline-block;
+}
+.uz-articleCard__expand.open { transform: rotate(180deg); }
+
+/* --- 関連記事セクション --- */
+.uz-relatedSection {
+  padding: 8px 14px 12px 46px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.uz-relatedSection__heading {
+  font-size: 11px; font-weight: 600; color: #a882ff;
+  margin-bottom: 6px; letter-spacing: .02em;
+}
+.uz-relatedSection__list {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.uz-relatedItem {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 8px;
+  text-decoration: none; color: var(--text);
+  transition: background .12s;
+}
+.uz-relatedItem:hover { background: rgba(255,255,255,.06); }
+.uz-relatedItem__icon { font-size: 14px; flex-shrink: 0; }
+.uz-relatedItem__body {
+  display: flex; flex-direction: column; min-width: 0;
+}
+.uz-relatedItem__title {
+  font-size: 12px; font-weight: 500; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.uz-relatedItem__shared {
+  font-size: 10px; color: #a882ff; opacity: .8;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.uz-relatedSection__backBtn {
+  margin-top: 10px; padding: 6px 16px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  border-radius: 8px; color: var(--text); font-size: 12px;
+  cursor: pointer; transition: all .12s;
+}
+.uz-relatedSection__backBtn:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
 
 /* ============================================================
    モーダル

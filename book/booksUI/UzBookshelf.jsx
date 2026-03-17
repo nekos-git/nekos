@@ -110,6 +110,7 @@ function UzBookshelf() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [highlightArticle, setHighlightArticle] = React.useState(null);
   const [shelfIndex, setShelfIndex] = React.useState(0);
+  const [expandedArticle, setExpandedArticle] = React.useState(null);
   const tooltipTimeoutRef = React.useRef(null);
 
   const handleMouseEnter = (e, item) => {
@@ -250,6 +251,23 @@ function UzBookshelf() {
 
   const shelfIcons = { books: '📚', manga: '📖', film: '🎬', music: '🎵', tech: '💻', biz: '💼', culture: '🌍' };
 
+  // --- テーマが共通する関連記事を取得 ---
+  const getRelatedArticles = React.useCallback((article) => {
+    if (!uzData || !article.themes || article.themes.length === 0) return [];
+    const myThemes = new Set(article.themes);
+    const scored = [];
+    for (const other of uzData.articles) {
+      if (other.id === article.id) continue;
+      if (!other.themes || other.themes.length === 0) continue;
+      const shared = other.themes.filter(t => myThemes.has(t));
+      if (shared.length > 0) {
+        scored.push({ ...other, sharedThemes: shared, sharedCount: shared.length });
+      }
+    }
+    scored.sort((a, b) => b.sharedCount - a.sharedCount);
+    return scored.slice(0, 5);
+  }, [uzData]);
+
   // ============================================================
   // 表紙コンポーネント — 美術的3D
   // ============================================================
@@ -388,25 +406,57 @@ function UzBookshelf() {
             </div>
           </div>
           <div className="uz-articlesList">
-            {filteredArticles.map(art => (
-              <div key={art.id} className="uz-articleCard" onClick={() => jumpToShelfFromArticle(art.id)}>
-                <div className="uz-articleCard__icon">{shelfIcons[art.shelf] || '📄'}</div>
-                <div className="uz-articleCard__body">
-                  <div className="uz-articleCard__title">{art.title}</div>
-                  <div className="uz-articleCard__meta">
-                    <span>{formatDate(art.date)}</span>
-                    {art.categories.map(c => <span key={c} className="uz-articleCard__cat">{c}</span>)}
-                    <span className="uz-articleCard__count">{art.productCount}点</span>
+            {filteredArticles.map(art => {
+              const isExpanded = expandedArticle === art.id;
+              const related = isExpanded ? getRelatedArticles(art) : [];
+              return (
+                <div key={art.id} className={`uz-articleCard__wrap ${isExpanded ? 'expanded' : ''}`}>
+                  <div className="uz-articleCard" onClick={() => setExpandedArticle(isExpanded ? null : art.id)}>
+                    <div className="uz-articleCard__icon">{shelfIcons[art.shelf] || '📄'}</div>
+                    <div className="uz-articleCard__body">
+                      <div className="uz-articleCard__title">{art.title}</div>
+                      <div className="uz-articleCard__meta">
+                        <span>{formatDate(art.date)}</span>
+                        {art.categories.map(c => <span key={c} className="uz-articleCard__cat">{c}</span>)}
+                        <span className="uz-articleCard__count">{art.productCount}点</span>
+                      </div>
+                      {art.themes && art.themes.length > 0 && (
+                        <div className="uz-articleCard__themes">
+                          {art.themes.map(t => <span key={t} className="uz-articleCard__theme">{t}</span>)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="uz-articleCard__actions">
+                      <a href={art.url} target="_blank" rel="noopener noreferrer" className="uz-articleCard__link" onClick={e => e.stopPropagation()}>記事を読む →</a>
+                      <span className={`uz-articleCard__expand ${isExpanded ? 'open' : ''}`}>▼</span>
+                    </div>
                   </div>
-                  {art.themes && art.themes.length > 0 && (
-                    <div className="uz-articleCard__themes">
-                      {art.themes.map(t => <span key={t} className="uz-articleCard__theme">{t}</span>)}
+                  {isExpanded && (
+                    <div className="uz-relatedSection">
+                      {related.length > 0 && (
+                        <>
+                          <div className="uz-relatedSection__heading">テーマが共通する記事</div>
+                          <div className="uz-relatedSection__list">
+                            {related.map(rel => (
+                              <a key={rel.id} href={rel.url} target="_blank" rel="noopener noreferrer" className="uz-relatedItem" onClick={e => e.stopPropagation()}>
+                                <span className="uz-relatedItem__icon">{shelfIcons[rel.shelf] || '📄'}</span>
+                                <span className="uz-relatedItem__body">
+                                  <span className="uz-relatedItem__title">{rel.title}</span>
+                                  <span className="uz-relatedItem__shared">{rel.sharedThemes.join(' / ')}</span>
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      <button className="uz-relatedSection__backBtn" onClick={(e) => { e.stopPropagation(); setShowArticles(false); }}>
+                        ← 本棚に戻る
+                      </button>
                     </div>
                   )}
                 </div>
-                <a href={art.url} target="_blank" rel="noopener noreferrer" className="uz-articleCard__link" onClick={e => e.stopPropagation()}>記事を読む →</a>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
