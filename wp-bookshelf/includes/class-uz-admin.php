@@ -69,7 +69,7 @@ class UZ_Bookshelf_Admin {
             'Articles',
             'Articles',
             'manage_options',
-            'edit.php?post_type=uz_article'
+            'edit.php'
         );
 
         add_submenu_page(
@@ -763,7 +763,7 @@ class UZ_Bookshelf_Admin {
             'uz_article_shelf',
             '棚 (Shelf)',
             array( $this, 'render_shelf_metabox' ),
-            'uz_article',
+            'post',
             'side',
             'high'
         );
@@ -772,7 +772,7 @@ class UZ_Bookshelf_Admin {
             'uz_article_related_items',
             '関連アイテム (Related Books)',
             array( $this, 'render_related_items_metabox' ),
-            'uz_article',
+            'post',
             'normal',
             'default'
         );
@@ -832,8 +832,15 @@ class UZ_Bookshelf_Admin {
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
             return;
         }
+        if ( get_post_type( $post_id ) !== 'post' ) {
+            return;
+        }
         if ( isset( $_POST['_uz_shelf'] ) ) {
-            update_post_meta( $post_id, '_uz_shelf', sanitize_text_field( $_POST['_uz_shelf'] ) );
+            $shelf = sanitize_text_field( $_POST['_uz_shelf'] );
+            update_post_meta( $post_id, '_uz_shelf', $shelf );
+            if ( ! empty( $shelf ) ) {
+                update_post_meta( $post_id, '_uz_article', '1' );
+            }
         }
     }
 
@@ -1282,7 +1289,7 @@ class UZ_Bookshelf_Admin {
             <hr />
 
             <h2>記事インポート（Movable Type形式）</h2>
-            <p>Movable Typeエクスポートファイル（<code>.txt</code>）をアップロードして、WordPressの記事（uz_article）として取り込みます。<br>
+            <p>Movable Typeエクスポートファイル（<code>.txt</code>）をアップロードして、WordPressの投稿として取り込みます。<br>
             アフィリエイトリンク（msmaflink等）もそのまま保持されます。同じスラッグの記事があれば更新（upsert）します。</p>
             <form method="post" enctype="multipart/form-data">
                 <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>

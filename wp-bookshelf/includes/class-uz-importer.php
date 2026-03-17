@@ -156,14 +156,16 @@ class UZ_Bookshelf_Importer {
 
         // Check for existing post by slug
         $existing = get_posts( array(
-            'post_type'   => 'uz_article',
+            'post_type'   => 'post',
             'name'        => $slug,
             'post_status' => array( 'publish', 'draft', 'private' ),
             'numberposts' => 1,
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
         ) );
 
         $post_data = array(
-            'post_type'    => 'uz_article',
+            'post_type'    => 'post',
             'post_title'   => $article['title'],
             'post_content' => $article['body'],
             'post_name'    => $slug,
@@ -186,6 +188,9 @@ class UZ_Bookshelf_Importer {
             return $post_id;
         }
 
+        // Mark as bookshelf article
+        update_post_meta( $post_id, '_uz_article', '1' );
+
         // Set shelf meta
         $shelf = isset( $shelf_map[ $article['basename'] ] ) ? $shelf_map[ $article['basename'] ] : '';
         if ( $shelf ) {
@@ -203,16 +208,16 @@ class UZ_Bookshelf_Importer {
             foreach ( $cats as $cat_name ) {
                 $cat_name = trim( $cat_name );
                 if ( empty( $cat_name ) ) continue;
-                $term = term_exists( $cat_name, 'uz_category' );
+                $term = term_exists( $cat_name, 'category' );
                 if ( ! $term ) {
-                    $term = wp_insert_term( $cat_name, 'uz_category' );
+                    $term = wp_insert_term( $cat_name, 'category' );
                 }
                 if ( ! is_wp_error( $term ) ) {
                     $term_ids[] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
                 }
             }
             if ( ! empty( $term_ids ) ) {
-                wp_set_object_terms( $post_id, $term_ids, 'uz_category' );
+                wp_set_object_terms( $post_id, $term_ids, 'category' );
             }
         }
 

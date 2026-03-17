@@ -3,7 +3,7 @@
  * Plugin Name: UZ Bookshelf
  * Plugin URI: https://github.com/nekos-git/wp-bookshelf
  * Description: 3D bookshelf display with affiliate links. Embed beautiful wooden bookshelves on any page with [uz_bookshelf] shortcode. Supports UZ Selection and Rakuten Books.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: UZ Media
  * Author URI: https://uz-media.com
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'UZ_BOOKSHELF_VERSION', '1.1.0' );
+define( 'UZ_BOOKSHELF_VERSION', '1.2.0' );
 define( 'UZ_BOOKSHELF_FILE', __FILE__ );
 define( 'UZ_BOOKSHELF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'UZ_BOOKSHELF_URL', plugin_dir_url( __FILE__ ) );
@@ -92,9 +92,6 @@ final class UZ_Bookshelf_Plugin {
         register_activation_hook( UZ_BOOKSHELF_FILE, array( $this, 'activate' ) );
         register_deactivation_hook( UZ_BOOKSHELF_FILE, array( $this, 'deactivate' ) );
 
-        // Initialize plugin
-        add_action( 'init', array( $this, 'init' ) );
-
         // REST API routes
         add_action( 'rest_api_init', array( $this->api, 'register_routes' ) );
 
@@ -111,7 +108,7 @@ final class UZ_Bookshelf_Plugin {
             add_action( 'admin_menu', array( $this->admin, 'register_menus' ) );
             add_action( 'admin_enqueue_scripts', array( $this->admin, 'enqueue_admin_assets' ) );
             add_action( 'add_meta_boxes', array( $this->admin, 'register_article_metaboxes' ) );
-            add_action( 'save_post_uz_article', array( $this->admin, 'save_article_metabox' ) );
+            add_action( 'save_post', array( $this->admin, 'save_article_metabox' ) );
         }
 
         // Shortcode (frontend)
@@ -125,10 +122,6 @@ final class UZ_Bookshelf_Plugin {
      * Plugin activation
      */
     public function activate() {
-        // Register post type first so rewrite rules are available
-        $this->register_article_post_type();
-        $this->register_article_taxonomy();
-
         $this->db->create_tables();
 
         // Auto-load sample data on first activation if tables are empty
@@ -136,13 +129,16 @@ final class UZ_Bookshelf_Plugin {
             $this->db->load_sample_data( true );
         }
 
-        // Auto-import articles from MT export if no uz_article posts exist
-        $article_count = wp_count_posts( 'uz_article' );
-        if ( empty( $article_count->publish ) || $article_count->publish == 0 ) {
+        // Auto-import articles if no bookshelf posts exist
+        $existing = get_posts( array(
+            'post_type'   => 'post',
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
+            'numberposts' => 1,
+        ) );
+        if ( empty( $existing ) ) {
             $this->import_articles_on_activate();
         }
-
-        flush_rewrite_rules();
     }
 
     /**
@@ -175,73 +171,7 @@ final class UZ_Bookshelf_Plugin {
      * Plugin deactivation
      */
     public function deactivate() {
-        flush_rewrite_rules();
-    }
-
-    /**
-     * Plugin init
-     */
-    public function init() {
-        $this->register_article_post_type();
-        $this->register_article_taxonomy();
-    }
-
-    /**
-     * Register uz_article custom post type
-     */
-    private function register_article_post_type() {
-        $labels = array(
-            'name'               => 'UZ Articles',
-            'singular_name'      => 'UZ Article',
-            'add_new'            => '新規追加',
-            'add_new_item'       => '新しい記事を追加',
-            'edit_item'          => '記事を編集',
-            'new_item'           => '新しい記事',
-            'view_item'          => '記事を表示',
-            'search_items'       => '記事を検索',
-            'not_found'          => '記事が見つかりません',
-            'not_found_in_trash' => 'ゴミ箱に記事がありません',
-            'all_items'          => 'すべての記事',
-            'menu_name'          => 'UZ Articles',
-        );
-
-        register_post_type( 'uz_article', array(
-            'labels'              => $labels,
-            'public'              => true,
-            'has_archive'         => true,
-            'show_in_rest'        => true,
-            'supports'            => array( 'title', 'editor', 'author', 'custom-fields' ),
-            'rewrite'             => array( 'slug' => 'entry', 'with_front' => false ),
-            'menu_icon'           => 'dashicons-media-text',
-            'show_in_menu'        => false,
-            'capability_type'     => 'post',
-            'map_meta_cap'        => true,
-        ) );
-    }
-
-    /**
-     * Register uz_category custom taxonomy
-     */
-    private function register_article_taxonomy() {
-        $labels = array(
-            'name'          => 'UZ Categories',
-            'singular_name' => 'UZ Category',
-            'search_items'  => 'カテゴリを検索',
-            'all_items'     => 'すべてのカテゴリ',
-            'edit_item'     => 'カテゴリを編集',
-            'add_new_item'  => '新しいカテゴリを追加',
-            'new_item_name' => '新しいカテゴリ名',
-            'menu_name'     => 'UZ Categories',
-        );
-
-        register_taxonomy( 'uz_category', 'uz_article', array(
-            'labels'            => $labels,
-            'hierarchical'      => true,
-            'public'            => true,
-            'show_in_rest'      => true,
-            'rewrite'           => array( 'slug' => 'uz-category' ),
-            'show_admin_column' => true,
-        ) );
+        // Nothing to clean up
     }
 }
 

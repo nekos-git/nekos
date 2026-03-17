@@ -333,11 +333,13 @@ class UZ_Bookshelf_DB {
         }
 
         $posts = get_posts( array(
-            'post_type'      => 'uz_article',
+            'post_type'      => 'post',
             'post_status'    => 'publish',
             'numberposts'    => -1,
             'orderby'        => $wp_orderby,
             'order'          => $wp_order,
+            'meta_key'       => '_uz_article',
+            'meta_value'     => '1',
         ) );
 
         $articles = array();
@@ -353,10 +355,12 @@ class UZ_Bookshelf_DB {
      */
     public function get_article( $id ) {
         $posts = get_posts( array(
-            'post_type'   => 'uz_article',
+            'post_type'   => 'post',
             'name'        => $id,
             'post_status' => array( 'publish', 'draft', 'private' ),
             'numberposts' => 1,
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
         ) );
 
         if ( empty( $posts ) ) {
@@ -371,7 +375,7 @@ class UZ_Bookshelf_DB {
      */
     private function post_to_article( $post ) {
         $shelf = get_post_meta( $post->ID, '_uz_shelf', true );
-        $terms = wp_get_object_terms( $post->ID, 'uz_category', array( 'fields' => 'names' ) );
+        $terms = wp_get_object_terms( $post->ID, 'category', array( 'fields' => 'names' ) );
         $cats  = is_array( $terms ) ? $terms : array();
 
         // Count items linked to this article
@@ -400,14 +404,16 @@ class UZ_Bookshelf_DB {
     public function upsert_article( $id, $data ) {
         // Check for existing post
         $existing_posts = get_posts( array(
-            'post_type'   => 'uz_article',
+            'post_type'   => 'post',
             'name'        => $id,
             'post_status' => array( 'publish', 'draft', 'private' ),
             'numberposts' => 1,
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
         ) );
 
         $post_data = array(
-            'post_type'   => 'uz_article',
+            'post_type'   => 'post',
             'post_name'   => $id,
             'post_title'  => isset( $data['title'] ) ? $data['title'] : '',
             'post_status' => 'publish',
@@ -431,6 +437,9 @@ class UZ_Bookshelf_DB {
             return;
         }
 
+        // Mark as bookshelf article
+        update_post_meta( $post_id, '_uz_article', '1' );
+
         // Set shelf meta
         if ( isset( $data['shelf'] ) ) {
             update_post_meta( $post_id, '_uz_shelf', $data['shelf'] );
@@ -444,16 +453,16 @@ class UZ_Bookshelf_DB {
                 foreach ( $cats as $cat_name ) {
                     $cat_name = trim( $cat_name );
                     if ( empty( $cat_name ) ) continue;
-                    $term = term_exists( $cat_name, 'uz_category' );
+                    $term = term_exists( $cat_name, 'category' );
                     if ( ! $term ) {
-                        $term = wp_insert_term( $cat_name, 'uz_category' );
+                        $term = wp_insert_term( $cat_name, 'category' );
                     }
                     if ( ! is_wp_error( $term ) ) {
                         $term_ids[] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
                     }
                 }
                 if ( ! empty( $term_ids ) ) {
-                    wp_set_object_terms( $post_id, $term_ids, 'uz_category' );
+                    wp_set_object_terms( $post_id, $term_ids, 'category' );
                 }
             }
         }
@@ -464,10 +473,12 @@ class UZ_Bookshelf_DB {
      */
     public function delete_article( $id ) {
         $posts = get_posts( array(
-            'post_type'   => 'uz_article',
+            'post_type'   => 'post',
             'name'        => $id,
             'post_status' => array( 'publish', 'draft', 'private' ),
             'numberposts' => 1,
+            'meta_key'    => '_uz_article',
+            'meta_value'  => '1',
         ) );
 
         if ( ! empty( $posts ) ) {
@@ -885,7 +896,9 @@ class UZ_Bookshelf_DB {
     public function get_stats() {
         global $wpdb;
         $article_count = (int) $wpdb->get_var(
-            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'uz_article' AND post_status = 'publish'"
+            "SELECT COUNT(*) FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_uz_article' AND pm.meta_value = '1'
+             WHERE p.post_type = 'post' AND p.post_status = 'publish'"
         );
         return array(
             'shelves'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->shelves_table()}" ),
