@@ -3,7 +3,7 @@
  * Plugin Name: UZ Bookshelf
  * Plugin URI: https://github.com/nekos-git/wp-bookshelf
  * Description: 3D bookshelf display with affiliate links. Embed beautiful wooden bookshelves on any page with [uz_bookshelf] shortcode. Supports UZ Selection and Rakuten Books.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: UZ Media
  * Author URI: https://uz-media.com
  * License: GPL-2.0-or-later
