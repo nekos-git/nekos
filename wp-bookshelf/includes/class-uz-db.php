@@ -408,7 +408,9 @@ class UZ_Bookshelf_DB {
     private function post_to_article( $post ) {
         $shelf = get_post_meta( $post->ID, '_uz_shelf', true );
         $terms = wp_get_object_terms( $post->ID, 'category', array( 'fields' => 'names' ) );
-        $cats  = is_array( $terms ) ? $terms : array();
+        $cats  = is_array( $terms ) ? array_values( array_filter( $terms, function( $name ) {
+            return $name !== 'Uncategorized' && $name !== '未分類';
+        } ) ) : array();
 
         // Count items linked to this article
         global $wpdb;
