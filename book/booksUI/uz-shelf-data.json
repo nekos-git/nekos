@@ -667,6 +667,149 @@
             "width": 105,
             "height": 148
           }
+        },
+        {
+          "id": "norwegian-wood",
+          "title": "ノルウェイの森",
+          "fullTitle": "ノルウェイの森 (講談社文庫)",
+          "author": "村上春樹",
+          "coverUrl": "https://m.media-amazon.com/images/I/71bSiCIMURL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4062748681",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%8E%E3%83%AB%E3%82%A6%E3%82%A7%E3%82%A4%E3%81%AE%E6%A3%AE+%E6%9D%91%E4%B8%8A%E6%98%A5%E6%A8%B9/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "nejimaki-dori",
+          "title": "ねじまき鳥クロニクル",
+          "fullTitle": "ねじまき鳥クロニクル (新潮文庫)",
+          "author": "村上春樹",
+          "coverUrl": "https://m.media-amazon.com/images/I/41RqE4FkURL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4101001545",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%81%AD%E3%81%98%E3%81%BE%E3%81%8D%E9%B3%A5%E3%82%AF%E3%83%AD%E3%83%8B%E3%82%AF%E3%83%AB+%E6%9D%91%E4%B8%8A%E6%98%A5%E6%A8%B9/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "kafka-on-the-shore",
+          "title": "海辺のカフカ",
+          "fullTitle": "海辺のカフカ (新潮文庫)",
+          "author": "村上春樹",
+          "coverUrl": "https://m.media-amazon.com/images/I/51T9MNenF7L._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4101001596",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E6%B5%B7%E8%BE%BA%E3%81%AE%E3%82%AB%E3%83%95%E3%82%AB+%E6%9D%91%E4%B8%8A%E6%98%A5%E6%A8%B9/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "alchemist",
+          "title": "アルケミスト",
+          "fullTitle": "アルケミスト 夢を旅した少年 (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "https://m.media-amazon.com/images/I/51pKiYRJURL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750036",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A2%E3%83%AB%E3%82%B1%E3%83%9F%E3%82%B9%E3%83%88+%E3%83%91%E3%82%A6%E3%83%AD%E3%83%BB%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "piedra-river",
+          "title": "ピエドラ川のほとりで私は泣いた",
+          "fullTitle": "ピエドラ川のほとりで私は泣いた (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750044",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%94%E3%82%A8%E3%83%89%E3%83%A9%E5%B7%9D+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "veronica-decides-to-die",
+          "title": "ベロニカは死ぬことにした",
+          "fullTitle": "ベロニカは死ぬことにした (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750052",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%99%E3%83%AD%E3%83%8B%E3%82%AB%E3%81%AF%E6%AD%BB%E3%81%AC%E3%81%93%E3%81%A8%E3%81%AB%E3%81%97%E3%81%9F+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "murakami-and-pauro",
+          "articleTitle": "絶望の光と祝福の光——村上春樹とパウロ・コエーリョが教えてくれたこと"
+        },
+        {
+          "id": "heaven-kawakami",
+          "title": "ヘヴン",
+          "fullTitle": "ヘヴン (講談社文庫)",
+          "author": "川上未映子",
+          "coverUrl": "https://m.media-amazon.com/images/I/41PJ4kf1P5L._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4062772663",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%98%E3%83%B4%E3%83%B3+%E5%B7%9D%E4%B8%8A%E6%9C%AA%E6%98%A0%E5%AD%90/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "mieko-kawakami",
+          "articleTitle": "川上未映子が描く「痛み」は、村上春樹の「喪失」とどう違うのか？『ヘヴン』と『すべて真夜中の恋人たち』が直視する「身体」と「体系」"
+        },
+        {
+          "id": "mayonaka-lovers",
+          "title": "すべて真夜中の恋人たち",
+          "fullTitle": "すべて真夜中の恋人たち (講談社文庫)",
+          "author": "川上未映子",
+          "coverUrl": "https://m.media-amazon.com/images/I/51MR0N-Y-JL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4062777568",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%81%99%E3%81%B9%E3%81%A6%E7%9C%9F%E5%A4%9C%E4%B8%AD%E3%81%AE%E6%81%8B%E4%BA%BA%E3%81%9F%E3%81%A1+%E5%B7%9D%E4%B8%8A%E6%9C%AA%E6%98%A0%E5%AD%90/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "mieko-kawakami",
+          "articleTitle": "川上未映子が描く「痛み」は、村上春樹の「喪失」とどう違うのか？『ヘヴン』と『すべて真夜中の恋人たち』が直視する「身体」と「体系」"
+        },
+        {
+          "id": "brida",
+          "title": "ブリーダ",
+          "fullTitle": "ブリーダ (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750079",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%96%E3%83%AA%E3%83%BC%E3%83%80+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "pauro-witch",
+          "articleTitle": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光"
+        },
+        {
+          "id": "portobello-witch",
+          "title": "ポルトベーロの魔女",
+          "fullTitle": "ポルトベーロの魔女 (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750095",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%9D%E3%83%AB%E3%83%88%E3%83%99%E3%83%BC%E3%83%AD%E3%81%AE%E9%AD%94%E5%A5%B3+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "pauro-witch",
+          "articleTitle": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光"
+        },
+        {
+          "id": "alchemist-pauro-witch",
+          "title": "アルケミスト",
+          "fullTitle": "アルケミスト 夢を旅した少年 (角川文庫)",
+          "author": "パウロ・コエーリョ",
+          "coverUrl": "https://m.media-amazon.com/images/I/51pKiYRJURL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4042750036",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A2%E3%83%AB%E3%82%B1%E3%83%9F%E3%82%B9%E3%83%88+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "pauro-witch",
+          "articleTitle": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光"
         }
       ]
     },
@@ -2818,6 +2961,123 @@
             "width": 128,
             "height": 182
           }
+        },
+        {
+          "id": "ex-machina-bluray",
+          "title": "エクス・マキナ",
+          "fullTitle": "エクス・マキナ [Blu-ray]",
+          "author": "アレックス・ガーランド (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71gJ3m4sqDL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B01LYOI9JH",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%BB%E3%83%9E%E3%82%AD%E3%83%8A+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "ai-robot-movie",
+          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
+        },
+        {
+          "id": "her-bluray",
+          "title": "her/世界でひとつの彼女",
+          "fullTitle": "her/世界でひとつの彼女 [Blu-ray]",
+          "author": "スパイク・ジョーンズ (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71p3QJGaZtL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B00LGATQYU",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/her+%E4%B8%96%E7%95%8C%E3%81%A7%E3%81%B2%E3%81%A8%E3%81%A4%E3%81%AE%E5%BD%BC%E5%A5%B3+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "ai-robot-movie",
+          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
+        },
+        {
+          "id": "ai-spielberg-bluray",
+          "title": "A.I.",
+          "fullTitle": "A.I. [Blu-ray]",
+          "author": "スティーヴン・スピルバーグ (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/516MrKxYu-L._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B00FIWNU0S",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/A.I.+%E3%82%B9%E3%83%94%E3%83%AB%E3%83%90%E3%83%BC%E3%82%B0+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "ai-robot-movie",
+          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
+        },
+        {
+          "id": "blade-runner-fc",
+          "title": "ブレードランナー ファイナル・カット",
+          "fullTitle": "ブレードランナー ファイナル・カット [Blu-ray]",
+          "author": "リドリー・スコット (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81nEjF6tG3L._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B0789ZYXJG",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%96%E3%83%AC%E3%83%BC%E3%83%89%E3%83%A9%E3%83%B3%E3%83%8A%E3%83%BC+%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB%E3%82%AB%E3%83%83%E3%83%88+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "ai-robot-movie",
+          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
+        },
+        {
+          "id": "blade-runner-2049",
+          "title": "ブレードランナー 2049",
+          "fullTitle": "ブレードランナー 2049 [Blu-ray]",
+          "author": "ドゥニ・ヴィルヌーヴ (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81V1dSPtReL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B079DLHXYF",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%96%E3%83%AC%E3%83%BC%E3%83%89%E3%83%A9%E3%83%B3%E3%83%8A%E3%83%BC+2049+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "ai-robot-movie",
+          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
+        },
+        {
+          "id": "life-of-pi",
+          "title": "ライフ・オブ・パイ",
+          "fullTitle": "ライフ・オブ・パイ/トラと漂流した227日 [Blu-ray]",
+          "author": "アン・リー (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81bFPy3RxvL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B00DQUMGVQ",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%A9%E3%82%A4%E3%83%95%E3%83%BB%E3%82%AA%E3%83%96%E3%83%BB%E3%83%91%E3%82%A4+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "underrated-masterpiece",
+          "articleTitle": "心に問いを残す、隠れた名作映画4選"
+        },
+        {
+          "id": "i-origins",
+          "title": "アイ・オリジンズ",
+          "fullTitle": "アイ・オリジンズ [DVD]",
+          "author": "マイク・ケイヒル (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71axxfhfbBL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B012FUSFHQ",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A2%E3%82%A4%E3%83%BB%E3%82%AA%E3%83%AA%E3%82%B8%E3%83%B3%E3%82%BA+DVD/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "underrated-masterpiece",
+          "articleTitle": "心に問いを残す、隠れた名作映画4選"
+        },
+        {
+          "id": "the-fall",
+          "title": "ザ・フォール/落下の王国",
+          "fullTitle": "ザ・フォール/落下の王国 [Blu-ray]",
+          "author": "ターセム・シン (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81b5j9SLUPL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B003GQSYYM",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%B6%E3%83%BB%E3%83%95%E3%82%A9%E3%83%BC%E3%83%AB+%E8%90%BD%E4%B8%8B%E3%81%AE%E7%8E%8B%E5%9B%BD+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "underrated-masterpiece",
+          "articleTitle": "心に問いを残す、隠れた名作映画4選"
+        },
+        {
+          "id": "mr-nobody",
+          "title": "ミスター・ノーバディ",
+          "fullTitle": "ミスター・ノーバディ [DVD]",
+          "author": "ジャコ・ヴァン・ドルマル (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81TOVpOOjVL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B005IGJJ86",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%9F%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%BB%E3%83%8E%E3%83%BC%E3%83%90%E3%83%87%E3%82%A3+DVD/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "underrated-masterpiece",
+          "articleTitle": "心に問いを残す、隠れた名作映画4選"
         }
       ]
     },
@@ -3740,7 +4000,177 @@
       "id": "culture",
       "title": "カルチャー",
       "icon": "culture",
-      "items": []
+      "items": [
+        {
+          "id": "zootopia-bluray",
+          "title": "ズートピア MovieNEX",
+          "fullTitle": "ズートピア MovieNEX [ブルーレイ+DVD+デジタルコピー+MovieNEXワールド]",
+          "author": "バイロン・ハワード, リッチ・ムーア (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81Y0n3LNMWL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B01DMDKUJA",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%BA%E3%83%BC%E3%83%88%E3%83%94%E3%82%A2+MovieNEX/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "zootopia",
+          "articleTitle": "『ズートピア』再訪 ― 続編公開前に見つめ直す、多様性とバディの物語構造"
+        },
+        {
+          "id": "eva-bluray-box",
+          "title": "新世紀エヴァンゲリオン Blu-ray BOX",
+          "fullTitle": "新世紀エヴァンゲリオン Blu-ray BOX STANDARD EDITION",
+          "author": "庵野秀明 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81pBOMZfxEL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B07RWHQBG2",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E6%96%B0%E4%B8%96%E7%B4%80%E3%82%A8%E3%83%B4%E3%82%A1%E3%83%B3%E3%82%B2%E3%83%AA%E3%82%AA%E3%83%B3+Blu-ray+BOX/",
+          "type": "product",
+          "format": "disc",
+          "articleId": "eva-jinruihokankeikaku",
+          "articleTitle": "AIと人類補完計画——エヴァンゲリオンが予言したネットワーク時代の終着点"
+        },
+        {
+          "id": "shin-eva-bluray",
+          "title": "シン・エヴァンゲリオン劇場版",
+          "fullTitle": "シン・エヴァンゲリオン劇場版 EVANGELION:3.0+1.11 THRICE UPON A TIME",
+          "author": "庵野秀明 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71lh6kP-SfL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B09V1KPXZ2",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%B7%E3%83%B3%E3%83%BB%E3%82%A8%E3%83%B4%E3%82%A1%E3%83%B3%E3%82%B2%E3%83%AA%E3%82%AA%E3%83%B3+Blu-ray/",
+          "type": "product",
+          "format": "disc",
+          "articleId": "eva-jinruihokankeikaku",
+          "articleTitle": "AIと人類補完計画——エヴァンゲリオンが予言したネットワーク時代の終着点"
+        },
+        {
+          "id": "goemon-bluray",
+          "title": "GOEMON",
+          "fullTitle": "GOEMON [Blu-ray]",
+          "author": "紀里谷和明 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/91j4oLuHTHL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B002LO7EK8",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/GOEMON+Blu-ray/",
+          "type": "product",
+          "format": "disc",
+          "articleId": "kiriya-kazuaki",
+          "articleTitle": "紀里谷和明を「観る」のではない、「浴びる」のだ。――なぜ今、『GOEMON』と『世界の終わりから』が私たちに突き刺さるのか"
+        },
+        {
+          "id": "sekai-no-owari-kara",
+          "title": "世界の終わりから",
+          "fullTitle": "世界の終わりから [Blu-ray]",
+          "author": "紀里谷和明 (監督)",
+          "coverUrl": "",
+          "amazonUrl": "https://www.amazon.co.jp/s?k=%E4%B8%96%E7%95%8C%E3%81%AE%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%8B%E3%82%89+%E7%B4%80%E9%87%8C%E8%B0%B7%E5%92%8C%E6%98%8E+Blu-ray",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E4%B8%96%E7%95%8C%E3%81%AE%E7%B5%82%E3%82%8F%E3%82%8A%E3%81%8B%E3%82%89+%E7%B4%80%E9%87%8C%E8%B0%B7%E5%92%8C%E6%98%8E/",
+          "type": "product",
+          "format": "disc",
+          "articleId": "kiriya-kazuaki",
+          "articleTitle": "紀里谷和明を「観る」のではない、「浴びる」のだ。――なぜ今、『GOEMON』と『世界の終わりから』が私たちに突き刺さるのか"
+        },
+        {
+          "id": "gits-1995-bluray",
+          "title": "GHOST IN THE SHELL/攻殻機動隊",
+          "fullTitle": "GHOST IN THE SHELL/攻殻機動隊 [Blu-ray]",
+          "author": "押井守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71Ygud4VdyL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B00FW5DK18",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/GHOST+IN+THE+SHELL+%E6%94%BB%E6%AE%BB%E6%A9%9F%E5%8B%95%E9%9A%8A+Blu-ray/",
+          "type": "product",
+          "format": "disc",
+          "articleId": "ghost-in-the-shell",
+          "articleTitle": "『攻殻機動隊』とChatGPT時代の「ゴースト」 模倣される自我の臨界点"
+        },
+        {
+          "id": "harmony-itoh",
+          "title": "ハーモニー",
+          "fullTitle": "ハーモニー (ハヤカワ文庫JA)",
+          "author": "伊藤計劃",
+          "coverUrl": "https://m.media-amazon.com/images/I/51z0GH2dSvL._SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/4150310661",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%8F%E3%83%BC%E3%83%A2%E3%83%8B%E3%83%BC+%E4%BC%8A%E8%97%A4%E8%A8%88%E5%8A%83/",
+          "type": "product",
+          "format": "bunko",
+          "articleId": "ghost-in-the-shell",
+          "articleTitle": "『攻殻機動隊』とChatGPT時代の「ゴースト」 模倣される自我の臨界点"
+        },
+        {
+          "id": "tokikake-bluray",
+          "title": "時をかける少女",
+          "fullTitle": "時をかける少女 [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71yxVUoApbL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B001LNMMHM",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E6%99%82%E3%82%92%E3%81%8B%E3%81%91%E3%82%8B%E5%B0%91%E5%A5%B3+%E7%B4%B0%E7%94%B0%E5%AE%88+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        },
+        {
+          "id": "summer-wars-bluray",
+          "title": "サマーウォーズ",
+          "fullTitle": "サマーウォーズ [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71FoKzqpxBL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B003461I32",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%B5%E3%83%9E%E3%83%BC%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%BA+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        },
+        {
+          "id": "ookami-kodomo",
+          "title": "おおかみこどもの雨と雪",
+          "fullTitle": "おおかみこどもの雨と雪 [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81XGRn-BhwL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B009QYK3TK",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%81%8A%E3%81%8A%E3%81%8B%E3%81%BF%E3%81%93%E3%81%A9%E3%82%82%E3%81%AE%E9%9B%A8%E3%81%A8%E9%9B%AA+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        },
+        {
+          "id": "bakemono-no-ko",
+          "title": "バケモノの子",
+          "fullTitle": "バケモノの子 [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/91aSFMGhAuL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B019968APK",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%90%E3%82%B1%E3%83%A2%E3%83%8E%E3%81%AE%E5%AD%90+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        },
+        {
+          "id": "ryu-to-sobakasu",
+          "title": "竜とそばかすの姫",
+          "fullTitle": "竜とそばかすの姫 [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/81N6VfA4fEL._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B09RWJMM3T",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E7%AB%9C%E3%81%A8%E3%81%9D%E3%81%B0%E3%81%8B%E3%81%99%E3%81%AE%E5%A7%AB+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        },
+        {
+          "id": "mirai-no-mirai",
+          "title": "未来のミライ",
+          "fullTitle": "未来のミライ [Blu-ray]",
+          "author": "細田守 (監督)",
+          "coverUrl": "https://m.media-amazon.com/images/I/71RYR9tZB3L._AC_SL800_.jpg",
+          "amazonUrl": "https://www.amazon.co.jp/dp/B07LDBKP4J",
+          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E6%9C%AA%E6%9D%A5%E3%81%AE%E3%83%9F%E3%83%A9%E3%82%A4+Blu-ray/",
+          "type": "product",
+          "format": "poster",
+          "articleId": "hosodamamoru",
+          "articleTitle": "破綻の向こう側に見える輝き――細田守という矛盾に満ちた映像作家"
+        }
+      ]
     }
   ],
   "articles": [
@@ -3753,7 +4183,7 @@
         "マンガ・アニメ"
       ],
       "shelf": "culture",
-      "productCount": 0,
+      "productCount": 1,
       "url": "https://uz-media.com/entry/zootopia",
       "themes": [
         "権力の構造と「悪」の生成",
@@ -3769,7 +4199,7 @@
         "IT・テクノロジー"
       ],
       "shelf": "culture",
-      "productCount": 0,
+      "productCount": 2,
       "url": "https://uz-media.com/entry/eva-jinruihokankeikaku",
       "themes": [
         "AIと人間の境界",
@@ -3786,7 +4216,7 @@
         "小説"
       ],
       "shelf": "books",
-      "productCount": 0,
+      "productCount": 6,
       "url": "https://uz-media.com/entry/murakami-and-pauro",
       "themes": [
         "喪失と不在の手触り",
@@ -3837,7 +4267,7 @@
         "映画"
       ],
       "shelf": "culture",
-      "productCount": 0,
+      "productCount": 2,
       "url": "https://uz-media.com/entry/kiriya-kazuaki",
       "themes": [
         "権力の構造と「悪」の生成",
@@ -3854,7 +4284,7 @@
         "IT・テクノロジー"
       ],
       "shelf": "film",
-      "productCount": 0,
+      "productCount": 5,
       "url": "https://uz-media.com/entry/ai-robot-movie",
       "themes": [
         "AIと人間の境界",
@@ -3901,7 +4331,7 @@
         "小説"
       ],
       "shelf": "books",
-      "productCount": 0,
+      "productCount": 2,
       "url": "https://uz-media.com/entry/mieko-kawakami",
       "themes": [
         "身体性と実存",
@@ -3916,7 +4346,7 @@
         "映画"
       ],
       "shelf": "film",
-      "productCount": 0,
+      "productCount": 4,
       "url": "https://uz-media.com/entry/underrated-masterpiece",
       "themes": [
         "絶望の中の希望",
@@ -3933,7 +4363,7 @@
         "IT・テクノロジー"
       ],
       "shelf": "culture",
-      "productCount": 0,
+      "productCount": 2,
       "url": "https://uz-media.com/entry/ghost-in-the-shell",
       "themes": [
         "AIと人間の境界",
@@ -3997,7 +4427,7 @@
         "小説"
       ],
       "shelf": "books",
-      "productCount": 0,
+      "productCount": 3,
       "url": "https://uz-media.com/entry/pauro-witch",
       "themes": [
         "自然と人間の境界崩壊",
@@ -4013,7 +4443,7 @@
         "映画"
       ],
       "shelf": "culture",
-      "productCount": 0,
+      "productCount": 6,
       "url": "https://uz-media.com/entry/hosodamamoru",
       "themes": [
         "暴力の連鎖と断絶",
