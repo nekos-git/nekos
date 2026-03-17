@@ -113,6 +113,13 @@ class UZ_Bookshelf_API {
             'permission_callback' => array( $this, 'check_admin_permission' ),
         ) );
 
+        // POST /import-articles - Import Movable Type export data
+        register_rest_route( self::NAMESPACE, '/import-articles', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'import_articles' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
         // --- CRUD for shelf items (admin) ---
         register_rest_route( self::NAMESPACE, '/items', array(
             'methods'             => WP_REST_Server::CREATABLE,
@@ -202,7 +209,7 @@ class UZ_Bookshelf_API {
     }
 
     /**
-     * GET /articles
+     * GET /articles - now returns uz_article custom post data with WP permalinks
      */
     public function get_articles( WP_REST_Request $request ) {
         $articles = $this->db->get_articles();
@@ -221,7 +228,7 @@ class UZ_Bookshelf_API {
                 'categories'   => $cats,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
-                'url'          => $a['url'] ?: '',
+                'url'          => $a['url'] ?: '',  // Now WP permalink
             );
         }
 
@@ -432,6 +439,39 @@ class UZ_Bookshelf_API {
         return rest_ensure_response( array(
             'success' => true,
             'counts'  => $result,
+        ) );
+    }
+
+    /**
+     * POST /import-articles - Import Movable Type export data as uz_article posts
+     */
+    public function import_articles( WP_REST_Request $request ) {
+        $params = $request->get_json_params();
+
+        if ( empty( $params['export_content'] ) ) {
+            return new WP_Error(
+                'missing_content',
+                'export_content is required',
+                array( 'status' => 400 )
+            );
+        }
+
+        $json_data = null;
+        if ( ! empty( $params['json_data'] ) ) {
+            $json_data = $params['json_data'];
+        } else {
+            // Try to load from bundled data file
+            $shelf_file = UZ_BOOKSHELF_PATH . 'data/uz-shelf-data.json';
+            if ( file_exists( $shelf_file ) ) {
+                $json_data = json_decode( file_get_contents( $shelf_file ), true );
+            }
+        }
+
+        $result = UZ_Bookshelf_Importer::run_import( $params['export_content'], $json_data );
+
+        return rest_ensure_response( array(
+            'success' => true,
+            'results' => $result,
         ) );
     }
 

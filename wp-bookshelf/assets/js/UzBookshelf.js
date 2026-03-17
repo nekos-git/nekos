@@ -655,7 +655,7 @@ function UzBookshelf() {
             h('span', { className: 'uz-articleCard__count' }, art.productCount + '点')
           )
         ),
-        h('a', { href: art.url, target: '_blank', rel: 'noopener noreferrer', className: 'uz-articleCard__link', onClick: function(e) { e.stopPropagation(); } }, '記事を読む →')
+        h('a', { href: art.url, className: 'uz-articleCard__link', onClick: function(e) { e.stopPropagation(); } }, '記事を読む →')
       );
     });
     artPanelChildren.push(h('div', { key: 'list', className: 'uz-articlesList' }, artCards));
@@ -679,7 +679,7 @@ function UzBookshelf() {
       ),
     ];
     var actionChildren = [
-      h('a', { key: 'read', href: selectedArticle.url, target: '_blank', rel: 'noopener noreferrer', className: 'uz-articleDetail__readLink' }, '記事を読む →')
+      h('a', { key: 'read', href: selectedArticle.url, className: 'uz-articleDetail__readLink' }, '記事を読む →')
     ];
     if (articleBooks.length > 0) {
       actionChildren.push(h('button', { key: 'shelf', className: 'uz-articleDetail__shelfBtn', onClick: function() { showArticleBooksOnShelf(selectedArticle.id); } }, '本棚で表示'));
@@ -863,7 +863,7 @@ function UzBookshelf() {
         h('div', { key: 'link', className: 'uz-modal__articleLink' },
           h('span', { className: 'uz-modal__articleLabel' }, '関連記事'),
           h('div', { className: 'uz-modal__articleLinkRow' },
-            h('a', { href: 'https://uz-media.com/entry/' + modal.articleId, target: '_blank', rel: 'noopener noreferrer' }, modal.articleTitle),
+            h('a', { href: modal.articleUrl || ('/entry/' + modal.articleId) }, modal.articleTitle),
             h('button', { className: 'uz-modal__articleDetailBtn', onClick: function() { openArticleFromModal(modal.articleId); } }, '詳細を見る')
           )
         )

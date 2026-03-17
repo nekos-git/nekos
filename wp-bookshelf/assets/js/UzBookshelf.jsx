@@ -977,7 +977,7 @@ function UzBookshelf() {
                       <div className="uz-modal__articleLink">
                         <span className="uz-modal__articleLabel">関連記事</span>
                         <div className="uz-modal__articleLinkRow">
-                          <a href={`https://uz-media.com/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">{modal.articleTitle}</a>
+                          <a href={modal.articleUrl || `/entry/${modal.articleId}`} target="_blank" rel="noopener noreferrer">{modal.articleTitle}</a>
                           <button className="uz-modal__articleDetailBtn" onClick={() => openArticleFromModal(modal.articleId)}>詳細を見る</button>
                         </div>
                       </div>

@@ -318,50 +318,161 @@ class UZ_Bookshelf_DB {
     }
 
     // =========================================================================
-    // CRUD: Articles
+    // CRUD: Articles (now backed by uz_article custom post type)
     // =========================================================================
 
+    /**
+     * Get all articles from uz_article posts.
+     * Returns data in the same format as the old custom table for backwards compatibility.
+     */
     public function get_articles( $order_by = 'date DESC' ) {
-        global $wpdb;
-        return $wpdb->get_results(
-            "SELECT * FROM {$this->articles_table()} ORDER BY $order_by",
-            ARRAY_A
-        );
+        $wp_order    = 'DESC';
+        $wp_orderby  = 'date';
+        if ( strpos( $order_by, 'ASC' ) !== false ) {
+            $wp_order = 'ASC';
+        }
+
+        $posts = get_posts( array(
+            'post_type'      => 'uz_article',
+            'post_status'    => 'publish',
+            'numberposts'    => -1,
+            'orderby'        => $wp_orderby,
+            'order'          => $wp_order,
+        ) );
+
+        $articles = array();
+        foreach ( $posts as $post ) {
+            $articles[] = $this->post_to_article( $post );
+        }
+
+        return $articles;
     }
 
+    /**
+     * Get a single article by slug (id = post_name).
+     */
     public function get_article( $id ) {
+        $posts = get_posts( array(
+            'post_type'   => 'uz_article',
+            'name'        => $id,
+            'post_status' => array( 'publish', 'draft', 'private' ),
+            'numberposts' => 1,
+        ) );
+
+        if ( empty( $posts ) ) {
+            return null;
+        }
+
+        return $this->post_to_article( $posts[0] );
+    }
+
+    /**
+     * Convert WP_Post to article array (backwards-compatible format).
+     */
+    private function post_to_article( $post ) {
+        $shelf = get_post_meta( $post->ID, '_uz_shelf', true );
+        $terms = wp_get_object_terms( $post->ID, 'uz_category', array( 'fields' => 'names' ) );
+        $cats  = is_array( $terms ) ? $terms : array();
+
+        // Count items linked to this article
         global $wpdb;
-        return $wpdb->get_row(
-            $wpdb->prepare( "SELECT * FROM {$this->articles_table()} WHERE id = %s", $id ),
-            ARRAY_A
+        $product_count = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->items_table()} WHERE article_id = %s",
+            $post->post_name
+        ) );
+
+        return array(
+            'id'            => $post->post_name,
+            'title'         => $post->post_title,
+            'date'          => $post->post_date ? gmdate( 'm/d/Y H:i:s', strtotime( $post->post_date ) ) : '',
+            'categories'    => wp_json_encode( $cats ),
+            'shelf'         => $shelf ?: '',
+            'product_count' => $product_count,
+            'url'           => get_permalink( $post->ID ),
+            'post_id'       => $post->ID,
         );
     }
 
+    /**
+     * Upsert article - creates/updates uz_article post.
+     * Kept for backwards compatibility with JSON import.
+     */
     public function upsert_article( $id, $data ) {
-        global $wpdb;
-        // Ensure TEXT columns have a value (MySQL TEXT cannot have DEFAULT)
-        $text_defaults = array( 'categories' => '[]', 'url' => '' );
-        foreach ( $text_defaults as $col => $default ) {
-            if ( ! isset( $data[ $col ] ) ) {
-                $data[ $col ] = $default;
+        // Check for existing post
+        $existing_posts = get_posts( array(
+            'post_type'   => 'uz_article',
+            'name'        => $id,
+            'post_status' => array( 'publish', 'draft', 'private' ),
+            'numberposts' => 1,
+        ) );
+
+        $post_data = array(
+            'post_type'   => 'uz_article',
+            'post_name'   => $id,
+            'post_title'  => isset( $data['title'] ) ? $data['title'] : '',
+            'post_status' => 'publish',
+        );
+
+        // Parse date if provided
+        if ( ! empty( $data['date'] ) ) {
+            $ts = strtotime( $data['date'] );
+            if ( $ts ) {
+                $post_data['post_date']     = gmdate( 'Y-m-d H:i:s', $ts );
+                $post_data['post_date_gmt'] = get_gmt_from_date( $post_data['post_date'] );
             }
         }
-        $existing = $this->get_article( $id );
-        if ( $existing ) {
-            $wpdb->update(
-                $this->articles_table(),
-                $data,
-                array( 'id' => $id )
-            );
-        } else {
-            $data['id'] = $id;
-            $wpdb->insert( $this->articles_table(), $data );
+
+        if ( ! empty( $existing_posts ) ) {
+            $post_data['ID'] = $existing_posts[0]->ID;
+        }
+
+        $post_id = wp_insert_post( $post_data, true );
+        if ( is_wp_error( $post_id ) ) {
+            return;
+        }
+
+        // Set shelf meta
+        if ( isset( $data['shelf'] ) ) {
+            update_post_meta( $post_id, '_uz_shelf', $data['shelf'] );
+        }
+
+        // Set categories
+        if ( isset( $data['categories'] ) ) {
+            $cats = is_string( $data['categories'] ) ? json_decode( $data['categories'], true ) : $data['categories'];
+            if ( is_array( $cats ) && ! empty( $cats ) ) {
+                $term_ids = array();
+                foreach ( $cats as $cat_name ) {
+                    $cat_name = trim( $cat_name );
+                    if ( empty( $cat_name ) ) continue;
+                    $term = term_exists( $cat_name, 'uz_category' );
+                    if ( ! $term ) {
+                        $term = wp_insert_term( $cat_name, 'uz_category' );
+                    }
+                    if ( ! is_wp_error( $term ) ) {
+                        $term_ids[] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
+                    }
+                }
+                if ( ! empty( $term_ids ) ) {
+                    wp_set_object_terms( $post_id, $term_ids, 'uz_category' );
+                }
+            }
         }
     }
 
+    /**
+     * Delete article - trashes the uz_article post.
+     */
     public function delete_article( $id ) {
-        global $wpdb;
-        $wpdb->delete( $this->articles_table(), array( 'id' => $id ) );
+        $posts = get_posts( array(
+            'post_type'   => 'uz_article',
+            'name'        => $id,
+            'post_status' => array( 'publish', 'draft', 'private' ),
+            'numberposts' => 1,
+        ) );
+
+        if ( ! empty( $posts ) ) {
+            wp_trash_post( $posts[0]->ID );
+        }
     }
 
     // =========================================================================
@@ -558,9 +669,20 @@ class UZ_Bookshelf_DB {
                 'categories'   => $cats,
                 'shelf'        => $a['shelf'] ?: '',
                 'productCount' => (int) $a['product_count'],
-                'url'          => $a['url'] ?: '',
+                'url'          => $a['url'] ?: '',  // Now returns WP permalink
             );
         }
+
+        // Also add articleUrl to shelf items for frontend consumption
+        foreach ( $result_shelves as &$shelf ) {
+            foreach ( $shelf['items'] as &$item ) {
+                if ( ! empty( $item['articleId'] ) ) {
+                    $art = $this->get_article( $item['articleId'] );
+                    $item['articleUrl'] = $art ? $art['url'] : '';
+                }
+            }
+        }
+        unset( $shelf, $item );
 
         return array(
             'shelves'  => $result_shelves,
@@ -762,10 +884,13 @@ class UZ_Bookshelf_DB {
      */
     public function get_stats() {
         global $wpdb;
+        $article_count = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'uz_article' AND post_status = 'publish'"
+        );
         return array(
             'shelves'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->shelves_table()}" ),
             'items'         => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->items_table()}" ),
-            'articles'      => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->articles_table()}" ),
+            'articles'      => $article_count,
             'rakuten_books' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->rakuten_table()}" ),
         );
     }

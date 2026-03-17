@@ -69,8 +69,7 @@ class UZ_Bookshelf_Admin {
             'Articles',
             'Articles',
             'manage_options',
-            'uz-bookshelf-articles',
-            array( $this, 'page_articles' )
+            'edit.php?post_type=uz_article'
         );
 
         add_submenu_page(
@@ -755,6 +754,93 @@ class UZ_Bookshelf_Admin {
     // Articles
     // =========================================================================
 
+    // =========================================================================
+    // uz_article Metaboxes
+    // =========================================================================
+
+    public function register_article_metaboxes() {
+        add_meta_box(
+            'uz_article_shelf',
+            '棚 (Shelf)',
+            array( $this, 'render_shelf_metabox' ),
+            'uz_article',
+            'side',
+            'high'
+        );
+
+        add_meta_box(
+            'uz_article_related_items',
+            '関連アイテム (Related Books)',
+            array( $this, 'render_related_items_metabox' ),
+            'uz_article',
+            'normal',
+            'default'
+        );
+    }
+
+    public function render_shelf_metabox( $post ) {
+        $current_shelf = get_post_meta( $post->ID, '_uz_shelf', true );
+        $shelves = $this->db->get_shelves();
+        wp_nonce_field( 'uz_article_shelf_save', 'uz_article_shelf_nonce' );
+        ?>
+        <select name="_uz_shelf" style="width:100%;">
+            <option value="">なし</option>
+            <?php foreach ( $shelves as $s ) : ?>
+                <option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $current_shelf, $s['id'] ); ?>>
+                    <?php echo esc_html( $s['title'] ); ?> (<?php echo esc_html( $s['id'] ); ?>)
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <?php
+    }
+
+    public function render_related_items_metabox( $post ) {
+        $related_items = $this->db->get_items_by_article( $post->post_name );
+        if ( empty( $related_items ) ) {
+            echo '<p>この記事に紐付けられたアイテムはありません。</p>';
+        } else {
+            ?>
+            <table class="widefat striped">
+                <thead><tr><th width="50">Cover</th><th>Title</th><th>Author</th><th>Shelf</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <?php foreach ( $related_items as $ri ) : ?>
+                    <tr>
+                        <td>
+                            <?php if ( $ri['cover_url'] ) : ?>
+                                <img src="<?php echo esc_url( $ri['cover_url'] ); ?>" style="width:35px;height:auto;" />
+                            <?php else : ?>
+                                <span style="color:#999;">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo esc_html( $ri['title'] ); ?></td>
+                        <td><?php echo esc_html( $ri['author'] ); ?></td>
+                        <td><code><?php echo esc_html( $ri['shelf_id'] ); ?></code></td>
+                        <td><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $ri['id'] ) ); ?>">Edit</a></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php
+        }
+        echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&article_id=' . urlencode( $post->post_name ) ) ) . '" class="button">+ Add Item to This Article</a></p>';
+    }
+
+    public function save_article_metabox( $post_id ) {
+        if ( ! isset( $_POST['uz_article_shelf_nonce'] ) || ! wp_verify_nonce( $_POST['uz_article_shelf_nonce'], 'uz_article_shelf_save' ) ) {
+            return;
+        }
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+        if ( isset( $_POST['_uz_shelf'] ) ) {
+            update_post_meta( $post_id, '_uz_shelf', sanitize_text_field( $_POST['_uz_shelf'] ) );
+        }
+    }
+
+    // =========================================================================
+    // Articles (legacy page — redirects to CPT)
+    // =========================================================================
+
     public function page_articles() {
         $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : 'list';
 
@@ -1058,6 +1144,29 @@ class UZ_Bookshelf_Admin {
                     }
                 }
 
+                // Import MT export file as uz_article posts
+                if ( $import_type === 'mt_import' && ! empty( $_FILES['mt_file']['tmp_name'] ) ) {
+                    $export_content = file_get_contents( $_FILES['mt_file']['tmp_name'] );
+                    if ( $export_content ) {
+                        // Load shelf/category maps from bundled JSON
+                        $json_data = null;
+                        $shelf_file = UZ_BOOKSHELF_PATH . 'data/uz-shelf-data.json';
+                        if ( file_exists( $shelf_file ) ) {
+                            $json_data = json_decode( file_get_contents( $shelf_file ), true );
+                        }
+                        $result = UZ_Bookshelf_Importer::run_import( $export_content, $json_data );
+                        $message = sprintf(
+                            '<div class="notice notice-success"><p>記事インポート完了: %d件作成, %d件更新, %dスキップ</p></div>',
+                            $result['created'], $result['updated'], $result['skipped']
+                        );
+                        if ( ! empty( $result['errors'] ) ) {
+                            $message .= '<div class="notice notice-warning"><p>エラー: ' . esc_html( implode( ', ', $result['errors'] ) ) . '</p></div>';
+                        }
+                    } else {
+                        $message = '<div class="notice notice-error"><p>ファイルの読み込みに失敗しました。</p></div>';
+                    }
+                }
+
                 if ( $import_type === 'rakuten_upload' && ! empty( $_FILES['rakuten_file']['tmp_name'] ) ) {
                     $genre_id = sanitize_text_field( $_POST['rakuten_genre_id'] ?? '' );
                     if ( $genre_id ) {
@@ -1168,6 +1277,23 @@ class UZ_Bookshelf_Admin {
                     </tr>
                 </table>
                 <?php submit_button( 'Import Shelf Data' ); ?>
+            </form>
+
+            <hr />
+
+            <h2>記事インポート（Movable Type形式）</h2>
+            <p>Movable Typeエクスポートファイル（<code>.txt</code>）をアップロードして、WordPressの記事（uz_article）として取り込みます。<br>
+            アフィリエイトリンク（msmaflink等）もそのまま保持されます。同じスラッグの記事があれば更新（upsert）します。</p>
+            <form method="post" enctype="multipart/form-data">
+                <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
+                <input type="hidden" name="import_type" value="mt_import" />
+                <table class="form-table">
+                    <tr>
+                        <th>エクスポートファイル</th>
+                        <td><input type="file" name="mt_file" accept=".txt,.export" required /></td>
+                    </tr>
+                </table>
+                <?php submit_button( '記事をインポート' ); ?>
             </form>
 
             <hr />
