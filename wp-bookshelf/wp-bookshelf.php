@@ -245,6 +245,9 @@ final class UZ_Bookshelf_Plugin {
             $this->import_articles_on_activate();
         }
 
+        // Sync article categories from bundled JSON (always runs)
+        $this->sync_article_categories();
+
         // Seed critique themes if none exist
         $this->seed_critique_themes();
 
@@ -266,6 +269,60 @@ final class UZ_Bookshelf_Plugin {
         }
 
         $this->db->import_from_json( $json_data );
+    }
+
+    /**
+     * Sync article categories from bundled JSON to existing WP posts.
+     */
+    private function sync_article_categories() {
+        $json_file = UZ_BOOKSHELF_PATH . 'data/uz-shelf-data.json';
+        if ( ! file_exists( $json_file ) ) {
+            return;
+        }
+
+        $json_data = json_decode( file_get_contents( $json_file ), true );
+        if ( empty( $json_data['articles'] ) ) {
+            return;
+        }
+
+        foreach ( $json_data['articles'] as $article ) {
+            if ( empty( $article['categories'] ) ) {
+                continue;
+            }
+
+            // Find existing post by slug (article id)
+            $posts = get_posts( array(
+                'post_type'   => 'post',
+                'name'        => $article['id'],
+                'post_status' => array( 'publish', 'draft', 'private' ),
+                'numberposts' => 1,
+                'meta_key'    => '_uz_article',
+                'meta_value'  => '1',
+            ) );
+            if ( empty( $posts ) ) {
+                continue;
+            }
+
+            $post_id  = $posts[0]->ID;
+            $term_ids = array();
+            foreach ( $article['categories'] as $cat_name ) {
+                $term = term_exists( $cat_name, 'category' );
+                if ( ! $term ) {
+                    $term = wp_insert_term( $cat_name, 'category' );
+                }
+                if ( ! is_wp_error( $term ) ) {
+                    $term_ids[] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
+                }
+            }
+            if ( $term_ids ) {
+                wp_set_object_terms( $post_id, $term_ids, 'category' );
+            }
+
+            // Also sync shelf meta
+            if ( ! empty( $article['shelf'] ) ) {
+                update_post_meta( $post_id, '_uz_shelf', $article['shelf'] );
+            }
+        }
     }
 
     /**
