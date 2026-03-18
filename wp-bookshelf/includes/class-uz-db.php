@@ -439,6 +439,7 @@ class UZ_Bookshelf_DB {
             'url'           => get_permalink( $post->ID ),
             'thumbnail_url' => $thumbnail_url,
             'post_id'       => $post->ID,
+            'body'          => $post->post_content ?: '',
         );
     }
 
@@ -728,6 +729,7 @@ class UZ_Bookshelf_DB {
                 'productCount' => (int) $a['product_count'],
                 'url'          => $a['url'] ?: '',
                 'thumbnailUrl' => $a['thumbnail_url'] ?: '',
+                'body'         => $a['body'] ?: '',
             );
         }
 

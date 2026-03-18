@@ -274,6 +274,7 @@ class UZ_Bookshelf_API {
                 'productCount' => (int) $a['product_count'],
                 'url'          => $a['url'] ?: '',
                 'thumbnailUrl' => $a['thumbnail_url'] ?: '',
+                'body'         => $a['body'] ?: '',
             );
         }
 
