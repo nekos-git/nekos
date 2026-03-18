@@ -929,6 +929,317 @@ class UZ_Bookshelf_DB {
         $wpdb->update( $this->items_table(), array( 'sort_order' => $current_order ), array( 'id' => (int) $neighbor['id'] ) );
     }
 
+    // =========================================================================
+    // Rakuten Fetch & Save (with dedup)
+    // =========================================================================
+
+    /**
+     * Check if a Rakuten item already exists in the DB by ISBN or title+author.
+     *
+     * @param array $item Rakuten item data (isbn, title, author)
+     * @return bool True if duplicate exists
+     */
+    public function is_duplicate_rakuten( $item ) {
+        global $wpdb;
+
+        // Check by ISBN first (most reliable)
+        if ( ! empty( $item['isbn'] ) ) {
+            $exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$this->items_table()} WHERE isbn = %s AND isbn != ''",
+                $item['isbn']
+            ) );
+            if ( (int) $exists > 0 ) {
+                return true;
+            }
+        }
+
+        // Fallback: check by title + author
+        if ( ! empty( $item['title'] ) ) {
+            $exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$this->items_table()} WHERE title = %s AND author = %s",
+                $item['title'],
+                $item['author'] ?? ''
+            ) );
+            if ( (int) $exists > 0 ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Fetch from Rakuten Books API and save new items (skip duplicates).
+     *
+     * @param string $keyword Search keyword
+     * @param string $genre_id Optional genre filter
+     * @param int    $hits     Number of results (max 30)
+     * @return array|WP_Error Result counts
+     */
+    public function fetch_and_save_rakuten( $keyword, $genre_id = '', $hits = 30 ) {
+        $app_id = get_option( 'uz_bookshelf_rakuten_app_id', '' );
+        if ( empty( $app_id ) ) {
+            return new WP_Error( 'no_api_key', __( '楽天APIアプリケーションIDが設定されていません。', 'uz-bookshelf' ) );
+        }
+
+        $args = array(
+            'format'         => 'json',
+            'applicationId'  => $app_id,
+            'keyword'        => $keyword,
+            'hits'           => min( $hits, 30 ),
+            'sort'           => 'reviewCount',
+            'outOfStockFlag' => 0,
+        );
+        if ( $genre_id ) {
+            $args['booksGenreId'] = $genre_id;
+        }
+
+        $api_url  = add_query_arg( $args, 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20170404' );
+        $response = wp_remote_get( $api_url, array( 'timeout' => 15 ) );
+
+        if ( is_wp_error( $response ) ) {
+            return $response;
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        if ( empty( $body ) || isset( $body['error'] ) ) {
+            $err_msg = $body['error_description'] ?? $body['error'] ?? 'Unknown API error';
+            return new WP_Error( 'api_error', $err_msg );
+        }
+
+        $saved    = 0;
+        $skipped  = 0;
+        $items    = $body['Items'] ?? array();
+
+        foreach ( $items as $i => $entry ) {
+            $item = isset( $entry['Item'] ) ? $entry['Item'] : $entry;
+
+            $data = array(
+                'isbn'             => $item['isbn'] ?? '',
+                'title'            => $item['title'] ?? '',
+                'author'           => $item['author'] ?? '',
+                'publisher'        => $item['publisherName'] ?? '',
+                'item_price'       => $item['itemPrice'] ?? 0,
+                'item_url'         => $item['itemUrl'] ?? '',
+                'large_image_url'  => $item['largeImageUrl'] ?? '',
+                'medium_image_url' => $item['mediumImageUrl'] ?? '',
+                'small_image_url'  => $item['smallImageUrl'] ?? '',
+                'item_caption'     => $item['itemCaption'] ?? '',
+                'books_genre_id'   => $item['booksGenreId'] ?? '',
+                'sales_date'       => $item['salesDate'] ?? '',
+                'review_average'   => $item['reviewAverage'] ?? '',
+                'review_count'     => $item['reviewCount'] ?? 0,
+                'availability'     => $item['availability'] ?? '',
+                'affiliate_url'    => $item['affiliateUrl'] ?? '',
+                'genre_id'         => $genre_id ?: substr( $item['booksGenreId'] ?? '', 0, 6 ),
+                'sort_order'       => $i,
+            );
+
+            if ( $this->is_duplicate_rakuten( $data ) ) {
+                $skipped++;
+                continue;
+            }
+
+            $this->insert_rakuten_book( $data );
+            $saved++;
+        }
+
+        return array(
+            'fetched' => count( $items ),
+            'saved'   => $saved,
+            'skipped' => $skipped,
+        );
+    }
+
+    // =========================================================================
+    // Central Item Management
+    // =========================================================================
+
+    /**
+     * Get all items (both sources) with optional filters for central management.
+     *
+     * @param array $args {
+     *     @type string $source     Filter by source: 'uz', 'rakuten', or '' for all.
+     *     @type string $shelf_id   Filter by shelf.
+     *     @type string $search     Search in title/author.
+     *     @type string $tag        Filter by tag (substring match in JSON tags field).
+     *     @type string $order_by   SQL ORDER BY clause.
+     *     @type int    $per_page   Limit results.
+     *     @type int    $offset     Offset for pagination.
+     * }
+     * @return array Items
+     */
+    public function get_managed_items( $args = array() ) {
+        global $wpdb;
+
+        $defaults = array(
+            'source'   => '',
+            'shelf_id' => '',
+            'search'   => '',
+            'tag'      => '',
+            'order_by' => 'id DESC',
+            'per_page' => 50,
+            'offset'   => 0,
+        );
+        $args = wp_parse_args( $args, $defaults );
+
+        $where = array( '1=1' );
+        $values = array();
+
+        if ( $args['source'] ) {
+            $where[] = 'source = %s';
+            $values[] = $args['source'];
+        }
+        if ( $args['shelf_id'] === '__none__' ) {
+            $where[] = "(shelf_id = '' OR shelf_id IS NULL)";
+        } elseif ( $args['shelf_id'] ) {
+            $where[] = 'shelf_id = %s';
+            $values[] = $args['shelf_id'];
+        }
+        if ( $args['search'] ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $where[] = '(title LIKE %s OR author LIKE %s OR isbn LIKE %s)';
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
+        }
+        if ( $args['tag'] ) {
+            $like = '%' . $wpdb->esc_like( $args['tag'] ) . '%';
+            $where[] = 'tags LIKE %s';
+            $values[] = $like;
+        }
+
+        $where_sql = implode( ' AND ', $where );
+
+        // Sanitize order_by
+        $allowed_orders = array(
+            'id DESC', 'id ASC', 'title ASC', 'title DESC',
+            'author ASC', 'author DESC', 'created_at DESC', 'created_at ASC',
+            'review_count DESC', 'review_average DESC', 'item_price ASC', 'item_price DESC',
+            'sort_order ASC',
+        );
+        $order_by = in_array( $args['order_by'], $allowed_orders, true ) ? $args['order_by'] : 'id DESC';
+
+        $sql = "SELECT * FROM {$this->items_table()} WHERE $where_sql ORDER BY $order_by LIMIT %d OFFSET %d";
+        $values[] = $args['per_page'];
+        $values[] = $args['offset'];
+
+        if ( ! empty( $values ) ) {
+            $sql = $wpdb->prepare( $sql, $values );
+        }
+
+        return $wpdb->get_results( $sql, ARRAY_A );
+    }
+
+    /**
+     * Count managed items (for pagination).
+     */
+    public function count_managed_items( $args = array() ) {
+        global $wpdb;
+
+        $where = array( '1=1' );
+        $values = array();
+
+        if ( ! empty( $args['source'] ) ) {
+            $where[] = 'source = %s';
+            $values[] = $args['source'];
+        }
+        if ( ! empty( $args['shelf_id'] ) && $args['shelf_id'] === '__none__' ) {
+            $where[] = "(shelf_id = '' OR shelf_id IS NULL)";
+        } elseif ( ! empty( $args['shelf_id'] ) ) {
+            $where[] = 'shelf_id = %s';
+            $values[] = $args['shelf_id'];
+        }
+        if ( ! empty( $args['search'] ) ) {
+            $like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+            $where[] = '(title LIKE %s OR author LIKE %s OR isbn LIKE %s)';
+            $values[] = $like;
+            $values[] = $like;
+            $values[] = $like;
+        }
+        if ( ! empty( $args['tag'] ) ) {
+            $like = '%' . $wpdb->esc_like( $args['tag'] ) . '%';
+            $where[] = 'tags LIKE %s';
+            $values[] = $like;
+        }
+
+        $where_sql = implode( ' AND ', $where );
+        $sql = "SELECT COUNT(*) FROM {$this->items_table()} WHERE $where_sql";
+
+        if ( ! empty( $values ) ) {
+            return (int) $wpdb->get_var( $wpdb->prepare( $sql, $values ) );
+        }
+        return (int) $wpdb->get_var( $sql );
+    }
+
+    /**
+     * Bulk assign items to a shelf.
+     *
+     * @param array  $ids      Item IDs
+     * @param string $shelf_id Shelf ID
+     * @return int Number of updated rows
+     */
+    public function bulk_assign_shelf( $ids, $shelf_id ) {
+        global $wpdb;
+        $ids = array_map( 'absint', $ids );
+        if ( empty( $ids ) ) return 0;
+
+        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+        $values = $ids;
+        $values[] = $shelf_id;
+
+        // Also set source to 'uz' when assigning to shelf (promotes rakuten item to curated)
+        return (int) $wpdb->query( $wpdb->prepare(
+            "UPDATE {$this->items_table()} SET shelf_id = %s, source = 'uz' WHERE id IN ($placeholders)",
+            array_merge( array( $shelf_id ), $ids )
+        ) );
+    }
+
+    /**
+     * Bulk update tags for items.
+     *
+     * @param array  $ids  Item IDs
+     * @param array  $tags Tags to set
+     * @return int Number of updated rows
+     */
+    public function bulk_update_tags( $ids, $tags ) {
+        global $wpdb;
+        $ids = array_map( 'absint', $ids );
+        if ( empty( $ids ) ) return 0;
+
+        $tags_json = wp_json_encode( array_map( 'sanitize_text_field', $tags ) );
+        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+        return (int) $wpdb->query( $wpdb->prepare(
+            "UPDATE {$this->items_table()} SET tags = %s WHERE id IN ($placeholders)",
+            array_merge( array( $tags_json ), $ids )
+        ) );
+    }
+
+    /**
+     * Get all distinct tags used in items.
+     *
+     * @return array Tag strings
+     */
+    public function get_all_tags() {
+        global $wpdb;
+        $rows = $wpdb->get_col( "SELECT DISTINCT tags FROM {$this->items_table()} WHERE tags != '' AND tags != '[]'" );
+        $all_tags = array();
+        foreach ( $rows as $json ) {
+            $decoded = json_decode( $json, true );
+            if ( is_array( $decoded ) ) {
+                foreach ( $decoded as $tag ) {
+                    $tag = trim( $tag );
+                    if ( $tag && ! in_array( $tag, $all_tags, true ) ) {
+                        $all_tags[] = $tag;
+                    }
+                }
+            }
+        }
+        sort( $all_tags );
+        return $all_tags;
+    }
+
     /**
      * Check if database has any data
      */

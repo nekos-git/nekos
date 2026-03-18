@@ -3,7 +3,7 @@
  * Plugin Name: UZ Bookshelf
  * Plugin URI: https://github.com/nekos-git/wp-bookshelf
  * Description: 3D bookshelf display with affiliate links. Embed beautiful wooden bookshelves on any page with [uz_bookshelf] shortcode. Supports UZ Selection and Rakuten Books.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: UZ Media
  * Author URI: https://end2endworld.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'UZ_BOOKSHELF_VERSION', '1.3.0' );
+define( 'UZ_BOOKSHELF_VERSION', '1.4.0' );
 define( 'UZ_BOOKSHELF_FILE', __FILE__ );
 define( 'UZ_BOOKSHELF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'UZ_BOOKSHELF_URL', plugin_dir_url( __FILE__ ) );
@@ -143,6 +143,53 @@ final class UZ_Bookshelf_Plugin {
 
         // Check for DB upgrades
         add_action( 'plugins_loaded', array( $this->db, 'maybe_upgrade' ) );
+
+        // WP Cron: Rakuten auto-fetch
+        add_action( 'uz_bookshelf_rakuten_cron', array( $this, 'run_rakuten_cron' ) );
+
+        // Register custom cron schedule (weekly)
+        add_filter( 'cron_schedules', array( $this, 'add_cron_schedules' ) );
+    }
+
+    /**
+     * Add custom cron schedules
+     */
+    public function add_cron_schedules( $schedules ) {
+        $schedules['weekly'] = array(
+            'interval' => WEEK_IN_SECONDS,
+            'display'  => __( '週1回', 'uz-bookshelf' ),
+        );
+        return $schedules;
+    }
+
+    /**
+     * WP Cron callback: Fetch from Rakuten for each keyword
+     */
+    public function run_rakuten_cron() {
+        $keywords = get_option( 'uz_bookshelf_cron_keywords', '' );
+        if ( empty( $keywords ) ) {
+            return;
+        }
+
+        $lines = array_filter( array_map( 'trim', explode( "\n", $keywords ) ) );
+        $log   = array();
+        $log[] = '実行日時: ' . wp_date( 'Y-m-d H:i:s' );
+
+        foreach ( $lines as $keyword ) {
+            $result = $this->db->fetch_and_save_rakuten( $keyword );
+            if ( is_wp_error( $result ) ) {
+                $log[] = "[$keyword] エラー: " . $result->get_error_message();
+            } else {
+                $log[] = sprintf(
+                    '[%s] 取得=%d, 保存=%d, スキップ=%d',
+                    $keyword, $result['fetched'], $result['saved'], $result['skipped']
+                );
+            }
+            // Rate limit: 1 sec between API calls
+            sleep( 1 );
+        }
+
+        update_option( 'uz_bookshelf_cron_last_log', implode( "\n", $log ) );
     }
 
     /**
@@ -293,6 +340,7 @@ final class UZ_Bookshelf_Plugin {
      * Plugin deactivation
      */
     public function deactivate() {
+        wp_clear_scheduled_hook( 'uz_bookshelf_rakuten_cron' );
         flush_rewrite_rules();
     }
 }

@@ -74,6 +74,24 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
+            __( 'アイテム管理', 'uz-bookshelf' ),
+            __( 'アイテム管理', 'uz-bookshelf' ),
+            'manage_options',
+            'uz-bookshelf-manage',
+            array( $this, 'page_manage_items' )
+        );
+
+        add_submenu_page(
+            'uz-bookshelf',
+            __( '楽天取得', 'uz-bookshelf' ),
+            __( '楽天取得', 'uz-bookshelf' ),
+            'manage_options',
+            'uz-bookshelf-rakuten-fetch',
+            array( $this, 'page_rakuten_fetch' )
+        );
+
+        add_submenu_page(
+            'uz-bookshelf',
             __( 'Rakuten Books', 'uz-bookshelf' ),
             __( 'Rakuten Books', 'uz-bookshelf' ),
             'manage_options',
@@ -113,6 +131,21 @@ class UZ_Bookshelf_Admin {
             array(),
             UZ_BOOKSHELF_VERSION
         );
+
+        // Admin JS for management pages
+        if ( strpos( $hook, 'uz-bookshelf-manage' ) !== false || strpos( $hook, 'uz-bookshelf-rakuten-fetch' ) !== false ) {
+            wp_enqueue_script(
+                'uz-bookshelf-admin-manage',
+                $this->plugin_url . 'assets/js/admin-manage.js',
+                array( 'jquery' ),
+                UZ_BOOKSHELF_VERSION,
+                true
+            );
+            wp_localize_script( 'uz-bookshelf-admin-manage', 'uzAdmin', array(
+                'apiBase' => rest_url( 'uz-bookshelf/v1' ),
+                'nonce'   => wp_create_nonce( 'wp_rest' ),
+            ) );
+        }
 
         // Media uploader for item edit pages
         if ( strpos( $hook, 'uz-bookshelf-items' ) !== false ) {
@@ -1062,6 +1095,424 @@ class UZ_Bookshelf_Admin {
         }
         wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-articles' ) );
         exit;
+    }
+
+    // =========================================================================
+    // 楽天取得 (Rakuten Fetch)
+    // =========================================================================
+
+    public function page_rakuten_fetch() {
+        $message = '';
+
+        // Handle manual fetch
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_rakuten_fetch_nonce'] ) ) {
+            if ( wp_verify_nonce( $_POST['uz_rakuten_fetch_nonce'], 'uz_rakuten_fetch' ) ) {
+                $keyword  = sanitize_text_field( $_POST['keyword'] ?? '' );
+                $genre_id = sanitize_text_field( $_POST['genre_id'] ?? '' );
+                $hits     = absint( $_POST['hits'] ?? 30 );
+
+                if ( $keyword ) {
+                    $result = $this->db->fetch_and_save_rakuten( $keyword, $genre_id, $hits );
+                    if ( is_wp_error( $result ) ) {
+                        $message = '<div class="notice notice-error"><p>' . esc_html( $result->get_error_message() ) . '</p></div>';
+                    } else {
+                        $message = '<div class="notice notice-success"><p>' . esc_html( sprintf(
+                            __( '楽天から %d件取得 → %d件保存（%d件は重複のためスキップ）', 'uz-bookshelf' ),
+                            $result['fetched'], $result['saved'], $result['skipped']
+                        ) ) . '</p></div>';
+                    }
+                }
+            }
+        }
+
+        // Handle cron keyword save
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_cron_keywords_nonce'] ) ) {
+            if ( wp_verify_nonce( $_POST['uz_cron_keywords_nonce'], 'uz_save_cron_keywords' ) ) {
+                $keywords = sanitize_textarea_field( $_POST['cron_keywords'] ?? '' );
+                update_option( 'uz_bookshelf_cron_keywords', $keywords );
+                $interval = sanitize_text_field( $_POST['cron_interval'] ?? 'daily' );
+                update_option( 'uz_bookshelf_cron_interval', $interval );
+                $message = '<div class="notice notice-success"><p>' . esc_html__( '自動取得設定を保存しました。', 'uz-bookshelf' ) . '</p></div>';
+
+                // Reschedule cron
+                $hook = 'uz_bookshelf_rakuten_cron';
+                wp_clear_scheduled_hook( $hook );
+                if ( ! empty( $keywords ) ) {
+                    $schedule = in_array( $interval, array( 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ? $interval : 'daily';
+                    wp_schedule_event( time() + 60, $schedule, $hook );
+                }
+            }
+        }
+
+        $app_id = get_option( 'uz_bookshelf_rakuten_app_id', '' );
+        $cron_keywords = get_option( 'uz_bookshelf_cron_keywords', '' );
+        $cron_interval = get_option( 'uz_bookshelf_cron_interval', 'daily' );
+        $next_cron = wp_next_scheduled( 'uz_bookshelf_rakuten_cron' );
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( '楽天ブックス取得', 'uz-bookshelf' ); ?></h1>
+            <?php echo $message; ?>
+
+            <?php if ( empty( $app_id ) ) : ?>
+                <div class="notice notice-warning">
+                    <p><?php echo wp_kses_post( sprintf(
+                        __( '楽天APIアプリケーションIDが未設定です。<a href="%s">設定ページ</a>で設定してください。', 'uz-bookshelf' ),
+                        admin_url( 'admin.php?page=uz-bookshelf-settings' )
+                    ) ); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <!-- Manual Fetch -->
+            <div style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin:20px 0;max-width:800px;">
+                <h2 style="margin-top:0;"><?php esc_html_e( '手動取得', 'uz-bookshelf' ); ?></h2>
+                <p><?php esc_html_e( 'キーワードで楽天ブックスAPIを検索し、結果をDBに保存します。重複するアイテムは自動的にスキップされます。', 'uz-bookshelf' ); ?></p>
+
+                <form method="post">
+                    <?php wp_nonce_field( 'uz_rakuten_fetch', 'uz_rakuten_fetch_nonce' ); ?>
+                    <table class="form-table">
+                        <tr>
+                            <th><label for="keyword"><?php esc_html_e( 'キーワード', 'uz-bookshelf' ); ?></label></th>
+                            <td><input type="text" name="keyword" id="keyword" class="regular-text" required placeholder="<?php esc_attr_e( '例: プログラミング, AI, SF小説', 'uz-bookshelf' ); ?>" /></td>
+                        </tr>
+                        <tr>
+                            <th><label for="genre_id"><?php esc_html_e( 'ジャンル（任意）', 'uz-bookshelf' ); ?></label></th>
+                            <td>
+                                <select name="genre_id" id="genre_id">
+                                    <option value=""><?php esc_html_e( '全ジャンル', 'uz-bookshelf' ); ?></option>
+                                    <option value="001005">001005 (コンピュータ・IT)</option>
+                                    <option value="001006">001006 (ビジネス・経済)</option>
+                                    <option value="001004">001004 (人文・思想)</option>
+                                    <option value="001001">001001 (文学・小説)</option>
+                                    <option value="001010">001010 (エンターテインメント)</option>
+                                    <option value="001009">001009 (科学・技術)</option>
+                                    <option value="001028">001028 (コミック)</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="hits"><?php esc_html_e( '取得件数', 'uz-bookshelf' ); ?></label></th>
+                            <td>
+                                <select name="hits" id="hits">
+                                    <option value="10">10件</option>
+                                    <option value="20">20件</option>
+                                    <option value="30" selected>30件（最大）</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <?php submit_button( __( '楽天から取得', 'uz-bookshelf' ), 'primary', 'submit', false ); ?>
+                </form>
+            </div>
+
+            <!-- Auto Fetch (WP Cron) -->
+            <div style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin:20px 0;max-width:800px;">
+                <h2 style="margin-top:0;"><?php esc_html_e( '自動取得設定（WP Cron）', 'uz-bookshelf' ); ?></h2>
+                <p><?php esc_html_e( 'キーワードを改行区切りで登録すると、定期的に自動取得します。重複は自動スキップされます。', 'uz-bookshelf' ); ?></p>
+
+                <?php if ( $next_cron ) : ?>
+                    <p><strong><?php esc_html_e( '次回実行:', 'uz-bookshelf' ); ?></strong>
+                    <?php echo esc_html( wp_date( 'Y-m-d H:i:s', $next_cron ) ); ?></p>
+                <?php else : ?>
+                    <p><em><?php esc_html_e( '自動取得はスケジュールされていません。', 'uz-bookshelf' ); ?></em></p>
+                <?php endif; ?>
+
+                <form method="post">
+                    <?php wp_nonce_field( 'uz_save_cron_keywords', 'uz_cron_keywords_nonce' ); ?>
+                    <table class="form-table">
+                        <tr>
+                            <th><label for="cron_keywords"><?php esc_html_e( 'キーワード（改行区切り）', 'uz-bookshelf' ); ?></label></th>
+                            <td>
+                                <textarea name="cron_keywords" id="cron_keywords" rows="6" class="large-text" placeholder="<?php esc_attr_e( "プログラミング\nAI 人工知能\nSF 小説\nビジネス書 2024", 'uz-bookshelf' ); ?>"><?php echo esc_textarea( $cron_keywords ); ?></textarea>
+                                <p class="description"><?php esc_html_e( '空欄にすると自動取得を停止します。', 'uz-bookshelf' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="cron_interval"><?php esc_html_e( '取得頻度', 'uz-bookshelf' ); ?></label></th>
+                            <td>
+                                <select name="cron_interval" id="cron_interval">
+                                    <option value="hourly" <?php selected( $cron_interval, 'hourly' ); ?>><?php esc_html_e( '1時間ごと', 'uz-bookshelf' ); ?></option>
+                                    <option value="twicedaily" <?php selected( $cron_interval, 'twicedaily' ); ?>><?php esc_html_e( '1日2回', 'uz-bookshelf' ); ?></option>
+                                    <option value="daily" <?php selected( $cron_interval, 'daily' ); ?>><?php esc_html_e( '1日1回', 'uz-bookshelf' ); ?></option>
+                                    <option value="weekly" <?php selected( $cron_interval, 'weekly' ); ?>><?php esc_html_e( '週1回', 'uz-bookshelf' ); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <?php submit_button( __( '自動取得設定を保存', 'uz-bookshelf' ), 'primary', 'submit', false ); ?>
+                </form>
+            </div>
+
+            <!-- Fetch Log -->
+            <?php
+            $last_log = get_option( 'uz_bookshelf_cron_last_log', '' );
+            if ( $last_log ) :
+            ?>
+            <div style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin:20px 0;max-width:800px;">
+                <h2 style="margin-top:0;"><?php esc_html_e( '最新の自動取得ログ', 'uz-bookshelf' ); ?></h2>
+                <pre style="background:#f0f0f1;padding:10px;overflow-x:auto;"><?php echo esc_html( $last_log ); ?></pre>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    // =========================================================================
+    // アイテム一元管理 (Central Item Management)
+    // =========================================================================
+
+    public function page_manage_items() {
+        // Handle bulk actions
+        $message = '';
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_manage_nonce'] ) ) {
+            if ( wp_verify_nonce( $_POST['uz_manage_nonce'], 'uz_manage_items' ) ) {
+                $bulk_action = sanitize_text_field( $_POST['bulk_action'] ?? '' );
+                $selected    = isset( $_POST['item_ids'] ) ? array_map( 'absint', (array) $_POST['item_ids'] ) : array();
+
+                if ( ! empty( $selected ) ) {
+                    if ( $bulk_action === 'assign_shelf' ) {
+                        $shelf_id = sanitize_text_field( $_POST['bulk_shelf_id'] ?? '' );
+                        if ( $shelf_id ) {
+                            $count = $this->db->bulk_assign_shelf( $selected, $shelf_id );
+                            $message = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を棚「%s」に追加しました。', 'uz-bookshelf' ), $count, $shelf_id ) ) . '</p></div>';
+                        }
+                    } elseif ( $bulk_action === 'add_tags' ) {
+                        $tags_raw = sanitize_text_field( $_POST['bulk_tags'] ?? '' );
+                        $tags     = array_filter( array_map( 'trim', explode( ',', $tags_raw ) ) );
+                        if ( ! empty( $tags ) ) {
+                            $count = $this->db->bulk_update_tags( $selected, $tags );
+                            $message = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件にタグを設定しました。', 'uz-bookshelf' ), $count ) ) . '</p></div>';
+                        }
+                    } elseif ( $bulk_action === 'delete' ) {
+                        foreach ( $selected as $id ) {
+                            $this->db->delete_item( $id );
+                        }
+                        $message = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を削除しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                    }
+                }
+            }
+        }
+
+        // Filters
+        $source   = isset( $_GET['source'] ) ? sanitize_text_field( $_GET['source'] ) : '';
+        $shelf_id = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
+        $search   = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
+        $tag      = isset( $_GET['tag'] ) ? sanitize_text_field( $_GET['tag'] ) : '';
+        $order_by = isset( $_GET['order_by'] ) ? sanitize_text_field( $_GET['order_by'] ) : 'id DESC';
+        $paged    = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+        $per_page = 50;
+
+        $args = array(
+            'source'   => $source,
+            'shelf_id' => $shelf_id,
+            'search'   => $search,
+            'tag'      => $tag,
+            'order_by' => $order_by,
+            'per_page' => $per_page,
+            'offset'   => ( $paged - 1 ) * $per_page,
+        );
+
+        $items      = $this->db->get_managed_items( $args );
+        $total      = $this->db->count_managed_items( $args );
+        $total_pages = ceil( $total / $per_page );
+        $shelves    = $this->db->get_shelves();
+        $all_tags   = $this->db->get_all_tags();
+
+        $base_url = admin_url( 'admin.php?page=uz-bookshelf-manage' );
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'アイテム一元管理', 'uz-bookshelf' ); ?></h1>
+            <?php echo $message; ?>
+
+            <!-- Filters -->
+            <div class="tablenav top">
+                <form method="get" class="alignleft actions">
+                    <input type="hidden" name="page" value="uz-bookshelf-manage" />
+
+                    <select name="source">
+                        <option value=""><?php esc_html_e( '全ソース', 'uz-bookshelf' ); ?></option>
+                        <option value="uz" <?php selected( $source, 'uz' ); ?>>UZ (キュレーション)</option>
+                        <option value="rakuten" <?php selected( $source, 'rakuten' ); ?>>楽天</option>
+                    </select>
+
+                    <select name="shelf_id">
+                        <option value=""><?php esc_html_e( '全棚', 'uz-bookshelf' ); ?></option>
+                        <option value="__none__" <?php selected( $shelf_id, '__none__' ); ?>><?php esc_html_e( '棚なし', 'uz-bookshelf' ); ?></option>
+                        <?php foreach ( $shelves as $s ) : ?>
+                            <option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $shelf_id, $s['id'] ); ?>>
+                                <?php echo esc_html( $s['title'] ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <?php if ( ! empty( $all_tags ) ) : ?>
+                    <select name="tag">
+                        <option value=""><?php esc_html_e( '全タグ', 'uz-bookshelf' ); ?></option>
+                        <?php foreach ( $all_tags as $t ) : ?>
+                            <option value="<?php echo esc_attr( $t ); ?>" <?php selected( $tag, $t ); ?>><?php echo esc_html( $t ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php endif; ?>
+
+                    <select name="order_by">
+                        <option value="id DESC" <?php selected( $order_by, 'id DESC' ); ?>><?php esc_html_e( '新しい順', 'uz-bookshelf' ); ?></option>
+                        <option value="title ASC" <?php selected( $order_by, 'title ASC' ); ?>><?php esc_html_e( 'タイトル順', 'uz-bookshelf' ); ?></option>
+                        <option value="author ASC" <?php selected( $order_by, 'author ASC' ); ?>><?php esc_html_e( '著者順', 'uz-bookshelf' ); ?></option>
+                        <option value="review_count DESC" <?php selected( $order_by, 'review_count DESC' ); ?>><?php esc_html_e( 'レビュー数順', 'uz-bookshelf' ); ?></option>
+                        <option value="review_average DESC" <?php selected( $order_by, 'review_average DESC' ); ?>><?php esc_html_e( '評価順', 'uz-bookshelf' ); ?></option>
+                        <option value="item_price ASC" <?php selected( $order_by, 'item_price ASC' ); ?>><?php esc_html_e( '価格（安い順）', 'uz-bookshelf' ); ?></option>
+                        <option value="item_price DESC" <?php selected( $order_by, 'item_price DESC' ); ?>><?php esc_html_e( '価格（高い順）', 'uz-bookshelf' ); ?></option>
+                        <option value="created_at DESC" <?php selected( $order_by, 'created_at DESC' ); ?>><?php esc_html_e( '取得日時順', 'uz-bookshelf' ); ?></option>
+                    </select>
+
+                    <input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'タイトル・著者・ISBN検索', 'uz-bookshelf' ); ?>" />
+                    <input type="submit" class="button" value="<?php esc_attr_e( '絞り込み', 'uz-bookshelf' ); ?>" />
+
+                    <?php if ( $source || $shelf_id || $search || $tag || $order_by !== 'id DESC' ) : ?>
+                        <a href="<?php echo esc_url( $base_url ); ?>" class="button"><?php esc_html_e( 'リセット', 'uz-bookshelf' ); ?></a>
+                    <?php endif; ?>
+                </form>
+
+                <div class="tablenav-pages">
+                    <span class="displaying-num"><?php echo esc_html( sprintf( __( '%d件', 'uz-bookshelf' ), $total ) ); ?></span>
+                    <?php if ( $total_pages > 1 ) : ?>
+                        <?php for ( $p = 1; $p <= $total_pages; $p++ ) : ?>
+                            <?php if ( $p === $paged ) : ?>
+                                <span class="tablenav-pages-navspan button disabled"><?php echo esc_html( $p ); ?></span>
+                            <?php else : ?>
+                                <a class="button" href="<?php echo esc_url( add_query_arg( 'paged', $p, $base_url . '&source=' . urlencode( $source ) . '&shelf_id=' . urlencode( $shelf_id ) . '&s=' . urlencode( $search ) . '&tag=' . urlencode( $tag ) . '&order_by=' . urlencode( $order_by ) ) ); ?>"><?php echo esc_html( $p ); ?></a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <form method="post">
+                <?php wp_nonce_field( 'uz_manage_items', 'uz_manage_nonce' ); ?>
+
+                <div style="background:#f0f0f1;padding:10px 15px;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <select name="bulk_action" id="bulk_action">
+                        <option value=""><?php esc_html_e( '一括操作', 'uz-bookshelf' ); ?></option>
+                        <option value="assign_shelf"><?php esc_html_e( '棚に追加', 'uz-bookshelf' ); ?></option>
+                        <option value="add_tags"><?php esc_html_e( 'タグ設定', 'uz-bookshelf' ); ?></option>
+                        <option value="delete"><?php esc_html_e( '削除', 'uz-bookshelf' ); ?></option>
+                    </select>
+
+                    <select name="bulk_shelf_id" id="bulk_shelf_id" style="display:none;">
+                        <?php foreach ( $shelves as $s ) : ?>
+                            <option value="<?php echo esc_attr( $s['id'] ); ?>"><?php echo esc_html( $s['title'] ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <input type="text" name="bulk_tags" id="bulk_tags" placeholder="<?php esc_attr_e( 'タグ（カンマ区切り）', 'uz-bookshelf' ); ?>" style="display:none;width:200px;" />
+
+                    <input type="submit" class="button action" value="<?php esc_attr_e( '適用', 'uz-bookshelf' ); ?>" onclick="if(document.getElementById('bulk_action').value==='delete')return confirm('<?php echo esc_js( __( '選択したアイテムを削除しますか？', 'uz-bookshelf' ) ); ?>');" />
+
+                    <span style="margin-left:auto;font-size:12px;color:#666;">
+                        <label><input type="checkbox" id="uz-select-all" /> <?php esc_html_e( '全選択', 'uz-bookshelf' ); ?></label>
+                    </span>
+                </div>
+
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th width="30"><input type="checkbox" id="uz-select-all-top" /></th>
+                            <th width="40"><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                            <th width="50"><?php esc_html_e( '画像', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( 'タイトル', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( '著者', 'uz-bookshelf' ); ?></th>
+                            <th width="60"><?php esc_html_e( 'ソース', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( '棚', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( 'タグ', 'uz-bookshelf' ); ?></th>
+                            <th width="60"><?php esc_html_e( '価格', 'uz-bookshelf' ); ?></th>
+                            <th width="40"><?php esc_html_e( '評価', 'uz-bookshelf' ); ?></th>
+                            <th width="80"><?php esc_html_e( '操作', 'uz-bookshelf' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ( empty( $items ) ) : ?>
+                            <tr><td colspan="11"><?php esc_html_e( 'アイテムが見つかりません。', 'uz-bookshelf' ); ?></td></tr>
+                        <?php else : ?>
+                            <?php foreach ( $items as $item ) : ?>
+                            <tr>
+                                <td><input type="checkbox" name="item_ids[]" value="<?php echo esc_attr( $item['id'] ); ?>" class="uz-item-checkbox" /></td>
+                                <td><?php echo esc_html( $item['id'] ); ?></td>
+                                <td>
+                                    <?php
+                                    $img = $item['cover_url'] ?: $item['small_image_url'] ?: $item['medium_image_url'] ?: '';
+                                    if ( $img ) : ?>
+                                        <img src="<?php echo esc_url( $img ); ?>" style="width:35px;height:auto;" />
+                                    <?php else : ?>
+                                        <span style="color:#999;">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php echo esc_html( mb_substr( $item['title'], 0, 40 ) ); ?></a></strong>
+                                    <?php if ( $item['isbn'] ) : ?>
+                                        <br><small style="color:#666;">ISBN: <?php echo esc_html( $item['isbn'] ); ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html( mb_substr( $item['author'], 0, 15 ) ); ?></td>
+                                <td>
+                                    <span style="background:<?php echo $item['source'] === 'uz' ? '#dff0d8' : '#d9edf7'; ?>;padding:2px 6px;border-radius:3px;font-size:11px;">
+                                        <?php echo esc_html( $item['source'] === 'uz' ? 'UZ' : '楽天' ); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php if ( $item['shelf_id'] ) : ?>
+                                        <code style="font-size:11px;"><?php echo esc_html( $item['shelf_id'] ); ?></code>
+                                    <?php else : ?>
+                                        <span style="color:#999;">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $tags = json_decode( $item['tags'], true );
+                                    if ( is_array( $tags ) && ! empty( $tags ) ) :
+                                        foreach ( $tags as $t ) : ?>
+                                            <span style="background:#e8e8e8;padding:1px 5px;border-radius:2px;font-size:11px;margin-right:2px;"><?php echo esc_html( $t ); ?></span>
+                                        <?php endforeach;
+                                    else : ?>
+                                        <span style="color:#999;">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo $item['item_price'] ? '&yen;' . number_format( $item['item_price'] ) : '-'; ?></td>
+                                <td><?php echo $item['review_average'] ? esc_html( $item['review_average'] ) : '-'; ?></td>
+                                <td>
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php esc_html_e( '編集', 'uz-bookshelf' ); ?></a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </form>
+
+            <!-- New Shelf Creation (inline) -->
+            <div style="background:#fff;border:1px solid #c3c4c7;padding:15px;margin-top:20px;max-width:500px;">
+                <h3 style="margin-top:0;"><?php esc_html_e( '新しい棚を作成', 'uz-bookshelf' ); ?></h3>
+                <p class="description"><?php esc_html_e( 'ここで棚を作成し、上のリストからアイテムを追加できます。', 'uz-bookshelf' ); ?></p>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>" class="button button-primary"><?php esc_html_e( '棚を作成', 'uz-bookshelf' ); ?></a>
+            </div>
+        </div>
+
+        <script>
+        jQuery(function($) {
+            // Bulk action visibility toggle
+            $('#bulk_action').on('change', function() {
+                var val = $(this).val();
+                $('#bulk_shelf_id').toggle(val === 'assign_shelf');
+                $('#bulk_tags').toggle(val === 'add_tags');
+            });
+
+            // Select all checkboxes
+            $('#uz-select-all, #uz-select-all-top').on('change', function() {
+                $('.uz-item-checkbox').prop('checked', this.checked);
+                $('#uz-select-all, #uz-select-all-top').prop('checked', this.checked);
+            });
+        });
+        </script>
+        <?php
     }
 
     // =========================================================================

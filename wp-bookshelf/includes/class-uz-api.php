@@ -169,6 +169,34 @@ class UZ_Bookshelf_API {
             'permission_callback' => array( $this, 'check_admin_permission' ),
         ) );
 
+        // POST /rakuten-fetch - Fetch from Rakuten API and save (with dedup)
+        register_rest_route( self::NAMESPACE, '/rakuten-fetch', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'rakuten_fetch' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
+        // GET /managed-items - Central item management list
+        register_rest_route( self::NAMESPACE, '/managed-items', array(
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => array( $this, 'get_managed_items' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
+        // POST /items/bulk-shelf - Bulk assign items to shelf
+        register_rest_route( self::NAMESPACE, '/items/bulk-shelf', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'bulk_assign_shelf' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
+        // POST /items/bulk-tags - Bulk update tags
+        register_rest_route( self::NAMESPACE, '/items/bulk-tags', array(
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => array( $this, 'bulk_assign_tags' ),
+            'permission_callback' => array( $this, 'check_admin_permission' ),
+        ) );
+
         // --- CRUD for shelf items (admin) ---
         register_rest_route( self::NAMESPACE, '/items', array(
             'methods'             => WP_REST_Server::CREATABLE,
@@ -814,6 +842,89 @@ class UZ_Bookshelf_API {
 
         $this->db->delete_item( $id );
         return rest_ensure_response( array( 'success' => true ) );
+    }
+
+    // =========================================================================
+    // Rakuten Fetch & Central Management
+    // =========================================================================
+
+    /**
+     * POST /rakuten-fetch - Fetch from Rakuten API and save new items
+     */
+    public function rakuten_fetch( WP_REST_Request $request ) {
+        $params   = $request->get_json_params();
+        $keyword  = sanitize_text_field( $params['keyword'] ?? '' );
+        $genre_id = sanitize_text_field( $params['genre_id'] ?? '' );
+        $hits     = absint( $params['hits'] ?? 30 );
+
+        if ( empty( $keyword ) ) {
+            return new WP_Error( 'missing_keyword', __( 'キーワードを指定してください', 'uz-bookshelf' ), array( 'status' => 400 ) );
+        }
+
+        $result = $this->db->fetch_and_save_rakuten( $keyword, $genre_id, $hits );
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+
+        return rest_ensure_response( array(
+            'success' => true,
+            'result'  => $result,
+        ) );
+    }
+
+    /**
+     * GET /managed-items - Central item management
+     */
+    public function get_managed_items( WP_REST_Request $request ) {
+        $args = array(
+            'source'   => sanitize_text_field( $request->get_param( 'source' ) ?? '' ),
+            'shelf_id' => sanitize_text_field( $request->get_param( 'shelf_id' ) ?? '' ),
+            'search'   => sanitize_text_field( $request->get_param( 'search' ) ?? '' ),
+            'tag'      => sanitize_text_field( $request->get_param( 'tag' ) ?? '' ),
+            'order_by' => sanitize_text_field( $request->get_param( 'order_by' ) ?? 'id DESC' ),
+            'per_page' => absint( $request->get_param( 'per_page' ) ?? 50 ),
+            'offset'   => absint( $request->get_param( 'offset' ) ?? 0 ),
+        );
+
+        $items = $this->db->get_managed_items( $args );
+        $total = $this->db->count_managed_items( $args );
+
+        return rest_ensure_response( array(
+            'items' => $items,
+            'total' => $total,
+        ) );
+    }
+
+    /**
+     * POST /items/bulk-shelf - Assign items to a shelf
+     */
+    public function bulk_assign_shelf( WP_REST_Request $request ) {
+        $params   = $request->get_json_params();
+        $ids      = $params['ids'] ?? array();
+        $shelf_id = sanitize_text_field( $params['shelf_id'] ?? '' );
+
+        if ( empty( $ids ) || empty( $shelf_id ) ) {
+            return new WP_Error( 'missing_params', __( 'ids と shelf_id が必要です', 'uz-bookshelf' ), array( 'status' => 400 ) );
+        }
+
+        $updated = $this->db->bulk_assign_shelf( $ids, $shelf_id );
+        return rest_ensure_response( array( 'success' => true, 'updated' => $updated ) );
+    }
+
+    /**
+     * POST /items/bulk-tags - Update tags for items
+     */
+    public function bulk_assign_tags( WP_REST_Request $request ) {
+        $params = $request->get_json_params();
+        $ids    = $params['ids'] ?? array();
+        $tags   = $params['tags'] ?? array();
+
+        if ( empty( $ids ) ) {
+            return new WP_Error( 'missing_params', __( 'ids が必要です', 'uz-bookshelf' ), array( 'status' => 400 ) );
+        }
+
+        $updated = $this->db->bulk_update_tags( $ids, $tags );
+        return rest_ensure_response( array( 'success' => true, 'updated' => $updated ) );
     }
 
     /**
