@@ -508,9 +508,9 @@ class UZ_Bookshelf_Book_Page {
 
         <main class="uz-book-page">
             <nav class="uz-book-breadcrumb">
-                <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'uz-bookshelf' ); ?></a>
                 &raquo;
-                <a href="<?php echo esc_url( $bookshelf_url ); ?>">Bookshelf</a>
+                <a href="<?php echo esc_url( $bookshelf_url ); ?>"><?php esc_html_e( 'Bookshelf', 'uz-bookshelf' ); ?></a>
                 &raquo;
                 <span><?php echo esc_html( $title ); ?></span>
             </nav>
@@ -523,7 +523,7 @@ class UZ_Bookshelf_Book_Page {
                              loading="eager" />
                     <?php else : ?>
                         <div style="width:100%;aspect-ratio:128/182;background:#ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;font-size:14px;">
-                            No Cover
+                            <?php esc_html_e( 'No Cover', 'uz-bookshelf' ); ?>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -559,7 +559,7 @@ class UZ_Bookshelf_Book_Page {
                                class="uz-book-btn uz-book-btn--amazon"
                                target="_blank"
                                rel="nofollow noopener noreferrer">
-                                Amazon
+                                <?php esc_html_e( 'Amazon', 'uz-bookshelf' ); ?>
                             </a>
                         <?php endif; ?>
 
@@ -568,7 +568,7 @@ class UZ_Bookshelf_Book_Page {
                                class="uz-book-btn uz-book-btn--rakuten"
                                target="_blank"
                                rel="nofollow noopener noreferrer">
-                                Rakuten
+                                <?php esc_html_e( 'Rakuten', 'uz-bookshelf' ); ?>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -576,13 +576,13 @@ class UZ_Bookshelf_Book_Page {
                     <table class="uz-book-meta-table">
                         <?php if ( ! empty( $item['isbn'] ) ) : ?>
                             <tr>
-                                <th>ISBN</th>
+                                <th><?php esc_html_e( 'ISBN', 'uz-bookshelf' ); ?></th>
                                 <td><?php echo esc_html( $item['isbn'] ); ?></td>
                             </tr>
                         <?php endif; ?>
                         <?php if ( ! empty( $item['publisher'] ) ) : ?>
                             <tr>
-                                <th>Publisher</th>
+                                <th><?php esc_html_e( 'Publisher', 'uz-bookshelf' ); ?></th>
                                 <td><?php echo esc_html( $item['publisher'] ); ?></td>
                             </tr>
                         <?php endif; ?>
@@ -590,14 +590,14 @@ class UZ_Bookshelf_Book_Page {
                             <?php $shelf = $this->db->get_shelf( $item['shelf_id'] ); ?>
                             <?php if ( $shelf ) : ?>
                                 <tr>
-                                    <th>Shelf</th>
+                                    <th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th>
                                     <td><?php echo esc_html( $shelf['title'] ); ?></td>
                                 </tr>
                             <?php endif; ?>
                         <?php endif; ?>
                         <?php if ( ! empty( $item['article_title'] ) ) : ?>
                             <tr>
-                                <th>Article</th>
+                                <th><?php esc_html_e( 'Article', 'uz-bookshelf' ); ?></th>
                                 <td>
                                     <?php
                                     $article = ! empty( $item['article_id'] ) ? $this->db->get_article( $item['article_id'] ) : null;
@@ -614,7 +614,7 @@ class UZ_Bookshelf_Book_Page {
                         <?php endif; ?>
                         <?php if ( ! empty( $item['item_price'] ) && (int) $item['item_price'] > 0 ) : ?>
                             <tr>
-                                <th>Price</th>
+                                <th><?php esc_html_e( 'Price', 'uz-bookshelf' ); ?></th>
                                 <td>&yen;<?php echo esc_html( number_format( (int) $item['item_price'] ) ); ?></td>
                             </tr>
                         <?php endif; ?>
@@ -624,7 +624,7 @@ class UZ_Bookshelf_Book_Page {
 
             <?php if ( ! empty( $related ) ) : ?>
                 <section class="uz-book-related">
-                    <h2>Related Books</h2>
+                    <h2><?php esc_html_e( 'Related Books', 'uz-bookshelf' ); ?></h2>
                     <div class="uz-book-related-grid">
                         <?php foreach ( $related as $rel ) : ?>
                             <div class="uz-book-related-item">
@@ -638,7 +638,7 @@ class UZ_Bookshelf_Book_Page {
                                              loading="lazy" />
                                     <?php else : ?>
                                         <div style="width:100%;aspect-ratio:128/182;background:#ddd;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#999;font-size:11px;">
-                                            No Cover
+                                            <?php esc_html_e( 'No Cover', 'uz-bookshelf' ); ?>
                                         </div>
                                     <?php endif; ?>
                                     <div class="uz-book-related-item-title">
@@ -652,7 +652,7 @@ class UZ_Bookshelf_Book_Page {
             <?php endif; ?>
 
             <a href="<?php echo esc_url( $bookshelf_url ); ?>" class="uz-book-back">
-                &larr; Back to Bookshelf
+                &larr; <?php esc_html_e( 'Back to Bookshelf', 'uz-bookshelf' ); ?>
             </a>
         </main>
 

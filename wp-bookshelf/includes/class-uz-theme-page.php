@@ -318,9 +318,9 @@ class UZ_Bookshelf_Theme_Page {
 
         <main class="uz-theme-page">
             <nav class="uz-theme-breadcrumb">
-                <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'uz-bookshelf' ); ?></a>
                 &raquo;
-                <a href="<?php echo esc_url( $bookshelf_url ); ?>">Bookshelf</a>
+                <a href="<?php echo esc_url( $bookshelf_url ); ?>"><?php esc_html_e( 'Bookshelf', 'uz-bookshelf' ); ?></a>
                 &raquo;
                 <span><?php echo esc_html( $title ); ?></span>
             </nav>
@@ -334,7 +334,7 @@ class UZ_Bookshelf_Theme_Page {
 
             <?php if ( ! empty( $articles ) ) : ?>
                 <section class="uz-theme-section uz-theme-articles">
-                    <h2>Articles</h2>
+                    <h2><?php esc_html_e( 'Articles', 'uz-bookshelf' ); ?></h2>
                     <?php foreach ( $articles as $entry ) :
                         $post = $entry['post'];
                         ?>
@@ -356,7 +356,7 @@ class UZ_Bookshelf_Theme_Page {
 
             <?php if ( ! empty( $books ) ) : ?>
                 <section class="uz-theme-section">
-                    <h2>Books</h2>
+                    <h2><?php esc_html_e( 'Books', 'uz-bookshelf' ); ?></h2>
                     <div class="uz-theme-book-grid">
                         <?php foreach ( $books as $item ) : ?>
                             <div class="uz-theme-book-item">
@@ -372,7 +372,7 @@ class UZ_Bookshelf_Theme_Page {
                                              loading="lazy" />
                                     <?php else : ?>
                                         <div style="width:100%;aspect-ratio:128/182;background:#ddd;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#999;font-size:11px;">
-                                            No Cover
+                                            <?php esc_html_e( 'No Cover', 'uz-bookshelf' ); ?>
                                         </div>
                                     <?php endif; ?>
                                     <div class="uz-theme-book-title">
@@ -386,7 +386,7 @@ class UZ_Bookshelf_Theme_Page {
             <?php endif; ?>
 
             <a href="<?php echo esc_url( $bookshelf_url ); ?>" class="uz-theme-back">
-                &larr; Back to Bookshelf
+                &larr; <?php esc_html_e( 'Back to Bookshelf', 'uz-bookshelf' ); ?>
             </a>
         </main>
 

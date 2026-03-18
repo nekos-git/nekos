@@ -225,7 +225,7 @@ class UZ_Bookshelf_API {
         if ( ! $shelf ) {
             return new WP_Error(
                 'shelf_not_found',
-                'Shelf not found',
+                __( 'Shelf not found', 'uz-bookshelf' ),
                 array( 'status' => 404 )
             );
         }
@@ -322,7 +322,7 @@ class UZ_Bookshelf_API {
         if ( empty( $query ) || mb_strlen( $query ) < 2 ) {
             return new WP_Error(
                 'query_too_short',
-                '検索キーワードは2文字以上入力してください',
+                __( '検索キーワードは2文字以上入力してください', 'uz-bookshelf' ),
                 array( 'status' => 400 )
             );
         }
@@ -413,7 +413,7 @@ class UZ_Bookshelf_API {
         if ( empty( $query ) || strlen( $query ) < 2 ) {
             return new WP_Error(
                 'query_too_short',
-                'Search query must be at least 2 characters',
+                __( 'Search query must be at least 2 characters', 'uz-bookshelf' ),
                 array( 'status' => 400 )
             );
         }
@@ -456,7 +456,7 @@ class UZ_Bookshelf_API {
     public function batch_update_authors( WP_REST_Request $request ) {
         $updates = $request->get_json_params();
         if ( ! is_array( $updates ) ) {
-            return new WP_Error( 'invalid_data', 'Expected array of {title, author}', array( 'status' => 400 ) );
+            return new WP_Error( 'invalid_data', __( 'Expected array of {title, author}', 'uz-bookshelf' ), array( 'status' => 400 ) );
         }
 
         global $wpdb;
@@ -519,7 +519,7 @@ class UZ_Bookshelf_API {
         if ( ! $term ) {
             return new WP_Error(
                 'theme_not_found',
-                'Theme not found',
+                __( 'Theme not found', 'uz-bookshelf' ),
                 array( 'status' => 404 )
             );
         }
@@ -613,7 +613,7 @@ class UZ_Bookshelf_API {
         $articles = $body['articles'] ?? array();
 
         if ( empty( $articles ) ) {
-            return new WP_Error( 'no_data', 'No articles provided', array( 'status' => 400 ) );
+            return new WP_Error( 'no_data', __( 'No articles provided', 'uz-bookshelf' ), array( 'status' => 400 ) );
         }
 
         require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -704,7 +704,7 @@ class UZ_Bookshelf_API {
         if ( empty( $body ) ) {
             return new WP_Error(
                 'empty_body',
-                'Request body must contain valid JSON',
+                __( 'Request body must contain valid JSON', 'uz-bookshelf' ),
                 array( 'status' => 400 )
             );
         }
@@ -729,7 +729,7 @@ class UZ_Bookshelf_API {
         if ( empty( $params['export_content'] ) ) {
             return new WP_Error(
                 'missing_content',
-                'export_content is required',
+                __( 'export_content is required', 'uz-bookshelf' ),
                 array( 'status' => 400 )
             );
         }
@@ -763,7 +763,7 @@ class UZ_Bookshelf_API {
         if ( empty( $data['title'] ) || empty( $data['shelf_id'] ) ) {
             return new WP_Error(
                 'missing_fields',
-                'title and shelf_id are required',
+                __( 'title and shelf_id are required', 'uz-bookshelf' ),
                 array( 'status' => 400 )
             );
         }
@@ -785,7 +785,7 @@ class UZ_Bookshelf_API {
         if ( ! $item ) {
             return new WP_Error(
                 'item_not_found',
-                'Item not found',
+                __( 'Item not found', 'uz-bookshelf' ),
                 array( 'status' => 404 )
             );
         }
@@ -807,7 +807,7 @@ class UZ_Bookshelf_API {
         if ( ! $item ) {
             return new WP_Error(
                 'item_not_found',
-                'Item not found',
+                __( 'Item not found', 'uz-bookshelf' ),
                 array( 'status' => 404 )
             );
         }

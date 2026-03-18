@@ -169,8 +169,8 @@ class UZ_Bookshelf_SEO {
      * Output default OGP, Twitter Card, and JSON-LD for the main bookshelf.
      */
     private function output_bookshelf_meta() {
-        $title       = 'UZ Bookshelf';
-        $description = 'Curated book collection with reviews and recommendations.';
+        $title       = __( 'UZ Bookshelf', 'uz-bookshelf' );
+        $description = __( 'Curated book collection with reviews and recommendations.', 'uz-bookshelf' );
         $page_url    = $this->get_current_page_url();
 
         // OGP tags.

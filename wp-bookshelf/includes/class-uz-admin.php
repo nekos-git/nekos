@@ -28,8 +28,8 @@ class UZ_Bookshelf_Admin {
      */
     public function register_menus() {
         add_menu_page(
-            'UZ Bookshelf',
-            'UZ Bookshelf',
+            __( 'UZ Bookshelf', 'uz-bookshelf' ),
+            __( 'UZ Bookshelf', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf',
             array( $this, 'page_dashboard' ),
@@ -39,8 +39,8 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Dashboard',
-            'Dashboard',
+            __( 'Dashboard', 'uz-bookshelf' ),
+            __( 'Dashboard', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf',
             array( $this, 'page_dashboard' )
@@ -48,8 +48,8 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Shelves',
-            'Shelves',
+            __( 'Shelves', 'uz-bookshelf' ),
+            __( 'Shelves', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf-shelves',
             array( $this, 'page_shelves' )
@@ -57,8 +57,8 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Shelf Items',
-            'Shelf Items',
+            __( 'Shelf Items', 'uz-bookshelf' ),
+            __( 'Shelf Items', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf-items',
             array( $this, 'page_items' )
@@ -66,16 +66,16 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Articles',
-            'Articles',
+            __( 'Articles', 'uz-bookshelf' ),
+            __( 'Articles', 'uz-bookshelf' ),
             'manage_options',
             'edit.php'
         );
 
         add_submenu_page(
             'uz-bookshelf',
-            'Rakuten Books',
-            'Rakuten Books',
+            __( 'Rakuten Books', 'uz-bookshelf' ),
+            __( 'Rakuten Books', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf-rakuten',
             array( $this, 'page_rakuten' )
@@ -83,8 +83,8 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Import / Export',
-            'Import / Export',
+            __( 'Import / Export', 'uz-bookshelf' ),
+            __( 'Import / Export', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf-import',
             array( $this, 'page_import' )
@@ -92,8 +92,8 @@ class UZ_Bookshelf_Admin {
 
         add_submenu_page(
             'uz-bookshelf',
-            'Settings',
-            'Settings',
+            __( 'Settings', 'uz-bookshelf' ),
+            __( 'Settings', 'uz-bookshelf' ),
             'manage_options',
             'uz-bookshelf-settings',
             array( $this, 'page_settings' )
@@ -136,35 +136,35 @@ class UZ_Bookshelf_Admin {
         $shelf_stats = $this->db->get_shelf_stats();
         ?>
         <div class="wrap">
-            <h1>UZ Bookshelf Dashboard</h1>
+            <h1><?php esc_html_e( 'UZ Bookshelf Dashboard', 'uz-bookshelf' ); ?></h1>
 
             <div class="uz-admin-cards">
                 <div class="uz-admin-card">
                     <h3><?php echo esc_html( $stats['shelves'] ); ?></h3>
-                    <p>Shelves</p>
+                    <p><?php esc_html_e( 'Shelves', 'uz-bookshelf' ); ?></p>
                 </div>
                 <div class="uz-admin-card">
                     <h3><?php echo esc_html( $stats['items'] ); ?></h3>
-                    <p>Shelf Items</p>
+                    <p><?php esc_html_e( 'Shelf Items', 'uz-bookshelf' ); ?></p>
                 </div>
                 <div class="uz-admin-card">
                     <h3><?php echo esc_html( $stats['articles'] ); ?></h3>
-                    <p>Articles</p>
+                    <p><?php esc_html_e( 'Articles', 'uz-bookshelf' ); ?></p>
                 </div>
                 <div class="uz-admin-card">
                     <h3><?php echo esc_html( $stats['rakuten_books'] ); ?></h3>
-                    <p>Rakuten Books</p>
+                    <p><?php esc_html_e( 'Rakuten Books', 'uz-bookshelf' ); ?></p>
                 </div>
             </div>
 
             <?php if ( ! empty( $shelf_stats ) ) : ?>
-            <h2>Shelf Breakdown</h2>
+            <h2><?php esc_html_e( 'Shelf Breakdown', 'uz-bookshelf' ); ?></h2>
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Items</th>
+                        <th><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Items', 'uz-bookshelf' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -179,14 +179,14 @@ class UZ_Bookshelf_Admin {
             </table>
             <?php endif; ?>
 
-            <h2>Shortcode Usage</h2>
-            <p>Use the following shortcode to display the bookshelf on any page or post:</p>
+            <h2><?php esc_html_e( 'Shortcode Usage', 'uz-bookshelf' ); ?></h2>
+            <p><?php esc_html_e( 'Use the following shortcode to display the bookshelf on any page or post:', 'uz-bookshelf' ); ?></p>
             <code>[uz_bookshelf]</code>
-            <p>Options:</p>
+            <p><?php esc_html_e( 'Options:', 'uz-bookshelf' ); ?></p>
             <ul>
-                <li><code>[uz_bookshelf mode="uz"]</code> - UZ Selection only</li>
-                <li><code>[uz_bookshelf mode="rakuten"]</code> - Rakuten Books only</li>
-                <li><code>[uz_bookshelf shelf="books"]</code> - Specific shelf only</li>
+                <li><code>[uz_bookshelf mode="uz"]</code> - <?php esc_html_e( 'UZ Selection only', 'uz-bookshelf' ); ?></li>
+                <li><code>[uz_bookshelf mode="rakuten"]</code> - <?php esc_html_e( 'Rakuten Books only', 'uz-bookshelf' ); ?></li>
+                <li><code>[uz_bookshelf shelf="books"]</code> - <?php esc_html_e( 'Specific shelf only', 'uz-bookshelf' ); ?></li>
             </ul>
         </div>
         <?php
@@ -221,32 +221,32 @@ class UZ_Bookshelf_Admin {
         ?>
         <div class="wrap">
             <h1>
-                Shelves
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>" class="page-title-action">Add New</a>
+                <?php esc_html_e( 'Shelves', 'uz-bookshelf' ); ?>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'uz-bookshelf' ); ?></a>
             </h1>
 
             <?php if ( isset( $_GET['msg'] ) ) : ?>
                 <?php if ( $_GET['msg'] === 'deleted' ) : ?>
-                    <div class="notice notice-success"><p>Shelf deleted.</p></div>
+                    <div class="notice notice-success"><p><?php esc_html_e( 'Shelf deleted.', 'uz-bookshelf' ); ?></p></div>
                 <?php elseif ( $_GET['msg'] === 'created' ) : ?>
-                    <div class="notice notice-success"><p>Shelf created.</p></div>
+                    <div class="notice notice-success"><p><?php esc_html_e( 'Shelf created.', 'uz-bookshelf' ); ?></p></div>
                 <?php endif; ?>
             <?php endif; ?>
 
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Icon</th>
-                        <th>Items</th>
-                        <th>Order</th>
-                        <th width="120">Actions</th>
+                        <th><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Icon', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Items', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Order', 'uz-bookshelf' ); ?></th>
+                        <th width="120"><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $shelf_stats ) ) : ?>
-                        <tr><td colspan="6">No shelves found. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ); ?>">Create one</a>.</td></tr>
+                        <tr><td colspan="6"><?php echo wp_kses_post( sprintf( __( 'No shelves found. <a href="%s">Create one</a>.', 'uz-bookshelf' ), esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=add' ) ) ) ); ?></td></tr>
                     <?php else : ?>
                         <?php foreach ( $shelf_stats as $i => $s ) : ?>
                         <tr>
@@ -255,20 +255,23 @@ class UZ_Bookshelf_Admin {
                             <td><?php echo esc_html( $s['icon'] ?? '-' ); ?></td>
                             <td>
                                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&shelf_id=' . urlencode( $s['id'] ) ) ); ?>">
-                                    <?php echo esc_html( $s['item_count'] ); ?> items
+                                    <?php
+                                    /* translators: %d: number of items */
+                                    echo esc_html( sprintf( __( '%d items', 'uz-bookshelf' ), $s['item_count'] ) );
+                                    ?>
                                 </a>
                             </td>
                             <td>
                                 <?php if ( $i > 0 ) : ?>
-                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_up&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="Move up">&uarr;</a>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_up&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="<?php esc_attr_e( 'Move up', 'uz-bookshelf' ); ?>">&uarr;</a>
                                 <?php endif; ?>
                                 <?php if ( $i < count( $shelf_stats ) - 1 ) : ?>
-                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_down&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="Move down">&darr;</a>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=move_down&id=' . urlencode( $s['id'] ) ), 'uz_move_shelf_' . $s['id'] ) ); ?>" title="<?php esc_attr_e( 'Move down', 'uz-bookshelf' ); ?>">&darr;</a>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=edit&id=' . urlencode( $s['id'] ) ) ); ?>">Edit</a> |
-                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=delete&id=' . urlencode( $s['id'] ) ), 'uz_delete_shelf_' . $s['id'] ) ); ?>" onclick="return confirm('Delete this shelf and all its items?');" style="color:#b32d2e;">Delete</a>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=edit&id=' . urlencode( $s['id'] ) ) ); ?>"><?php esc_html_e( 'Edit', 'uz-bookshelf' ); ?></a> |
+                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-shelves&action=delete&id=' . urlencode( $s['id'] ) ), 'uz_delete_shelf_' . $s['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this shelf and all its items?', 'uz-bookshelf' ) ); ?>');" style="color:#b32d2e;"><?php esc_html_e( 'Delete', 'uz-bookshelf' ); ?></a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -287,7 +290,7 @@ class UZ_Bookshelf_Admin {
             if ( wp_verify_nonce( $_POST['uz_shelf_nonce'], 'uz_save_shelf' ) ) {
                 $shelf_id = $id ?: sanitize_title( $_POST['shelf_id'] ?? '' );
                 if ( ! $shelf_id ) {
-                    echo '<div class="notice notice-error"><p>Shelf ID is required.</p></div>';
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Shelf ID is required.', 'uz-bookshelf' ) . '</p></div>';
                 } else {
                     $max_order = 0;
                     if ( ! $id ) {
@@ -308,7 +311,7 @@ class UZ_Bookshelf_Admin {
                         wp_redirect( admin_url( 'admin.php?page=uz-bookshelf-shelves&msg=created' ) );
                         exit;
                     }
-                    echo '<div class="notice notice-success"><p>Shelf updated.</p></div>';
+                    echo '<div class="notice notice-success"><p>' . esc_html__( 'Shelf updated.', 'uz-bookshelf' ) . '</p></div>';
                     $shelf = $this->db->get_shelf( $shelf_id );
                 }
             }
@@ -317,30 +320,30 @@ class UZ_Bookshelf_Admin {
         $icons = array( 'book', 'film', 'music', 'manga', 'tech', 'biz', 'culture', 'star', 'heart', 'bookmark' );
         ?>
         <div class="wrap">
-            <h1><?php echo $id ? 'Edit Shelf' : 'Add New Shelf'; ?></h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves' ) ); ?>">&larr; Back to list</a>
+            <h1><?php echo $id ? esc_html__( 'Edit Shelf', 'uz-bookshelf' ) : esc_html__( 'Add New Shelf', 'uz-bookshelf' ); ?></h1>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-shelves' ) ); ?>">&larr; <?php esc_html_e( 'Back to list', 'uz-bookshelf' ); ?></a>
 
             <form method="post" style="max-width:700px;">
                 <?php wp_nonce_field( 'uz_save_shelf', 'uz_shelf_nonce' ); ?>
 
                 <table class="form-table">
                     <tr>
-                        <th><label for="shelf_id">Shelf ID (slug)</label></th>
+                        <th><label for="shelf_id"><?php esc_html_e( 'Shelf ID (slug)', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <?php if ( $id ) : ?>
                                 <code><?php echo esc_html( $id ); ?></code>
                             <?php else : ?>
-                                <input type="text" name="shelf_id" id="shelf_id" class="regular-text" required placeholder="e.g. my-books" />
-                                <p class="description">Unique identifier. Cannot be changed later.</p>
+                                <input type="text" name="shelf_id" id="shelf_id" class="regular-text" required placeholder="<?php esc_attr_e( 'e.g. my-books', 'uz-bookshelf' ); ?>" />
+                                <p class="description"><?php esc_html_e( 'Unique identifier. Cannot be changed later.', 'uz-bookshelf' ); ?></p>
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="title">Title</label></th>
+                        <th><label for="title"><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="title" id="title" class="regular-text" value="<?php echo esc_attr( $shelf['title'] ?? '' ); ?>" required /></td>
                     </tr>
                     <tr>
-                        <th><label for="icon">Icon</label></th>
+                        <th><label for="icon"><?php esc_html_e( 'Icon', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="icon" id="icon">
                                 <?php foreach ( $icons as $ico ) : ?>
@@ -351,25 +354,33 @@ class UZ_Bookshelf_Admin {
                     </tr>
                     <?php if ( $id ) : ?>
                     <tr>
-                        <th><label for="sort_order">Sort Order</label></th>
+                        <th><label for="sort_order"><?php esc_html_e( 'Sort Order', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="number" name="sort_order" id="sort_order" style="width:80px;" value="<?php echo esc_attr( $shelf['sort_order'] ?? 0 ); ?>" /></td>
                     </tr>
                     <?php endif; ?>
                 </table>
 
-                <?php submit_button( $id ? 'Update Shelf' : 'Create Shelf' ); ?>
+                <?php submit_button( $id ? __( 'Update Shelf', 'uz-bookshelf' ) : __( 'Create Shelf', 'uz-bookshelf' ) ); ?>
             </form>
 
             <?php if ( $id ) : ?>
             <hr />
-            <h2>Items in this shelf</h2>
+            <h2><?php esc_html_e( 'Items in this shelf', 'uz-bookshelf' ); ?></h2>
             <?php
             $items = $this->db->get_items( $id );
             if ( empty( $items ) ) :
             ?>
-                <p>No items yet. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) ); ?>">Add one</a>.</p>
+                <p><?php echo wp_kses_post( sprintf( __( 'No items yet. <a href="%s">Add one</a>.', 'uz-bookshelf' ), esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) ) ) ); ?></p>
             <?php else : ?>
-                <p><?php echo count( $items ); ?> items. <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&shelf_id=' . urlencode( $id ) ) ); ?>">View all</a> | <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) ); ?>">Add new</a></p>
+                <p><?php
+                    /* translators: %1$d: item count, %2$s: view all URL, %3$s: add new URL */
+                    echo wp_kses_post( sprintf(
+                        __( '%1$d items. <a href="%2$s">View all</a> | <a href="%3$s">Add new</a>', 'uz-bookshelf' ),
+                        count( $items ),
+                        esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&shelf_id=' . urlencode( $id ) ) ),
+                        esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=add&shelf_id=' . urlencode( $id ) ) )
+                    ) );
+                ?></p>
             <?php endif; ?>
             <?php endif; ?>
         </div>
@@ -436,12 +447,12 @@ class UZ_Bookshelf_Admin {
         ?>
         <div class="wrap">
             <h1>
-                Shelf Items
-                <a href="<?php echo esc_url( $add_url ); ?>" class="page-title-action">Add New</a>
+                <?php esc_html_e( 'Shelf Items', 'uz-bookshelf' ); ?>
+                <a href="<?php echo esc_url( $add_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'uz-bookshelf' ); ?></a>
             </h1>
 
             <?php if ( isset( $_GET['msg'] ) && $_GET['msg'] === 'deleted' ) : ?>
-                <div class="notice notice-success"><p>Item deleted.</p></div>
+                <div class="notice notice-success"><p><?php esc_html_e( 'Item deleted.', 'uz-bookshelf' ); ?></p></div>
             <?php endif; ?>
 
             <div class="tablenav top">
@@ -449,37 +460,40 @@ class UZ_Bookshelf_Admin {
                     <form method="get">
                         <input type="hidden" name="page" value="uz-bookshelf-items" />
                         <select name="shelf_id">
-                            <option value="">All Shelves</option>
+                            <option value=""><?php esc_html_e( 'All Shelves', 'uz-bookshelf' ); ?></option>
                             <?php foreach ( $shelves as $s ) : ?>
                                 <option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $shelf_filter, $s['id'] ); ?>>
                                     <?php echo esc_html( $s['title'] ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <input type="submit" class="button" value="Filter" />
+                        <input type="submit" class="button" value="<?php esc_attr_e( 'Filter', 'uz-bookshelf' ); ?>" />
                     </form>
                 </div>
                 <div class="tablenav-pages">
-                    <span class="displaying-num"><?php echo count( $items ); ?> items</span>
+                    <span class="displaying-num"><?php
+                        /* translators: %d: number of items */
+                        echo esc_html( sprintf( __( '%d items', 'uz-bookshelf' ), count( $items ) ) );
+                    ?></span>
                 </div>
             </div>
 
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th width="50">ID</th>
-                        <th width="60">Cover</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Shelf</th>
-                        <th>Article</th>
-                        <?php if ( $shelf_filter ) : ?><th width="60">Order</th><?php endif; ?>
-                        <th width="100">Actions</th>
+                        <th width="50"><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                        <th width="60"><?php esc_html_e( 'Cover', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Article', 'uz-bookshelf' ); ?></th>
+                        <?php if ( $shelf_filter ) : ?><th width="60"><?php esc_html_e( 'Order', 'uz-bookshelf' ); ?></th><?php endif; ?>
+                        <th width="100"><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $items ) ) : ?>
-                        <tr><td colspan="<?php echo $shelf_filter ? 8 : 7; ?>">No items found.</td></tr>
+                        <tr><td colspan="<?php echo $shelf_filter ? 8 : 7; ?>"><?php esc_html_e( 'No items found.', 'uz-bookshelf' ); ?></td></tr>
                     <?php else : ?>
                         <?php foreach ( $items as $idx => $item ) : ?>
                         <tr>
@@ -511,8 +525,8 @@ class UZ_Bookshelf_Admin {
                             </td>
                             <?php endif; ?>
                             <td>
-                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>">Edit</a> |
-                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=delete&id=' . $item['id'] ), 'uz_delete_item_' . $item['id'] ) ); ?>" onclick="return confirm('Delete this item?');" style="color:#b32d2e;">Delete</a>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'uz-bookshelf' ); ?></a> |
+                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=delete&id=' . $item['id'] ), 'uz_delete_item_' . $item['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this item?', 'uz-bookshelf' ) ); ?>');" style="color:#b32d2e;"><?php esc_html_e( 'Delete', 'uz-bookshelf' ); ?></a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -582,7 +596,7 @@ class UZ_Bookshelf_Admin {
 
                 if ( $id ) {
                     $this->db->update_item( $id, $data );
-                    echo '<div class="notice notice-success"><p>Item updated.</p></div>';
+                    echo '<div class="notice notice-success"><p>' . esc_html__( 'Item updated.', 'uz-bookshelf' ) . '</p></div>';
                     $item = $this->db->get_item( $id );
                 } else {
                     $new_id = $this->db->insert_item( $data );
@@ -593,7 +607,7 @@ class UZ_Bookshelf_Admin {
         }
 
         if ( isset( $_GET['msg'] ) && $_GET['msg'] === 'created' ) {
-            echo '<div class="notice notice-success"><p>Item created.</p></div>';
+            echo '<div class="notice notice-success"><p>' . esc_html__( 'Item created.', 'uz-bookshelf' ) . '</p></div>';
         }
 
         $shelves   = $this->db->get_shelves();
@@ -611,19 +625,19 @@ class UZ_Bookshelf_Admin {
         $cover_url_val   = $item['cover_url'] ?? '';
         ?>
         <div class="wrap">
-            <h1><?php echo $id ? 'Edit Item' : 'Add New Item'; ?></h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items' ) ); ?>">&larr; Back to list</a>
+            <h1><?php echo $id ? esc_html__( 'Edit Item', 'uz-bookshelf' ) : esc_html__( 'Add New Item', 'uz-bookshelf' ); ?></h1>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items' ) ); ?>">&larr; <?php esc_html_e( 'Back to list', 'uz-bookshelf' ); ?></a>
 
             <form method="post" style="max-width:700px;">
                 <?php wp_nonce_field( 'uz_save_item', 'uz_item_nonce' ); ?>
 
                 <table class="form-table">
                     <tr>
-                        <th><label for="item_id">Item ID</label></th>
+                        <th><label for="item_id"><?php esc_html_e( 'Item ID', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="item_id" id="item_id" class="regular-text" value="<?php echo esc_attr( $item['item_id'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="shelf_id">Shelf</label></th>
+                        <th><label for="shelf_id"><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="shelf_id" id="shelf_id">
                                 <?php foreach ( $shelves as $s ) : ?>
@@ -635,53 +649,53 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="title">Title (short)</label></th>
+                        <th><label for="title"><?php esc_html_e( 'Title (short)', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="title" id="title" class="regular-text" value="<?php echo esc_attr( $item['title'] ?? '' ); ?>" required /></td>
                     </tr>
                     <tr>
-                        <th><label for="full_title">Full Title</label></th>
+                        <th><label for="full_title"><?php esc_html_e( 'Full Title', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="full_title" id="full_title" class="large-text" value="<?php echo esc_attr( $item['full_title'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="author">Author</label></th>
+                        <th><label for="author"><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="author" id="author" class="regular-text" value="<?php echo esc_attr( $item['author'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="full_author">Full Author</label></th>
+                        <th><label for="full_author"><?php esc_html_e( 'Full Author', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="full_author" id="full_author" class="regular-text" value="<?php echo esc_attr( $item['full_author'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="cover_url">Cover Image</label></th>
+                        <th><label for="cover_url"><?php esc_html_e( 'Cover Image', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <div style="margin-bottom:8px;">
                                 <img id="uz-cover-preview" src="<?php echo esc_url( $cover_url_val ); ?>" style="max-width:120px;max-height:170px;border:1px solid #ccc;<?php echo $cover_url_val ? '' : 'display:none;'; ?>" />
                             </div>
                             <input type="url" name="cover_url" id="cover_url" class="large-text" value="<?php echo esc_attr( $cover_url_val ); ?>" placeholder="https://..." />
                             <div style="margin-top:6px;">
-                                <button type="button" id="uz-select-cover" class="button">Media Library</button>
-                                <button type="button" id="uz-fetch-cover" class="button">Amazon URL &rarr; Cover</button>
-                                <button type="button" id="uz-clear-cover" class="button" style="color:#b32d2e;">Clear</button>
+                                <button type="button" id="uz-select-cover" class="button"><?php esc_html_e( 'Media Library', 'uz-bookshelf' ); ?></button>
+                                <button type="button" id="uz-fetch-cover" class="button"><?php esc_html_e( 'Amazon URL &rarr; Cover', 'uz-bookshelf' ); ?></button>
+                                <button type="button" id="uz-clear-cover" class="button" style="color:#b32d2e;"><?php esc_html_e( 'Clear', 'uz-bookshelf' ); ?></button>
                             </div>
-                            <p class="description">Select from Media Library, auto-fetch from Amazon URL, or paste a URL directly.</p>
+                            <p class="description"><?php esc_html_e( 'Select from Media Library, auto-fetch from Amazon URL, or paste a URL directly.', 'uz-bookshelf' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="amazon_url">Amazon URL</label></th>
+                        <th><label for="amazon_url"><?php esc_html_e( 'Amazon URL', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="url" name="amazon_url" id="amazon_url" class="large-text" value="<?php echo esc_attr( $item['amazon_url'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rakuten_url">Rakuten URL</label></th>
+                        <th><label for="rakuten_url"><?php esc_html_e( 'Rakuten URL', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="url" name="rakuten_url" id="rakuten_url" class="large-text" value="<?php echo esc_attr( $item['rakuten_url'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="affiliate_url">Affiliate URL</label></th>
+                        <th><label for="affiliate_url"><?php esc_html_e( 'Affiliate URL', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="url" name="affiliate_url" id="affiliate_url" class="large-text" value="<?php echo esc_attr( $item['affiliate_url'] ?? '' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="article_id">Article</label></th>
+                        <th><label for="article_id"><?php esc_html_e( 'Article', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="article_id" id="article_id">
-                                <option value="">-- None --</option>
+                                <option value=""><?php esc_html_e( '-- None --', 'uz-bookshelf' ); ?></option>
                                 <?php foreach ( $articles as $a ) : ?>
                                     <option value="<?php echo esc_attr( $a['id'] ); ?>" <?php selected( $current_article, $a['id'] ); ?>>
                                         <?php echo esc_html( mb_substr( $a['title'], 0, 60 ) ); ?>
@@ -692,25 +706,25 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="comment">UZ Comment</label></th>
+                        <th><label for="comment"><?php esc_html_e( 'UZ Comment', 'uz-bookshelf' ); ?></label></th>
                         <td><textarea name="comment" id="comment" rows="3" class="large-text"><?php echo esc_textarea( $item['comment'] ?? '' ); ?></textarea></td>
                     </tr>
                     <tr>
-                        <th><label for="tags">Tags (comma-separated)</label></th>
-                        <td><input type="text" name="tags" id="tags" class="large-text" value="<?php echo esc_attr( $tags_list ); ?>" placeholder="e.g. SF, philosophy, tech" /></td>
+                        <th><label for="tags"><?php esc_html_e( 'Tags (comma-separated)', 'uz-bookshelf' ); ?></label></th>
+                        <td><input type="text" name="tags" id="tags" class="large-text" value="<?php echo esc_attr( $tags_list ); ?>" placeholder="<?php esc_attr_e( 'e.g. SF, philosophy, tech', 'uz-bookshelf' ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="type">Type</label></th>
+                        <th><label for="type"><?php esc_html_e( 'Type', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="type" id="type">
-                                <option value="product" <?php selected( $item['type'] ?? '', 'product' ); ?>>Product</option>
-                                <option value="featured" <?php selected( $item['type'] ?? '', 'featured' ); ?>>Featured</option>
-                                <option value="spine" <?php selected( $item['type'] ?? '', 'spine' ); ?>>Spine</option>
+                                <option value="product" <?php selected( $item['type'] ?? '', 'product' ); ?>><?php esc_html_e( 'Product', 'uz-bookshelf' ); ?></option>
+                                <option value="featured" <?php selected( $item['type'] ?? '', 'featured' ); ?>><?php esc_html_e( 'Featured', 'uz-bookshelf' ); ?></option>
+                                <option value="spine" <?php selected( $item['type'] ?? '', 'spine' ); ?>><?php esc_html_e( 'Spine', 'uz-bookshelf' ); ?></option>
                             </select>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="format">Format</label></th>
+                        <th><label for="format"><?php esc_html_e( 'Format', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="format" id="format">
                                 <?php
@@ -723,14 +737,14 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th>Dimensions</th>
+                        <th><?php esc_html_e( 'Dimensions', 'uz-bookshelf' ); ?></th>
                         <td>
-                            W: <input type="number" name="width" style="width:80px;" value="<?php echo esc_attr( $item['width'] ?? 128 ); ?>" />
-                            H: <input type="number" name="height" style="width:80px;" value="<?php echo esc_attr( $item['height'] ?? 182 ); ?>" />
+                            <?php esc_html_e( 'W:', 'uz-bookshelf' ); ?> <input type="number" name="width" style="width:80px;" value="<?php echo esc_attr( $item['width'] ?? 128 ); ?>" />
+                            <?php esc_html_e( 'H:', 'uz-bookshelf' ); ?> <input type="number" name="height" style="width:80px;" value="<?php echo esc_attr( $item['height'] ?? 182 ); ?>" />
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="sort_order">Sort Order</label></th>
+                        <th><label for="sort_order"><?php esc_html_e( 'Sort Order', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="number" name="sort_order" id="sort_order" style="width:80px;" value="<?php echo esc_attr( $item['sort_order'] ?? 0 ); ?>" /></td>
                     </tr>
                 </table>
@@ -801,7 +815,7 @@ class UZ_Bookshelf_Admin {
         } else {
             ?>
             <table class="widefat striped">
-                <thead><tr><th width="50">Cover</th><th>Title</th><th>Author</th><th>Shelf</th><th>Actions</th></tr></thead>
+                <thead><tr><th width="50">Cover</th><th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th></tr></thead>
                 <tbody>
                     <?php foreach ( $related_items as $ri ) : ?>
                     <tr>
@@ -872,13 +886,13 @@ class UZ_Bookshelf_Admin {
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Shelf</th>
-                        <th>Categories</th>
-                        <th>Products</th>
-                        <th>Actions</th>
+                        <th><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Date', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Categories', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Products', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -960,19 +974,19 @@ class UZ_Bookshelf_Admin {
 
                 <table class="form-table">
                     <tr>
-                        <th><label for="article_id">Article ID</label></th>
+                        <th><label for="article_id"><?php esc_html_e( 'Article ID', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="article_id" id="article_id" class="regular-text" value="<?php echo esc_attr( $article['id'] ?? '' ); ?>" <?php echo $id ? 'readonly' : ''; ?> required /></td>
                     </tr>
                     <tr>
-                        <th><label for="title">Title</label></th>
+                        <th><label for="title"><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="title" id="title" class="large-text" value="<?php echo esc_attr( $article['title'] ?? '' ); ?>" required /></td>
                     </tr>
                     <tr>
-                        <th><label for="date">Date</label></th>
+                        <th><label for="date"><?php esc_html_e( 'Date', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="date" id="date" class="regular-text" value="<?php echo esc_attr( $article['date'] ?? '' ); ?>" placeholder="MM/DD/YYYY" /></td>
                     </tr>
                     <tr>
-                        <th><label for="shelf">Shelf</label></th>
+                        <th><label for="shelf"><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <select name="shelf" id="shelf">
                                 <option value="">None</option>
@@ -985,15 +999,15 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="categories">Categories (comma-separated)</label></th>
+                        <th><label for="categories"><?php esc_html_e( 'Categories (comma-separated)', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="text" name="categories" id="categories" class="large-text" value="<?php echo esc_attr( $cats_str ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="product_count">Product Count</label></th>
+                        <th><label for="product_count"><?php esc_html_e( 'Product Count', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="number" name="product_count" id="product_count" style="width:80px;" value="<?php echo esc_attr( $article['product_count'] ?? 0 ); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="url">URL</label></th>
+                        <th><label for="url"><?php esc_html_e( 'URL', 'uz-bookshelf' ); ?></label></th>
                         <td><input type="url" name="url" id="url" class="large-text" value="<?php echo esc_attr( $article['url'] ?? '' ); ?>" /></td>
                     </tr>
                 </table>
@@ -1003,7 +1017,7 @@ class UZ_Bookshelf_Admin {
 
             <?php if ( $id && $article ) : ?>
             <hr />
-            <h2>Related Items</h2>
+            <h2><?php esc_html_e( 'Related Items', 'uz-bookshelf' ); ?></h2>
             <?php
             $related_items = $this->db->get_items_by_article( $id );
             if ( empty( $related_items ) ) :
@@ -1011,7 +1025,7 @@ class UZ_Bookshelf_Admin {
                 <p>No items linked to this article yet.</p>
             <?php else : ?>
                 <table class="widefat striped" style="max-width:700px;">
-                    <thead><tr><th width="50">Cover</th><th>Title</th><th>Author</th><th>Shelf</th><th>Actions</th></tr></thead>
+                    <thead><tr><th width="50">Cover</th><th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th><th><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th></tr></thead>
                     <tbody>
                         <?php foreach ( $related_items as $ri ) : ?>
                         <tr>
@@ -1058,24 +1072,24 @@ class UZ_Bookshelf_Admin {
         $books = $this->db->get_rakuten_books();
         ?>
         <div class="wrap">
-            <h1>Rakuten Books</h1>
-            <p><?php echo count( $books ); ?> books in database.</p>
+            <h1><?php esc_html_e( 'Rakuten Books', 'uz-bookshelf' ); ?></h1>
+            <p><?php echo esc_html( sprintf( __( '%d books in database.', 'uz-bookshelf' ), count( $books ) ) ); ?></p>
 
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Cover</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Genre</th>
-                        <th>Price</th>
-                        <th>Rating</th>
+                        <th><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Cover', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Genre', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Price', 'uz-bookshelf' ); ?></th>
+                        <th><?php esc_html_e( 'Rating', 'uz-bookshelf' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( empty( $books ) ) : ?>
-                        <tr><td colspan="7">No rakuten books found.</td></tr>
+                        <tr><td colspan="7"><?php esc_html_e( 'No rakuten books found.', 'uz-bookshelf' ); ?></td></tr>
                     <?php else : ?>
                         <?php foreach ( array_slice( $books, 0, 100 ) as $b ) : ?>
                         <tr>
@@ -1096,7 +1110,7 @@ class UZ_Bookshelf_Admin {
                 </tbody>
             </table>
             <?php if ( count( $books ) > 100 ) : ?>
-                <p><em>Showing first 100 of <?php echo count( $books ); ?> books.</em></p>
+                <p><em><?php echo esc_html( sprintf( __( 'Showing first 100 of %d books.', 'uz-bookshelf' ), count( $books ) ) ); ?></em></p>
             <?php endif; ?>
         </div>
         <?php
@@ -1120,7 +1134,7 @@ class UZ_Bookshelf_Admin {
                         $message = '<div class="notice notice-error"><p>' . esc_html( $result->get_error_message() ) . '</p></div>';
                     } else {
                         $message = sprintf(
-                            '<div class="notice notice-success"><p>サンプルデータを読み込みました: %d棚, %dアイテム, %d記事, %d楽天ブックス</p></div>',
+                            '<div class="notice notice-success"><p>' . esc_html( sprintf( __( 'サンプルデータを読み込みました: %d棚, %dアイテム, %d記事, %d楽天ブックス', 'uz-bookshelf' ), $result['shelves'], $result['items'], $result['articles'], $result['rakuten_books'] ) ) . '</p></div>',
                             $result['shelves'], $result['items'], $result['articles'], $result['rakuten_books']
                         );
                     }
@@ -1129,7 +1143,7 @@ class UZ_Bookshelf_Admin {
                 // Start Fresh — clear all data
                 if ( $import_type === 'start_fresh' ) {
                     $this->db->clear_all_data();
-                    $message = '<div class="notice notice-success"><p>全データをクリアしました。1から作成できます。</p></div>';
+                    $message = '<div class="notice notice-success"><p>' . esc_html__( '全データをクリアしました。1から作成できます。', 'uz-bookshelf' ) . '</p></div>';
                 }
 
                 if ( $import_type === 'json_upload' && ! empty( $_FILES['json_file']['tmp_name'] ) ) {
@@ -1139,15 +1153,15 @@ class UZ_Bookshelf_Admin {
                     if ( $data ) {
                         $result = $this->db->import_from_json( $data );
                         if ( is_wp_error( $result ) ) {
-                            $message = '<div class="notice notice-error"><p>Import failed: ' . esc_html( $result->get_error_message() ) . '</p></div>';
+                            $message = '<div class="notice notice-error"><p>' . esc_html( sprintf( __( 'Import failed: %s', 'uz-bookshelf' ), $result->get_error_message() ) ) . '</p></div>';
                         } else {
                             $message = sprintf(
-                                '<div class="notice notice-success"><p>Import complete: %d shelves, %d items, %d articles.</p></div>',
+                                '<div class="notice notice-success"><p>' . esc_html( sprintf( __( 'Import complete: %d shelves, %d items, %d articles.', 'uz-bookshelf' ), $result['shelves'], $result['items'], $result['articles'] ) ) . '</p></div>',
                                 $result['shelves'], $result['items'], $result['articles']
                             );
                         }
                     } else {
-                        $message = '<div class="notice notice-error"><p>Invalid JSON file.</p></div>';
+                        $message = '<div class="notice notice-error"><p>' . esc_html__( 'Invalid JSON file.', 'uz-bookshelf' ) . '</p></div>';
                     }
                 }
 
@@ -1163,14 +1177,14 @@ class UZ_Bookshelf_Admin {
                         }
                         $result = UZ_Bookshelf_Importer::run_import( $export_content, $json_data );
                         $message = sprintf(
-                            '<div class="notice notice-success"><p>記事インポート完了: %d件作成, %d件更新, %dスキップ</p></div>',
+                            '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '記事インポート完了: %d件作成, %d件更新, %dスキップ', 'uz-bookshelf' ), $result['created'], $result['updated'], $result['skipped'] ) ) . '</p></div>',
                             $result['created'], $result['updated'], $result['skipped']
                         );
                         if ( ! empty( $result['errors'] ) ) {
-                            $message .= '<div class="notice notice-warning"><p>エラー: ' . esc_html( implode( ', ', $result['errors'] ) ) . '</p></div>';
+                            $message .= '<div class="notice notice-warning"><p>' . esc_html( sprintf( __( 'エラー: %s', 'uz-bookshelf' ), implode( ', ', $result['errors'] ) ) ) . '</p></div>';
                         }
                     } else {
-                        $message = '<div class="notice notice-error"><p>ファイルの読み込みに失敗しました。</p></div>';
+                        $message = '<div class="notice notice-error"><p>' . esc_html__( 'ファイルの読み込みに失敗しました。', 'uz-bookshelf' ) . '</p></div>';
                     }
                 }
 
@@ -1207,11 +1221,11 @@ class UZ_Bookshelf_Admin {
                                 $count++;
                             }
                             $message = sprintf(
-                                '<div class="notice notice-success"><p>Imported %d Rakuten books for genre %s.</p></div>',
+                                '<div class="notice notice-success"><p>' . esc_html( sprintf( __( 'Imported %d Rakuten books for genre %s.', 'uz-bookshelf' ), $count, esc_html( $genre_id ) ) ) . '</p></div>',
                                 $count, esc_html( $genre_id )
                             );
                         } else {
-                            $message = '<div class="notice notice-error"><p>Invalid Rakuten JSON file.</p></div>';
+                            $message = '<div class="notice notice-error"><p>' . esc_html__( 'Invalid Rakuten JSON file.', 'uz-bookshelf' ) . '</p></div>';
                         }
                     }
                 }
@@ -1223,16 +1237,16 @@ class UZ_Bookshelf_Admin {
 
         ?>
         <div class="wrap">
-            <h1>Import / Export</h1>
+            <h1><?php esc_html_e( 'Import / Export', 'uz-bookshelf' ); ?></h1>
             <?php echo $message; ?>
 
             <!-- ===== Quick Actions ===== -->
             <div style="display:flex;gap:20px;margin:20px 0;flex-wrap:wrap;">
 
                 <div style="flex:1;min-width:300px;background:#f0f0f1;border-left:4px solid #2271b1;padding:20px;">
-                    <h2 style="margin-top:0;">📚 サンプルデータを読み込む</h2>
-                    <p>全書籍（6棚・212アイテム）、全記事（48件）、楽天ブックス（90冊）を一括読み込み。<br>
-                    カバー画像・アフィリエイトリンクもすべて含まれます。</p>
+                    <h2 style="margin-top:0;"><?php esc_html_e( '📚 サンプルデータを読み込む', 'uz-bookshelf' ); ?></h2>
+                    <p><?php esc_html_e( '全書籍（6棚・212アイテム）、全記事（48件）、楽天ブックス（90冊）を一括読み込み。', 'uz-bookshelf' ); ?><br>
+                    <?php esc_html_e( 'カバー画像・アフィリエイトリンクもすべて含まれます。', 'uz-bookshelf' ); ?></p>
                     <form method="post">
                         <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
                         <input type="hidden" name="import_type" value="load_sample" />
@@ -1241,11 +1255,11 @@ class UZ_Bookshelf_Admin {
                 </div>
 
                 <div style="flex:1;min-width:300px;background:#f0f0f1;border-left:4px solid #d63638;padding:20px;">
-                    <h2 style="margin-top:0;">🆕 1から作る（全データクリア）</h2>
-                    <p>全データを削除して空の状態から始めます。<br>
-                    棚の作成、本の追加、記事の紐付けを管理画面から行えます。</p>
+                    <h2 style="margin-top:0;"><?php esc_html_e( '🆕 1から作る（全データクリア）', 'uz-bookshelf' ); ?></h2>
+                    <p><?php esc_html_e( '全データを削除して空の状態から始めます。', 'uz-bookshelf' ); ?><br>
+                    <?php esc_html_e( '棚の作成、本の追加、記事の紐付けを管理画面から行えます。', 'uz-bookshelf' ); ?></p>
                     <?php if ( $has_data ) : ?>
-                    <form method="post" onsubmit="return confirm('本当に全データを削除しますか？この操作は取り消せません。');">
+                    <form method="post" onsubmit="return confirm('<?php echo esc_js( __( '本当に全データを削除しますか？この操作は取り消せません。', 'uz-bookshelf' ) ); ?>');">
                         <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
                         <input type="hidden" name="import_type" value="start_fresh" />
                         <?php submit_button( '全データをクリアして1から作る', 'delete', 'submit', false ); ?>
@@ -1270,7 +1284,7 @@ class UZ_Bookshelf_Admin {
 
             <hr />
 
-            <h2>JSONファイルからインポート</h2>
+            <h2><?php esc_html_e( 'JSONファイルからインポート', 'uz-bookshelf' ); ?></h2>
 
             <h3>uz-shelf-data.json</h3>
             <p><code>uz-shelf-data.json</code> をアップロードして棚・アイテム・記事を読み込みます。</p>
@@ -1279,16 +1293,16 @@ class UZ_Bookshelf_Admin {
                 <input type="hidden" name="import_type" value="json_upload" />
                 <table class="form-table">
                     <tr>
-                        <th>JSON File</th>
+                        <th><?php esc_html_e( 'JSON File', 'uz-bookshelf' ); ?></th>
                         <td><input type="file" name="json_file" accept=".json" required /></td>
                     </tr>
                 </table>
-                <?php submit_button( 'Import Shelf Data' ); ?>
+                <?php submit_button( __( 'Import Shelf Data', 'uz-bookshelf' ) ); ?>
             </form>
 
             <hr />
 
-            <h2>記事インポート（Movable Type形式）</h2>
+            <h2><?php esc_html_e( '記事インポート（Movable Type形式）', 'uz-bookshelf' ); ?></h2>
             <p>Movable Typeエクスポートファイル（<code>.txt</code>）をアップロードして、WordPressの投稿として取り込みます。<br>
             アフィリエイトリンク（msmaflink等）もそのまま保持されます。同じスラッグの記事があれば更新（upsert）します。</p>
             <form method="post" enctype="multipart/form-data">
@@ -1296,23 +1310,23 @@ class UZ_Bookshelf_Admin {
                 <input type="hidden" name="import_type" value="mt_import" />
                 <table class="form-table">
                     <tr>
-                        <th>エクスポートファイル</th>
+                        <th><?php esc_html_e( 'エクスポートファイル', 'uz-bookshelf' ); ?></th>
                         <td><input type="file" name="mt_file" accept=".txt,.export" required /></td>
                     </tr>
                 </table>
-                <?php submit_button( '記事をインポート' ); ?>
+                <?php submit_button( __( '記事をインポート', 'uz-bookshelf' ) ); ?>
             </form>
 
             <hr />
 
-            <h3>楽天ブックス JSON</h3>
+            <h3><?php esc_html_e( '楽天ブックス JSON', 'uz-bookshelf' ); ?></h3>
             <p>楽天ブックスAPI レスポンスファイル（例: <code>001005.json</code>）をアップロード。</p>
             <form method="post" enctype="multipart/form-data">
                 <?php wp_nonce_field( 'uz_import_data', 'uz_import_nonce' ); ?>
                 <input type="hidden" name="import_type" value="rakuten_upload" />
                 <table class="form-table">
                     <tr>
-                        <th>Genre ID</th>
+                        <th><?php esc_html_e( 'Genre ID', 'uz-bookshelf' ); ?></th>
                         <td>
                             <select name="rakuten_genre_id">
                                 <option value="001005">001005 (IT・テクノロジー)</option>
@@ -1322,16 +1336,16 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th>JSON File</th>
+                        <th><?php esc_html_e( 'JSON File', 'uz-bookshelf' ); ?></th>
                         <td><input type="file" name="rakuten_file" accept=".json" required /></td>
                     </tr>
                 </table>
-                <?php submit_button( 'Import Rakuten Books' ); ?>
+                <?php submit_button( __( 'Import Rakuten Books', 'uz-bookshelf' ) ); ?>
             </form>
 
             <hr />
 
-            <h2>エクスポート</h2>
+            <h2><?php esc_html_e( 'エクスポート', 'uz-bookshelf' ); ?></h2>
             <?php
             // Handle export download
             if ( isset( $_POST['uz_export_action'] ) && wp_verify_nonce( $_POST['uz_export_nonce'] ?? '', 'uz_export_data' ) ) {
@@ -1380,7 +1394,7 @@ class UZ_Bookshelf_Admin {
                 </table>
             </form>
 
-            <h3>REST API</h3>
+            <h3><?php esc_html_e( 'REST API', 'uz-bookshelf' ); ?></h3>
             <ul>
                 <li><code>GET /wp-json/uz-bookshelf/v1/shelves</code> — 全棚データ</li>
                 <li><code>GET /wp-json/uz-bookshelf/v1/articles</code> — 全記事</li>
@@ -1403,7 +1417,7 @@ class UZ_Bookshelf_Admin {
                 update_option( 'uz_bookshelf_shelf_color', sanitize_hex_color( $_POST['shelf_color'] ?? '#5a3d25' ) );
                 update_option( 'uz_bookshelf_shelf_rows', absint( $_POST['shelf_rows'] ?? 2 ) );
                 update_option( 'uz_bookshelf_load_sample_data', ! empty( $_POST['load_sample_data'] ) ? '1' : '0' );
-                echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
+                echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved.', 'uz-bookshelf' ) . '</p></div>';
             }
         }
 
@@ -1415,29 +1429,29 @@ class UZ_Bookshelf_Admin {
         $load_sample_data     = get_option( 'uz_bookshelf_load_sample_data', '1' );
         ?>
         <div class="wrap">
-            <h1>UZ Bookshelf Settings</h1>
+            <h1><?php esc_html_e( 'UZ Bookshelf Settings', 'uz-bookshelf' ); ?></h1>
 
             <form method="post" style="max-width:700px;">
                 <?php wp_nonce_field( 'uz_save_settings', 'uz_settings_nonce' ); ?>
 
-                <h2>Affiliate Settings</h2>
+                <h2><?php esc_html_e( 'Affiliate Settings', 'uz-bookshelf' ); ?></h2>
                 <table class="form-table">
                     <tr>
-                        <th><label for="rakuten_app_id">Rakuten Application ID</label></th>
+                        <th><label for="rakuten_app_id"><?php esc_html_e( 'Rakuten Application ID', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <input type="text" name="rakuten_app_id" id="rakuten_app_id" class="regular-text" value="<?php echo esc_attr( $rakuten_app_id ); ?>" />
                             <p class="description">Rakuten Books API を利用するためのアプリケーションID</p>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rakuten_affiliate_id">Rakuten Affiliate ID</label></th>
+                        <th><label for="rakuten_affiliate_id"><?php esc_html_e( 'Rakuten Affiliate ID', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <input type="text" name="rakuten_affiliate_id" id="rakuten_affiliate_id" class="regular-text" value="<?php echo esc_attr( $rakuten_affiliate_id ); ?>" />
                             <p class="description">楽天リンクに自動付与されるアフィリエイトID</p>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="amazon_tag">Amazon Associate Tag</label></th>
+                        <th><label for="amazon_tag"><?php esc_html_e( 'Amazon Associate Tag', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <input type="text" name="amazon_tag" id="amazon_tag" class="regular-text" value="<?php echo esc_attr( $amazon_tag ); ?>" />
                             <p class="description">AmazonリンクにAssociate Tagを自動付与</p>
@@ -1445,10 +1459,10 @@ class UZ_Bookshelf_Admin {
                     </tr>
                 </table>
 
-                <h2>Display Settings</h2>
+                <h2><?php esc_html_e( 'Display Settings', 'uz-bookshelf' ); ?></h2>
                 <table class="form-table">
                     <tr>
-                        <th><label for="shelf_color">Shelf Wood Color</label></th>
+                        <th><label for="shelf_color"><?php esc_html_e( 'Shelf Wood Color', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <input type="color" name="shelf_color" id="shelf_color" value="<?php echo esc_attr( $shelf_color ); ?>" />
                             <span style="margin-left:8px;"><?php echo esc_html( $shelf_color ); ?></span>
@@ -1456,7 +1470,7 @@ class UZ_Bookshelf_Admin {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="shelf_rows">Shelf Rows</label></th>
+                        <th><label for="shelf_rows"><?php esc_html_e( 'Shelf Rows', 'uz-bookshelf' ); ?></label></th>
                         <td>
                             <input type="number" name="shelf_rows" id="shelf_rows" min="1" max="10" value="<?php echo esc_attr( $shelf_rows ); ?>" style="width:80px;" />
                             <p class="description">1棚あたりの段数（デフォルト: 2）</p>
@@ -1464,10 +1478,10 @@ class UZ_Bookshelf_Admin {
                     </tr>
                 </table>
 
-                <h2>Data Settings</h2>
+                <h2><?php esc_html_e( 'Data Settings', 'uz-bookshelf' ); ?></h2>
                 <table class="form-table">
                     <tr>
-                        <th>Sample Data</th>
+                        <th><?php esc_html_e( 'Sample Data', 'uz-bookshelf' ); ?></th>
                         <td>
                             <label>
                                 <input type="checkbox" name="load_sample_data" value="1" <?php checked( $load_sample_data, '1' ); ?> />
@@ -1478,7 +1492,7 @@ class UZ_Bookshelf_Admin {
                     </tr>
                 </table>
 
-                <?php submit_button( 'Save Settings' ); ?>
+                <?php submit_button( __( 'Save Settings', 'uz-bookshelf' ) ); ?>
             </form>
         </div>
         <?php
