@@ -488,6 +488,29 @@ class UZ_Bookshelf_Admin {
                             $this->db->update_item( $sid, array( 'format' => 'standard' ) );
                         }
                         $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を通常表示に設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                    } elseif ( $bulk_action === 'sort_title_asc' || $bulk_action === 'sort_title_desc' || $bulk_action === 'sort_author_asc' || $bulk_action === 'sort_reverse' ) {
+                        // Bulk sort: reorder selected items by criteria within their shelf
+                        $bulk_items = array();
+                        foreach ( $selected as $sid ) {
+                            $it = $this->db->get_item( $sid );
+                            if ( $it ) $bulk_items[] = $it;
+                        }
+                        if ( $bulk_action === 'sort_title_asc' ) {
+                            usort( $bulk_items, function( $a, $b ) { return strcmp( $a['title'], $b['title'] ); } );
+                        } elseif ( $bulk_action === 'sort_title_desc' ) {
+                            usort( $bulk_items, function( $a, $b ) { return strcmp( $b['title'], $a['title'] ); } );
+                        } elseif ( $bulk_action === 'sort_author_asc' ) {
+                            usort( $bulk_items, function( $a, $b ) { return strcmp( $a['author'], $b['author'] ); } );
+                        } elseif ( $bulk_action === 'sort_reverse' ) {
+                            $bulk_items = array_reverse( $bulk_items );
+                        }
+                        // Collect original sort_orders, assign in new order
+                        $orders = array_map( function( $it ) { return (int) $it['sort_order']; }, $bulk_items );
+                        sort( $orders );
+                        foreach ( $bulk_items as $i => $it ) {
+                            $this->db->update_item( (int) $it['id'], array( 'sort_order' => $orders[ $i ] ) );
+                        }
+                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を並べ替えました。', 'uz-bookshelf' ), count( $bulk_items ) ) ) . '</p></div>';
                     }
                 }
             }
@@ -548,8 +571,16 @@ class UZ_Bookshelf_Admin {
                 <div style="background:#f0f0f1;padding:8px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <select name="bulk_action">
                         <option value=""><?php esc_html_e( '一括操作', 'uz-bookshelf' ); ?></option>
-                        <option value="set_vertical"><?php esc_html_e( '縦置きにする', 'uz-bookshelf' ); ?></option>
-                        <option value="set_standard"><?php esc_html_e( '通常表示にする', 'uz-bookshelf' ); ?></option>
+                        <optgroup label="<?php esc_attr_e( '表示形式', 'uz-bookshelf' ); ?>">
+                            <option value="set_vertical"><?php esc_html_e( '縦置きにする', 'uz-bookshelf' ); ?></option>
+                            <option value="set_standard"><?php esc_html_e( '通常表示にする', 'uz-bookshelf' ); ?></option>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e( '並べ替え', 'uz-bookshelf' ); ?>">
+                            <option value="sort_title_asc"><?php esc_html_e( 'タイトル順（A→Z）', 'uz-bookshelf' ); ?></option>
+                            <option value="sort_title_desc"><?php esc_html_e( 'タイトル順（Z→A）', 'uz-bookshelf' ); ?></option>
+                            <option value="sort_author_asc"><?php esc_html_e( '著者順（A→Z）', 'uz-bookshelf' ); ?></option>
+                            <option value="sort_reverse"><?php esc_html_e( '順序を反転', 'uz-bookshelf' ); ?></option>
+                        </optgroup>
                     </select>
                     <input type="submit" class="button action" value="<?php esc_attr_e( '適用', 'uz-bookshelf' ); ?>" />
                     <span style="margin-left:auto;font-size:12px;color:#666;">
@@ -608,14 +639,10 @@ class UZ_Bookshelf_Admin {
                                         <?php echo esc_html( $format_label ); ?>
                                     </a>
                                 </td>
-                                <td>
-                                    <?php if ( $idx > 0 ) : ?>
-                                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_up&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&uarr;</a>
-                                    <?php endif; ?>
-                                    <?php if ( $idx < count( $items ) - 1 ) : ?>
-                                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_down&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&darr;</a>
-                                    <?php endif; ?>
-                                    <small style="color:#999;"><?php echo esc_html( $item['sort_order'] ); ?></small>
+                                <td style="white-space:nowrap;">
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_up&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>" title="<?php esc_attr_e( '上へ', 'uz-bookshelf' ); ?>">&uarr;</a>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_down&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>" title="<?php esc_attr_e( '下へ', 'uz-bookshelf' ); ?>">&darr;</a>
+                                    <input type="number" class="uz-sort-inline" data-item-id="<?php echo esc_attr( $item['id'] ); ?>" value="<?php echo esc_attr( $item['sort_order'] ); ?>" style="width:50px;font-size:11px;padding:1px 3px;text-align:center;" title="<?php esc_attr_e( '順序（直接編集可）', 'uz-bookshelf' ); ?>" />
                                 </td>
                                 <td>
                                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'uz-bookshelf' ); ?></a> |
@@ -631,9 +658,36 @@ class UZ_Bookshelf_Admin {
 
         <script>
         jQuery(function($) {
+            // Select all checkboxes
             $('#uz-items-select-all, #uz-items-select-all-top').on('change', function() {
                 $('.uz-items-cb').prop('checked', this.checked);
                 $('#uz-items-select-all, #uz-items-select-all-top').prop('checked', this.checked);
+            });
+
+            // Inline sort_order quick-edit
+            var sortTimer = {};
+            $('.uz-sort-inline').on('change input', function() {
+                var $el = $(this);
+                var itemId = $el.data('item-id');
+                var newVal = parseInt($el.val(), 10);
+                if (isNaN(newVal) || newVal < 0) return;
+
+                clearTimeout(sortTimer[itemId]);
+                sortTimer[itemId] = setTimeout(function() {
+                    $el.css('background', '#fff3cd');
+                    $.post(ajaxurl, {
+                        action: 'uz_update_sort_order',
+                        id: itemId,
+                        sort_order: newVal,
+                        _wpnonce: '<?php echo esc_js( wp_create_nonce( 'uz_inline_sort' ) ); ?>'
+                    }).done(function(res) {
+                        $el.css('background', res.success ? '#d4edda' : '#f8d7da');
+                        setTimeout(function() { $el.css('background', ''); }, 800);
+                    }).fail(function() {
+                        $el.css('background', '#f8d7da');
+                        setTimeout(function() { $el.css('background', ''); }, 800);
+                    });
+                }, 400);
             });
         });
         </script>
@@ -659,6 +713,27 @@ class UZ_Bookshelf_Admin {
         }
         wp_redirect( $redirect );
         exit;
+    }
+
+    /**
+     * AJAX: Update sort_order for a single item (inline quick-edit)
+     */
+    public function ajax_update_sort_order() {
+        check_ajax_referer( 'uz_inline_sort' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'Permission denied', 403 );
+        }
+
+        $id         = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
+        $sort_order = isset( $_POST['sort_order'] ) ? absint( $_POST['sort_order'] ) : 0;
+
+        if ( ! $id ) {
+            wp_send_json_error( 'Invalid ID' );
+        }
+
+        $this->db->update_item( $id, array( 'sort_order' => $sort_order ) );
+        wp_send_json_success( array( 'id' => $id, 'sort_order' => $sort_order ) );
     }
 
     private function handle_item_move() {

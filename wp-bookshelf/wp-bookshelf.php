@@ -127,6 +127,7 @@ final class UZ_Bookshelf_Plugin {
             add_action( 'admin_enqueue_scripts', array( $this->admin, 'enqueue_admin_assets' ) );
             add_action( 'add_meta_boxes', array( $this->admin, 'register_article_metaboxes' ) );
             add_action( 'save_post', array( $this->admin, 'save_article_metabox' ) );
+            add_action( 'wp_ajax_uz_update_sort_order', array( $this->admin, 'ajax_update_sort_order' ) );
         }
 
         // Shortcode (frontend)
