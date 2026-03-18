@@ -599,6 +599,12 @@ class UZ_Bookshelf_DB {
 
         $counts = array( 'shelves' => 0, 'items' => 0, 'articles' => 0 );
 
+        // Clear existing uz-source items before re-import to prevent duplicates
+        if ( ! empty( $data['shelves'] ) ) {
+            global $wpdb;
+            $wpdb->query( "DELETE FROM {$this->items_table()} WHERE source = 'uz'" );
+        }
+
         // Import shelves and items
         if ( ! empty( $data['shelves'] ) ) {
             foreach ( $data['shelves'] as $i => $shelf ) {

@@ -415,23 +415,6 @@
         },
         {
           "id": "jinsei-kaeru-8-mahousyo_",
-          "title": "モモ (岩波少年文庫)",
-          "fullTitle": "モモ (岩波少年文庫)",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/51y5V0dPX1L._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B073PPWX7L",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%A2%E3%83%A2%20(%E5%B2%A9%E6%B3%A2%E5%B0%91%E5%B9%B4%E6%96%87%E5%BA%AB)/",
-          "articleId": "jinsei-kaeru-8-mahousyo",
-          "articleTitle": "人生を変える8冊の魔法書",
-          "type": "product",
-          "format": "bunko",
-          "dimensions": {
-            "width": 105,
-            "height": 148
-          }
-        },
-        {
-          "id": "jinsei-kaeru-8-mahousyo_",
           "title": "シッダールタ",
           "fullTitle": "シッダールタ",
           "author": "光文社",
@@ -500,23 +483,6 @@
         },
         {
           "id": "jinsei-kaeru-8-mahousyo_",
-          "title": "ハーモニー〔新版〕 (ハヤカワ文庫 JA イ 7-7)",
-          "fullTitle": "ハーモニー〔新版〕 (ハヤカワ文庫 JA イ 7-7)",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/61ZL9TLXTMS._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/4150311668",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%8F%E3%83%BC%E3%83%A2%E3%83%8B%E3%83%BC%E3%80%94%E6%96%B0%E7%89%88%E3%80%95%20(%E3%83%8F%E3%83%A4%E3%82%AB%E3%83%AF%E6%96%87%E5%BA%AB%20JA%20%E3%82%A4%207-7)/",
-          "articleId": "jinsei-kaeru-8-mahousyo",
-          "articleTitle": "人生を変える8冊の魔法書",
-          "type": "product",
-          "format": "bunko",
-          "dimensions": {
-            "width": 105,
-            "height": 148
-          }
-        },
-        {
-          "id": "jinsei-kaeru-8-mahousyo_",
           "title": "クラウド・アトラス（上）",
           "fullTitle": "クラウド・アトラス（上）",
           "author": "",
@@ -547,23 +513,6 @@
           "dimensions": {
             "width": 128,
             "height": 182
-          }
-        },
-        {
-          "id": "murakamiharuki-the-best-5_",
-          "title": "ノルウェイの森 (講談社文庫)",
-          "fullTitle": "ノルウェイの森 (講談社文庫)",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/317UPtfYBdL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B07KVTV42B",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%8E%E3%83%AB%E3%82%A6%E3%82%A7%E3%82%A4%E3%81%AE%E6%A3%AE%20(%E8%AC%9B%E8%AB%87%E7%A4%BE%E6%96%87%E5%BA%AB)/",
-          "articleId": "murakamiharuki-the-best-5",
-          "articleTitle": "村上春樹・圧倒的名作ベスト5 ―― 喪失と再生を巡る至高の文学世界",
-          "type": "product",
-          "format": "bunko",
-          "dimensions": {
-            "width": 105,
-            "height": 148
           }
         },
         {
@@ -615,23 +564,6 @@
           "dimensions": {
             "width": 105,
             "height": 148
-          }
-        },
-        {
-          "id": "murakamiharuki-the-best-5_",
-          "title": "世界の終りとハードボイルド・ワンダーランド",
-          "fullTitle": "世界の終りとハードボイルド・ワンダーランド",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/41ZM9BPMHKL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/4103534176",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E4%B8%96%E7%95%8C%E3%81%AE%E7%B5%82%E3%82%8A%E3%81%A8%E3%83%8F%E3%83%BC%E3%83%89%E3%83%9C%E3%82%A4%E3%83%AB%E3%83%89%E3%83%BB%E3%83%AF%E3%83%B3%E3%83%80%E3%83%BC%E3%83%A9%E3%83%B3%E3%83%89/",
-          "articleId": "murakamiharuki-the-best-5",
-          "articleTitle": "村上春樹・圧倒的名作ベスト5 ―― 喪失と再生を巡る至高の文学世界",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
           }
         },
         {
@@ -797,19 +729,6 @@
           "format": "bunko",
           "articleId": "pauro-witch",
           "articleTitle": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光"
-        },
-        {
-          "id": "alchemist-pauro-witch",
-          "title": "アルケミスト",
-          "fullTitle": "アルケミスト 夢を旅した少年 (角川文庫)",
-          "author": "パウロ・コエーリョ",
-          "coverUrl": "https://m.media-amazon.com/images/P/4042750010.09._SCLZZZZZZZ_SX500_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/4042750010",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A2%E3%83%AB%E3%82%B1%E3%83%9F%E3%82%B9%E3%83%88+%E3%82%B3%E3%82%A8%E3%83%BC%E3%83%AA%E3%83%A7/",
-          "type": "product",
-          "format": "bunko",
-          "articleId": "pauro-witch",
-          "articleTitle": "パウロ・コエーリョが描く「魔女」とは何者なのか――自己探求の旅路を照らす光"
         }
       ]
     },
@@ -898,23 +817,6 @@
           "coverUrl": "https://m.media-amazon.com/images/I/41ciCmxMqML._SL800_.jpg",
           "amazonUrl": "https://www.amazon.co.jp/dp/B0F8JK1PJP",
           "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%EF%BC%A1%EF%BC%AB%EF%BC%A9%EF%BC%B2%EF%BC%A1/",
-          "articleId": "dystopian-food",
-          "articleTitle": "ディストピア飯が教えてくれたこと——美しく描かれる地獄について",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          }
-        },
-        {
-          "id": "dystopian-food_",
-          "title": "トゥモロー・ワールド",
-          "fullTitle": "トゥモロー・ワールド",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/41Q4JSFjJTL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B0CKM622WH",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%88%E3%82%A5%E3%83%A2%E3%83%AD%E3%83%BC%E3%83%BB%E3%83%AF%E3%83%BC%E3%83%AB%E3%83%89/",
           "articleId": "dystopian-food",
           "articleTitle": "ディストピア飯が教えてくれたこと——美しく描かれる地獄について",
           "type": "product",
@@ -1473,54 +1375,12 @@
         },
         {
           "id": "darkfantasy-2_",
-          "title": "ケントゥリア 1 (ジャンプコミックスDIGITAL)",
-          "fullTitle": "ケントゥリア 1 (ジャンプコミックスDIGITAL)",
-          "author": "集英社",
-          "coverUrl": "https://m.media-amazon.com/images/I/51QQ5yFnQXL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B0D59Q69KP",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%B1%E3%83%B3%E3%83%88%E3%82%A5%E3%83%AA%E3%82%A2%201%20(%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%E3%82%B3%E3%83%9F%E3%83%83%E3%82%AF%E3%82%B9DIGITAL)/",
-          "articleId": "darkfantasy-2",
-          "articleTitle": "ベルセルクとケントゥリア——闇に熱を宿す者たちへ",
-          "type": "product",
-          "format": "comic",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          },
-          "originalWork": {
-            "title": "ベルセルク（三浦建太郎）",
-            "type": "原作マンガ"
-          }
-        },
-        {
-          "id": "darkfantasy-2_",
           "title": "ベルセルク",
           "fullTitle": "ベルセルク",
           "author": "",
           "coverUrl": "https://m.media-amazon.com/images/I/41CuZ6CTlbL._SL800_.jpg",
           "amazonUrl": "https://www.amazon.co.jp/dp/B0D4Z5TSW8",
           "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%99%E3%83%AB%E3%82%BB%E3%83%AB%E3%82%AF/",
-          "articleId": "darkfantasy-2",
-          "articleTitle": "ベルセルクとケントゥリア——闇に熱を宿す者たちへ",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          },
-          "originalWork": {
-            "title": "ベルセルク（三浦建太郎）",
-            "type": "原作マンガ"
-          }
-        },
-        {
-          "id": "darkfantasy-2_",
-          "title": "ケントゥリア 1~6巻セット",
-          "fullTitle": "ケントゥリア 1~6巻セット",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/51uj4llibGL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B0FTG96L4T",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%B1%E3%83%B3%E3%83%88%E3%82%A5%E3%83%AA%E3%82%A2%201~6%E5%B7%BB%E3%82%BB%E3%83%83%E3%83%88/",
           "articleId": "darkfantasy-2",
           "articleTitle": "ベルセルクとケントゥリア——闇に熱を宿す者たちへ",
           "type": "product",
@@ -1675,27 +1535,6 @@
         },
         {
           "id": "jinseikan-kaeru-8-manga_",
-          "title": "AKIRA コミック 全6巻完結セット",
-          "fullTitle": "AKIRA コミック 全6巻完結セット",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/61cnFNxU4TL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B072M71F24",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/AKIRA%20%E3%82%B3%E3%83%9F%E3%83%83%E3%82%AF%20%E5%85%A86%E5%B7%BB%E5%AE%8C%E7%B5%90%E3%82%BB%E3%83%83%E3%83%88/",
-          "articleId": "jinseikan-kaeru-8-manga",
-          "articleTitle": "人生観を変える8つの名作マンガ",
-          "type": "product",
-          "format": "comic",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          },
-          "originalWork": {
-            "title": "AKIRA（大友克洋）",
-            "type": "原作マンガ"
-          }
-        },
-        {
-          "id": "jinseikan-kaeru-8-manga_",
           "title": "【化粧箱入り】火の鳥 全12巻セット",
           "fullTitle": "【化粧箱入り】火の鳥 全12巻セット",
           "author": "朝日新聞出版",
@@ -1805,27 +1644,6 @@
           },
           "originalWork": {
             "title": "DEATH NOTE（大場つぐみ/小畑健）",
-            "type": "原作マンガ"
-          }
-        },
-        {
-          "id": "jinseikan-kaeru-8-manga_",
-          "title": "風の谷のナウシカ 全7巻箱入りセット「トルメキア戦役バージョン」",
-          "fullTitle": "風の谷のナウシカ 全7巻箱入りセット「トルメキア戦役バージョン」",
-          "author": "徳間書店",
-          "coverUrl": "https://m.media-amazon.com/images/I/61JGS6zdkeL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/419210010X",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E9%A2%A8%E3%81%AE%E8%B0%B7%E3%81%AE%E3%83%8A%E3%82%A6%E3%82%B7%E3%82%AB%20%E5%85%A87%E5%B7%BB%E7%AE%B1%E5%85%A5%E3%82%8A%E3%82%BB%E3%83%83%E3%83%88%E3%80%8C%E3%83%88%E3%83%AB%E3%83%A1%E3%82%AD%E3%82%A2%E6%88%A6%E5%BD%B9%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E3%80%8D/",
-          "articleId": "jinseikan-kaeru-8-manga",
-          "articleTitle": "人生観を変える8つの名作マンガ",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          },
-          "originalWork": {
-            "title": "風の谷のナウシカ（宮崎駿）",
             "type": "原作マンガ"
           }
         },
@@ -2318,46 +2136,12 @@
         },
         {
           "id": "shinjitsu-ayahuya-movie-5_",
-          "title": "インセプション(字幕版)",
-          "fullTitle": "インセプション(字幕版)",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/51O-5-ZCRAL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B00FIWNDVI",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%82%A4%E3%83%B3%E3%82%BB%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3(%E5%AD%97%E5%B9%95%E7%89%88)/",
-          "articleId": "shinjitsu-ayahuya-movie-5",
-          "articleTitle": "真実があやふやな時代だからこそ、知るために観たい映画5選",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          }
-        },
-        {
-          "id": "shinjitsu-ayahuya-movie-5_",
           "title": "マトリックス (字幕版)",
           "fullTitle": "マトリックス (字幕版)",
           "author": "",
           "coverUrl": "https://m.media-amazon.com/images/I/51CbLT0+kTL._SL800_.jpg",
           "amazonUrl": "https://www.amazon.co.jp/dp/B00FIWIQ3I",
           "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%9E%E3%83%88%E3%83%AA%E3%83%83%E3%82%AF%E3%82%B9%20(%E5%AD%97%E5%B9%95%E7%89%88)/",
-          "articleId": "shinjitsu-ayahuya-movie-5",
-          "articleTitle": "真実があやふやな時代だからこそ、知るために観たい映画5選",
-          "type": "product",
-          "format": "standard",
-          "dimensions": {
-            "width": 128,
-            "height": 182
-          }
-        },
-        {
-          "id": "shinjitsu-ayahuya-movie-5_",
-          "title": "メメント",
-          "fullTitle": "メメント",
-          "author": "",
-          "coverUrl": "https://m.media-amazon.com/images/I/51yF+NZV8OL._SL800_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B0FJ5D5DRR",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%A1%E3%83%A1%E3%83%B3%E3%83%88/",
           "articleId": "shinjitsu-ayahuya-movie-5",
           "articleTitle": "真実があやふやな時代だからこそ、知るために観たい映画5選",
           "type": "product",
@@ -3009,19 +2793,6 @@
           "coverUrl": "https://m.media-amazon.com/images/P/B073P9T96Z.01._SCLZZZZZZZ_SX500_.jpg",
           "amazonUrl": "https://www.amazon.co.jp/dp/B073P9T96Z",
           "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%96%E3%83%AC%E3%83%BC%E3%83%89%E3%83%A9%E3%83%B3%E3%83%8A%E3%83%BC+%E3%83%95%E3%82%A1%E3%82%A4%E3%83%8A%E3%83%AB%E3%82%AB%E3%83%83%E3%83%88+Blu-ray/",
-          "type": "product",
-          "format": "poster",
-          "articleId": "ai-robot-movie",
-          "articleTitle": "AI時代の次にくるのはロボットか？ なぜ今、我々は「身体」を持つ機械の夢を見るのか——現代に観るべきロボット映画論"
-        },
-        {
-          "id": "blade-runner-2049",
-          "title": "ブレードランナー 2049",
-          "fullTitle": "ブレードランナー 2049 [Blu-ray]",
-          "author": "ドゥニ・ヴィルヌーヴ (監督)",
-          "coverUrl": "https://m.media-amazon.com/images/P/B07886H8VM.01._SCLZZZZZZZ_SX500_.jpg",
-          "amazonUrl": "https://www.amazon.co.jp/dp/B07886H8VM",
-          "rakutenUrl": "https://search.rakuten.co.jp/search/mall/%E3%83%96%E3%83%AC%E3%83%BC%E3%83%89%E3%83%A9%E3%83%B3%E3%83%8A%E3%83%BC+2049+Blu-ray/",
           "type": "product",
           "format": "poster",
           "articleId": "ai-robot-movie",
