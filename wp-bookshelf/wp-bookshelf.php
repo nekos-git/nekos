@@ -226,6 +226,14 @@ final class UZ_Bookshelf_Plugin {
         // Register taxonomy before seeding
         $this->register_taxonomies();
 
+        // Generate API token for shared hosting (where Authorization header is stripped)
+        if ( ! get_option( 'uz_bookshelf_api_token' ) ) {
+            update_option( 'uz_bookshelf_api_token', wp_generate_password( 32, false ) );
+        }
+
+        // Auto-import shelf data (items + shelves) from bundled JSON
+        $this->import_shelf_data_on_activate();
+
         // Auto-import articles if no bookshelf posts exist
         $existing = get_posts( array(
             'post_type'   => 'post',
@@ -241,6 +249,23 @@ final class UZ_Bookshelf_Plugin {
         $this->seed_critique_themes();
 
         flush_rewrite_rules();
+    }
+
+    /**
+     * Import shelf data (shelves + items) from bundled JSON on activation
+     */
+    private function import_shelf_data_on_activate() {
+        $json_file = UZ_BOOKSHELF_PATH . 'data/uz-shelf-data.json';
+        if ( ! file_exists( $json_file ) ) {
+            return;
+        }
+
+        $json_data = json_decode( file_get_contents( $json_file ), true );
+        if ( ! $json_data || empty( $json_data['shelves'] ) ) {
+            return;
+        }
+
+        $this->db->import_from_json( $json_data );
     }
 
     /**

@@ -220,15 +220,25 @@ class UZ_Bookshelf_API {
 
     /**
      * Permission check for admin endpoints.
-     * Verifies both capability and REST nonce.
+     * Supports standard WP auth + token-based fallback for shared hosting
+     * where the Authorization header is stripped by CGI/FastCGI.
      */
     public function check_admin_permission( WP_REST_Request $request = null ) {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return false;
+        if ( current_user_can( 'manage_options' ) ) {
+            return true;
         }
-        // Nonce is automatically verified by WP REST API when X-WP-Nonce header is present.
-        // This is handled by rest_cookie_check_errors() in WP core.
-        return true;
+
+        // Token-based fallback: check X-UZ-Token header or _uz_token param
+        $token = $request ? $request->get_header( 'X-UZ-Token' ) : '';
+        if ( ! $token && $request ) {
+            $token = $request->get_param( '_uz_token' );
+        }
+        if ( $token ) {
+            $stored = get_option( 'uz_bookshelf_api_token', '' );
+            return $stored && hash_equals( $stored, $token );
+        }
+
+        return false;
     }
 
     // =========================================================================

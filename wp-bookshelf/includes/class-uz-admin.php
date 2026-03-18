@@ -2111,6 +2111,11 @@ class UZ_Bookshelf_Admin {
 
                 <?php submit_button( __( 'Save Settings', 'uz-bookshelf' ) ); ?>
             </form>
+
+            <h2><?php esc_html_e( 'API Token', 'uz-bookshelf' ); ?></h2>
+            <p class="description">共有ホスティング等でApplication Passwordが使えない場合のREST API認証用トークン。<br>
+            ヘッダー <code>X-UZ-Token</code> またはパラメータ <code>_uz_token</code> で送信。</p>
+            <p><code><?php echo esc_html( get_option( 'uz_bookshelf_api_token', '(未生成)' ) ); ?></code></p>
         </div>
         <?php
     }
