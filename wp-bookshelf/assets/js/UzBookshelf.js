@@ -745,6 +745,26 @@ function UzBookshelf() {
     artPanelChildren.push(
       h('div', { key: 'grid', className: 'uz-artCardGrid' }, artCards)
     );
+
+    // 本棚に戻るボタン（記事一覧）
+    artPanelChildren.push(
+      h('div', { key: 'backToShelf', className: 'uz-backToShelf' },
+        h('div', { className: 'uz-backToShelf__divider' }),
+        h('button', {
+          className: 'uz-backToShelf__btn',
+          onClick: function() {
+            setShowArticles(false);
+            setSelectedArticle(null);
+            setShelfIndex(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+          h('span', { className: 'uz-backToShelf__icon' }, '\uD83D\uDCDA'),
+          h('span', { className: 'uz-backToShelf__text' }, '本棚に戻る')
+        )
+      )
+    );
+
     children.push(h('div', { key: 'artPanel', className: 'uz-articlesPanel' }, artPanelChildren));
   }
 
