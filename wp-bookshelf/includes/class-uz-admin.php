@@ -458,6 +458,9 @@ class UZ_Bookshelf_Admin {
             case 'move_down':
                 $this->handle_item_move();
                 break;
+            case 'toggle_format':
+                $this->handle_item_toggle_format();
+                break;
             default:
                 $this->page_items_list();
         }
@@ -466,6 +469,29 @@ class UZ_Bookshelf_Admin {
     private function page_items_list() {
         $shelf_filter = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
         $shelves      = $this->db->get_shelves();
+
+        // Handle bulk actions
+        $bulk_msg = '';
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['uz_items_bulk_nonce'] ) ) {
+            if ( wp_verify_nonce( $_POST['uz_items_bulk_nonce'], 'uz_items_bulk' ) ) {
+                $bulk_action = sanitize_text_field( $_POST['bulk_action'] ?? '' );
+                $selected    = isset( $_POST['item_ids'] ) ? array_map( 'absint', (array) $_POST['item_ids'] ) : array();
+
+                if ( ! empty( $selected ) ) {
+                    if ( $bulk_action === 'set_vertical' ) {
+                        foreach ( $selected as $sid ) {
+                            $this->db->update_item( $sid, array( 'format' => 'vertical' ) );
+                        }
+                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を縦置きに設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                    } elseif ( $bulk_action === 'set_standard' ) {
+                        foreach ( $selected as $sid ) {
+                            $this->db->update_item( $sid, array( 'format' => 'standard' ) );
+                        }
+                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を通常表示に設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                    }
+                }
+            }
+        }
 
         if ( $shelf_filter ) {
             $items = $this->db->get_items( $shelf_filter );
@@ -487,6 +513,10 @@ class UZ_Bookshelf_Admin {
             <?php if ( isset( $_GET['msg'] ) && $_GET['msg'] === 'deleted' ) : ?>
                 <div class="notice notice-success"><p><?php esc_html_e( 'Item deleted.', 'uz-bookshelf' ); ?></p></div>
             <?php endif; ?>
+            <?php if ( isset( $_GET['msg'] ) && $_GET['msg'] === 'format_changed' ) : ?>
+                <div class="notice notice-success"><p><?php esc_html_e( '表示形式を変更しました。', 'uz-bookshelf' ); ?></p></div>
+            <?php endif; ?>
+            <?php echo $bulk_msg; ?>
 
             <div class="tablenav top">
                 <div class="alignleft actions">
@@ -511,63 +541,124 @@ class UZ_Bookshelf_Admin {
                 </div>
             </div>
 
-            <table class="widefat striped">
-                <thead>
-                    <tr>
-                        <th width="50"><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
-                        <th width="60"><?php esc_html_e( 'Cover', 'uz-bookshelf' ); ?></th>
-                        <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
-                        <th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th>
-                        <th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th>
-                        <th><?php esc_html_e( 'Article', 'uz-bookshelf' ); ?></th>
-                        <?php if ( $shelf_filter ) : ?><th width="60"><?php esc_html_e( 'Order', 'uz-bookshelf' ); ?></th><?php endif; ?>
-                        <th width="100"><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ( empty( $items ) ) : ?>
-                        <tr><td colspan="<?php echo $shelf_filter ? 8 : 7; ?>"><?php esc_html_e( 'No items found.', 'uz-bookshelf' ); ?></td></tr>
-                    <?php else : ?>
-                        <?php foreach ( $items as $idx => $item ) : ?>
+            <form method="post">
+                <?php wp_nonce_field( 'uz_items_bulk', 'uz_items_bulk_nonce' ); ?>
+
+                <!-- Bulk actions bar -->
+                <div style="background:#f0f0f1;padding:8px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <select name="bulk_action">
+                        <option value=""><?php esc_html_e( '一括操作', 'uz-bookshelf' ); ?></option>
+                        <option value="set_vertical"><?php esc_html_e( '縦置きにする', 'uz-bookshelf' ); ?></option>
+                        <option value="set_standard"><?php esc_html_e( '通常表示にする', 'uz-bookshelf' ); ?></option>
+                    </select>
+                    <input type="submit" class="button action" value="<?php esc_attr_e( '適用', 'uz-bookshelf' ); ?>" />
+                    <span style="margin-left:auto;font-size:12px;color:#666;">
+                        <label><input type="checkbox" id="uz-items-select-all" /> <?php esc_html_e( '全選択', 'uz-bookshelf' ); ?></label>
+                    </span>
+                </div>
+
+                <table class="widefat striped">
+                    <thead>
                         <tr>
-                            <td><?php echo esc_html( $item['id'] ); ?></td>
-                            <td>
-                                <?php if ( $item['cover_url'] ) : ?>
-                                    <img src="<?php echo esc_url( $item['cover_url'] ); ?>" style="width:40px;height:auto;" />
-                                <?php else : ?>
-                                    <span style="color:#999;">-</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php echo esc_html( $item['title'] ); ?></a></strong>
-                                <?php if ( $item['full_title'] && $item['full_title'] !== $item['title'] ) : ?>
-                                    <br><small><?php echo esc_html( mb_substr( $item['full_title'], 0, 50 ) ); ?></small>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo esc_html( $item['author'] ); ?></td>
-                            <td><code><?php echo esc_html( $item['shelf_id'] ); ?></code></td>
-                            <td><?php echo esc_html( $item['article_title'] ? mb_substr( $item['article_title'], 0, 20 ) . '...' : '-' ); ?></td>
-                            <?php if ( $shelf_filter ) : ?>
-                            <td>
-                                <?php if ( $idx > 0 ) : ?>
-                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_up&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&uarr;</a>
-                                <?php endif; ?>
-                                <?php if ( $idx < count( $items ) - 1 ) : ?>
-                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_down&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&darr;</a>
-                                <?php endif; ?>
-                            </td>
-                            <?php endif; ?>
-                            <td>
-                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'uz-bookshelf' ); ?></a> |
-                                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=delete&id=' . $item['id'] ), 'uz_delete_item_' . $item['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this item?', 'uz-bookshelf' ) ); ?>');" style="color:#b32d2e;"><?php esc_html_e( 'Delete', 'uz-bookshelf' ); ?></a>
-                            </td>
+                            <th width="30"><input type="checkbox" id="uz-items-select-all-top" /></th>
+                            <th width="50"><?php esc_html_e( 'ID', 'uz-bookshelf' ); ?></th>
+                            <th width="60"><?php esc_html_e( 'Cover', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( 'Title', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( 'Author', 'uz-bookshelf' ); ?></th>
+                            <th><?php esc_html_e( 'Shelf', 'uz-bookshelf' ); ?></th>
+                            <th width="55"><?php esc_html_e( '表示', 'uz-bookshelf' ); ?></th>
+                            <th width="60"><?php esc_html_e( '順序', 'uz-bookshelf' ); ?></th>
+                            <th width="100"><?php esc_html_e( 'Actions', 'uz-bookshelf' ); ?></th>
                         </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php if ( empty( $items ) ) : ?>
+                            <tr><td colspan="9"><?php esc_html_e( 'No items found.', 'uz-bookshelf' ); ?></td></tr>
+                        <?php else : ?>
+                            <?php foreach ( $items as $idx => $item ) :
+                                $is_vertical = ( $item['format'] === 'vertical' );
+                                $format_label = $is_vertical ? '縦' : '横';
+                                $format_color = $is_vertical ? '#d9edf7' : '#dff0d8';
+                                $toggle_format = $is_vertical ? 'standard' : 'vertical';
+                                $toggle_url = wp_nonce_url(
+                                    admin_url( 'admin.php?page=uz-bookshelf-items&action=toggle_format&id=' . $item['id'] . '&to=' . $toggle_format . ( $shelf_filter ? '&shelf_id=' . urlencode( $shelf_filter ) : '' ) ),
+                                    'uz_toggle_format_' . $item['id']
+                                );
+                            ?>
+                            <tr>
+                                <td><input type="checkbox" name="item_ids[]" value="<?php echo esc_attr( $item['id'] ); ?>" class="uz-items-cb" /></td>
+                                <td><?php echo esc_html( $item['id'] ); ?></td>
+                                <td>
+                                    <?php if ( $item['cover_url'] ) : ?>
+                                        <img src="<?php echo esc_url( $item['cover_url'] ); ?>" style="width:40px;height:auto;" />
+                                    <?php else : ?>
+                                        <span style="color:#999;">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <strong><a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php echo esc_html( $item['title'] ); ?></a></strong>
+                                    <?php if ( $item['full_title'] && $item['full_title'] !== $item['title'] ) : ?>
+                                        <br><small><?php echo esc_html( mb_substr( $item['full_title'], 0, 50 ) ); ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html( $item['author'] ); ?></td>
+                                <td><code><?php echo esc_html( $item['shelf_id'] ); ?></code></td>
+                                <td>
+                                    <a href="<?php echo esc_url( $toggle_url ); ?>" title="<?php echo esc_attr( $is_vertical ? __( '通常表示に切り替え', 'uz-bookshelf' ) : __( '縦置きに切り替え', 'uz-bookshelf' ) ); ?>" style="background:<?php echo esc_attr( $format_color ); ?>;padding:2px 6px;border-radius:3px;font-size:11px;text-decoration:none;">
+                                        <?php echo esc_html( $format_label ); ?>
+                                    </a>
+                                </td>
+                                <td>
+                                    <?php if ( $idx > 0 ) : ?>
+                                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_up&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&uarr;</a>
+                                    <?php endif; ?>
+                                    <?php if ( $idx < count( $items ) - 1 ) : ?>
+                                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=move_down&id=' . $item['id'] . '&shelf_id=' . urlencode( $shelf_filter ?: $item['shelf_id'] ) ), 'uz_move_item_' . $item['id'] ) ); ?>">&darr;</a>
+                                    <?php endif; ?>
+                                    <small style="color:#999;"><?php echo esc_html( $item['sort_order'] ); ?></small>
+                                </td>
+                                <td>
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=edit&id=' . $item['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'uz-bookshelf' ); ?></a> |
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=uz-bookshelf-items&action=delete&id=' . $item['id'] ), 'uz_delete_item_' . $item['id'] ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete this item?', 'uz-bookshelf' ) ); ?>');" style="color:#b32d2e;"><?php esc_html_e( 'Delete', 'uz-bookshelf' ); ?></a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </form>
         </div>
+
+        <script>
+        jQuery(function($) {
+            $('#uz-items-select-all, #uz-items-select-all-top').on('change', function() {
+                $('.uz-items-cb').prop('checked', this.checked);
+                $('#uz-items-select-all, #uz-items-select-all-top').prop('checked', this.checked);
+            });
+        });
+        </script>
         <?php
+    }
+
+    /**
+     * Toggle item format between standard/vertical
+     */
+    private function handle_item_toggle_format() {
+        $id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+        $to = isset( $_GET['to'] ) ? sanitize_text_field( $_GET['to'] ) : 'standard';
+        $shelf_id = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
+
+        if ( $id && check_admin_referer( 'uz_toggle_format_' . $id ) ) {
+            $format = in_array( $to, array( 'standard', 'vertical' ), true ) ? $to : 'standard';
+            $this->db->update_item( $id, array( 'format' => $format ) );
+        }
+
+        $redirect = admin_url( 'admin.php?page=uz-bookshelf-items&msg=format_changed' );
+        if ( $shelf_id ) {
+            $redirect .= '&shelf_id=' . urlencode( $shelf_id );
+        }
+        wp_redirect( $redirect );
+        exit;
     }
 
     private function handle_item_move() {
