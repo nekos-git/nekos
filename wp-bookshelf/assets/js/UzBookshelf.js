@@ -776,6 +776,13 @@ function UzBookshelf() {
     }
     detailChildren.push(h('div', { key: 'actions', className: 'uz-articleDetail__actions' }, actionChildren));
 
+    // 記事本文
+    if (selectedArticle.body) {
+      detailChildren.push(
+        h('div', { key: 'body', className: 'uz-articleDetail__body', dangerouslySetInnerHTML: { __html: selectedArticle.body } })
+      );
+    }
+
     if (articleBooks.length > 0) {
       detailChildren.push(
         h('div', { key: 'books', className: 'uz-articleDetail__booksSection' },
@@ -793,6 +800,26 @@ function UzBookshelf() {
         )
       );
     }
+
+    // 本棚に戻るボタン
+    detailChildren.push(
+      h('div', { key: 'backToShelf', className: 'uz-backToShelf' },
+        h('div', { className: 'uz-backToShelf__divider' }),
+        h('button', {
+          className: 'uz-backToShelf__btn',
+          onClick: function() {
+            setShowArticles(false);
+            setSelectedArticle(null);
+            setShelfIndex(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+          h('span', { className: 'uz-backToShelf__icon' }, '\uD83D\uDCDA'),
+          h('span', { className: 'uz-backToShelf__text' }, '本棚に戻る')
+        )
+      )
+    );
+
     children.push(h('div', { key: 'artDetail', className: 'uz-articleDetail' }, detailChildren));
   }
 

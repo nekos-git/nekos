@@ -746,6 +746,11 @@ function UzBookshelf() {
               )}
             </div>
 
+            {/* 記事本文 */}
+            {selectedArticle.body && (
+              <div className="uz-articleDetail__body" dangerouslySetInnerHTML={{ __html: selectedArticle.body }} />
+            )}
+
             {articleBooks.length > 0 ? (
               <div className="uz-articleDetail__booksSection">
                 <h3 className="uz-articleDetail__booksTitle">この記事で紹介された本（{articleBooks.length}冊）</h3>
@@ -769,6 +774,15 @@ function UzBookshelf() {
                 <div className="uz-emptyState__text">この記事に関連する本はまだ登録されていません</div>
               </div>
             )}
+
+            {/* 本棚に戻るボタン */}
+            <div className="uz-backToShelf">
+              <div className="uz-backToShelf__divider" />
+              <button className="uz-backToShelf__btn" onClick={() => { setShowArticles(false); setSelectedArticle(null); setShelfIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <span className="uz-backToShelf__icon">📚</span>
+                <span className="uz-backToShelf__text">本棚に戻る</span>
+              </button>
+            </div>
           </div>
         );
       })()}
