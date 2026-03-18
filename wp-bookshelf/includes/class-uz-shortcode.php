@@ -88,32 +88,28 @@ class UZ_Bookshelf_Shortcode {
         $js_file = UZ_BOOKSHELF_PATH . 'assets/js/UzBookshelf.js';
         $version  = UZ_BOOKSHELF_VERSION . '.' . ( file_exists( $js_file ) ? filemtime( $js_file ) : '' );
 
-        // React 18 — use WP bundled version (WP 6.5+), fallback to CDN for older WP
-        if ( wp_script_is( 'react', 'registered' ) ) {
+        // React 18 — use WP bundled wp-element (includes React + ReactDOM).
+        // WP 6.2+ bundles React 18; for older WP, register a local fallback.
+        if ( wp_script_is( 'wp-element', 'registered' ) ) {
+            wp_enqueue_script( 'wp-element' );
+        } elseif ( wp_script_is( 'react', 'registered' ) ) {
             wp_enqueue_script( 'react' );
             wp_enqueue_script( 'react-dom' );
         } else {
-            wp_enqueue_script(
-                'react',
-                'https://unpkg.com/react@18/umd/react.production.min.js',
-                array(),
-                '18',
-                true
-            );
-            wp_enqueue_script(
-                'react-dom',
-                'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-                array( 'react' ),
-                '18',
-                true
-            );
+            // Fallback: bundle React locally (copy react.production.min.js into assets/vendor/)
+            $vendor_dir = $this->plugin_url . 'assets/vendor/';
+            wp_register_script( 'react', $vendor_dir . 'react.production.min.js', array(), '18', true );
+            wp_register_script( 'react-dom', $vendor_dir . 'react-dom.production.min.js', array( 'react' ), '18', true );
+            wp_enqueue_script( 'react' );
+            wp_enqueue_script( 'react-dom' );
         }
 
         // Bookshelf JS (pre-compiled, no Babel needed)
+        $js_deps = wp_script_is( 'wp-element', 'registered' ) ? array( 'wp-element' ) : array( 'react', 'react-dom' );
         wp_enqueue_script(
             'uz-bookshelf-app',
             $this->plugin_url . 'assets/js/UzBookshelf.js',
-            array( 'react', 'react-dom' ),
+            $js_deps,
             $version,
             true
         );
@@ -145,6 +141,8 @@ class UZ_Bookshelf_Shortcode {
             'apiBase'    => esc_url_raw( rest_url( 'uz-bookshelf/v1' ) ),
             'nonce'      => wp_create_nonce( 'wp_rest' ),
             'coversBase' => $this->plugin_url . 'assets/covers/',
+            'shelfColor' => get_option( 'uz_bookshelf_shelf_color', '#5a3d25' ),
+            'shelfRows'  => (int) get_option( 'uz_bookshelf_shelf_rows', 2 ),
         ) );
 
         // Mount React app after scripts load

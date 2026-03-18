@@ -23,6 +23,21 @@ class UZ_Bookshelf_API {
     }
 
     /**
+     * Append affiliate IDs to item URLs if configured.
+     */
+    private function apply_affiliate_links( &$item ) {
+        $amazon_tag  = get_option( 'uz_bookshelf_amazon_tag', '' );
+        $rakuten_id  = get_option( 'uz_bookshelf_rakuten_affiliate_id', '' );
+
+        if ( $amazon_tag && ! empty( $item['amazonUrl'] ) ) {
+            $item['amazonUrl'] = add_query_arg( 'tag', $amazon_tag, $item['amazonUrl'] );
+        }
+        if ( $rakuten_id && ! empty( $item['rakutenUrl'] ) ) {
+            $item['rakutenUrl'] = add_query_arg( 'af_id', $rakuten_id, $item['rakutenUrl'] );
+        }
+    }
+
+    /**
      * Register all REST routes
      */
     public function register_routes() {
@@ -176,10 +191,16 @@ class UZ_Bookshelf_API {
     }
 
     /**
-     * Permission check for admin endpoints
+     * Permission check for admin endpoints.
+     * Verifies both capability and REST nonce.
      */
-    public function check_admin_permission() {
-        return current_user_can( 'manage_options' );
+    public function check_admin_permission( WP_REST_Request $request = null ) {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return false;
+        }
+        // Nonce is automatically verified by WP REST API when X-WP-Nonce header is present.
+        // This is handled by rest_cookie_check_errors() in WP core.
+        return true;
     }
 
     // =========================================================================
@@ -218,7 +239,7 @@ class UZ_Bookshelf_API {
                 $tags = array();
             }
 
-            $result[] = array(
+            $entry = array(
                 'id'           => $item['item_id'],
                 'title'        => $item['title'],
                 'fullTitle'    => $item['full_title'] ?: '',
@@ -237,6 +258,8 @@ class UZ_Bookshelf_API {
                     'height' => (int) $item['height'] ?: 182,
                 ),
             );
+            $this->apply_affiliate_links( $entry );
+            $result[] = $entry;
         }
 
         return rest_ensure_response( $result );
@@ -404,7 +427,7 @@ class UZ_Bookshelf_API {
                 $tags = array();
             }
 
-            $result[] = array(
+            $entry = array(
                 'id'           => $item['item_id'],
                 'title'        => $item['title'],
                 'fullTitle'    => $item['full_title'] ?: '',
@@ -420,6 +443,8 @@ class UZ_Bookshelf_API {
                 'type'         => $item['type'] ?: 'product',
                 'format'       => $item['format'] ?: 'standard',
             );
+            $this->apply_affiliate_links( $entry );
+            $result[] = $entry;
         }
 
         return rest_ensure_response( $result );

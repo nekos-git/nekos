@@ -5,7 +5,7 @@
  * Description: 3D bookshelf display with affiliate links. Embed beautiful wooden bookshelves on any page with [uz_bookshelf] shortcode. Supports UZ Selection and Rakuten Books.
  * Version: 1.3.0
  * Author: UZ Media
- * Author URI: https://uz-media.com
+ * Author URI: https://end2endworld.org
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: uz-bookshelf
@@ -63,6 +63,15 @@ final class UZ_Bookshelf_Plugin {
         $this->register_hooks();
     }
 
+    /** @var UZ_Bookshelf_SEO SEO handler */
+    public $seo;
+
+    /** @var UZ_Bookshelf_Book_Page Book pages */
+    public $book_page;
+
+    /** @var UZ_Bookshelf_Theme_Page Theme pages */
+    public $theme_page;
+
     /**
      * Load required files
      */
@@ -72,16 +81,22 @@ final class UZ_Bookshelf_Plugin {
         require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-admin.php';
         require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-shortcode.php';
         require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-importer.php';
+        require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-seo.php';
+        require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-book-page.php';
+        require_once UZ_BOOKSHELF_PATH . 'includes/class-uz-theme-page.php';
     }
 
     /**
      * Initialize components
      */
     private function init_components() {
-        $this->db        = new UZ_Bookshelf_DB();
-        $this->api       = new UZ_Bookshelf_API( $this->db );
-        $this->admin     = new UZ_Bookshelf_Admin( $this->db, UZ_BOOKSHELF_URL );
-        $this->shortcode = new UZ_Bookshelf_Shortcode( UZ_BOOKSHELF_URL, UZ_BOOKSHELF_PATH );
+        $this->db         = new UZ_Bookshelf_DB();
+        $this->api        = new UZ_Bookshelf_API( $this->db );
+        $this->admin      = new UZ_Bookshelf_Admin( $this->db, UZ_BOOKSHELF_URL );
+        $this->shortcode  = new UZ_Bookshelf_Shortcode( UZ_BOOKSHELF_URL, UZ_BOOKSHELF_PATH );
+        $this->seo        = new UZ_Bookshelf_SEO( $this->db );
+        $this->book_page  = new UZ_Bookshelf_Book_Page( $this->db );
+        $this->theme_page = new UZ_Bookshelf_Theme_Page( $this->db );
     }
 
     /**
@@ -116,6 +131,15 @@ final class UZ_Bookshelf_Plugin {
 
         // Shortcode (frontend)
         $this->shortcode->register();
+
+        // SEO: OGP, JSON-LD, sitemap
+        $this->seo->register();
+
+        // Individual book pages
+        $this->book_page->register();
+
+        // Theme landing pages
+        $this->theme_page->register();
 
         // Check for DB upgrades
         add_action( 'plugins_loaded', array( $this->db, 'maybe_upgrade' ) );

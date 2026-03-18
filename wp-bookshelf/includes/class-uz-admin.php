@@ -1332,7 +1332,55 @@ class UZ_Bookshelf_Admin {
             <hr />
 
             <h2>エクスポート</h2>
-            <p>REST APIでデータを取得できます:</p>
+            <?php
+            // Handle export download
+            if ( isset( $_POST['uz_export_action'] ) && wp_verify_nonce( $_POST['uz_export_nonce'] ?? '', 'uz_export_data' ) ) {
+                $export_type = sanitize_text_field( $_POST['uz_export_action'] );
+                $data = null;
+                $filename = 'uz-bookshelf-export.json';
+
+                if ( $export_type === 'shelves' ) {
+                    $data = $this->db->export_shelf_data();
+                    $filename = 'uz-shelf-data-' . gmdate( 'Y-m-d' ) . '.json';
+                } elseif ( $export_type === 'rakuten' ) {
+                    $genre = sanitize_text_field( $_POST['export_genre_id'] ?? '001005' );
+                    $data = $this->db->export_rakuten_data( $genre );
+                    $filename = 'uz-rakuten-' . $genre . '-' . gmdate( 'Y-m-d' ) . '.json';
+                }
+
+                if ( $data ) {
+                    header( 'Content-Type: application/json; charset=utf-8' );
+                    header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+                    echo wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+                    exit;
+                }
+            }
+            ?>
+            <form method="post">
+                <?php wp_nonce_field( 'uz_export_data', 'uz_export_nonce' ); ?>
+                <table class="form-table">
+                    <tr>
+                        <th>棚データ (JSON)</th>
+                        <td>
+                            <button type="submit" name="uz_export_action" value="shelves" class="button">棚 + 記事データをダウンロード</button>
+                            <p class="description">全ての棚・アイテム・記事データをJSONファイルとしてエクスポート</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>楽天ブックス (JSON)</th>
+                        <td>
+                            <select name="export_genre_id" style="vertical-align:middle;">
+                                <option value="001005">001005 (IT・テクノロジー)</option>
+                                <option value="001006">001006 (ビジネス)</option>
+                                <option value="001010">001010 (カルチャー)</option>
+                            </select>
+                            <button type="submit" name="uz_export_action" value="rakuten" class="button" style="margin-left:8px;">ダウンロード</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+
+            <h3>REST API</h3>
             <ul>
                 <li><code>GET /wp-json/uz-bookshelf/v1/shelves</code> — 全棚データ</li>
                 <li><code>GET /wp-json/uz-bookshelf/v1/articles</code> — 全記事</li>
@@ -1352,6 +1400,9 @@ class UZ_Bookshelf_Admin {
                 update_option( 'uz_bookshelf_rakuten_app_id', sanitize_text_field( $_POST['rakuten_app_id'] ?? '' ) );
                 update_option( 'uz_bookshelf_rakuten_affiliate_id', sanitize_text_field( $_POST['rakuten_affiliate_id'] ?? '' ) );
                 update_option( 'uz_bookshelf_amazon_tag', sanitize_text_field( $_POST['amazon_tag'] ?? '' ) );
+                update_option( 'uz_bookshelf_shelf_color', sanitize_hex_color( $_POST['shelf_color'] ?? '#5a3d25' ) );
+                update_option( 'uz_bookshelf_shelf_rows', absint( $_POST['shelf_rows'] ?? 2 ) );
+                update_option( 'uz_bookshelf_load_sample_data', ! empty( $_POST['load_sample_data'] ) ? '1' : '0' );
                 echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
             }
         }
@@ -1359,6 +1410,9 @@ class UZ_Bookshelf_Admin {
         $rakuten_app_id       = get_option( 'uz_bookshelf_rakuten_app_id', '' );
         $rakuten_affiliate_id = get_option( 'uz_bookshelf_rakuten_affiliate_id', '' );
         $amazon_tag           = get_option( 'uz_bookshelf_amazon_tag', '' );
+        $shelf_color          = get_option( 'uz_bookshelf_shelf_color', '#5a3d25' );
+        $shelf_rows           = get_option( 'uz_bookshelf_shelf_rows', 2 );
+        $load_sample_data     = get_option( 'uz_bookshelf_load_sample_data', '1' );
         ?>
         <div class="wrap">
             <h1>UZ Bookshelf Settings</h1>
@@ -1366,23 +1420,61 @@ class UZ_Bookshelf_Admin {
             <form method="post" style="max-width:700px;">
                 <?php wp_nonce_field( 'uz_save_settings', 'uz_settings_nonce' ); ?>
 
-                <h2>Rakuten API</h2>
+                <h2>Affiliate Settings</h2>
                 <table class="form-table">
                     <tr>
-                        <th><label for="rakuten_app_id">Application ID</label></th>
-                        <td><input type="text" name="rakuten_app_id" id="rakuten_app_id" class="regular-text" value="<?php echo esc_attr( $rakuten_app_id ); ?>" /></td>
+                        <th><label for="rakuten_app_id">Rakuten Application ID</label></th>
+                        <td>
+                            <input type="text" name="rakuten_app_id" id="rakuten_app_id" class="regular-text" value="<?php echo esc_attr( $rakuten_app_id ); ?>" />
+                            <p class="description">Rakuten Books API を利用するためのアプリケーションID</p>
+                        </td>
                     </tr>
                     <tr>
-                        <th><label for="rakuten_affiliate_id">Affiliate ID</label></th>
-                        <td><input type="text" name="rakuten_affiliate_id" id="rakuten_affiliate_id" class="regular-text" value="<?php echo esc_attr( $rakuten_affiliate_id ); ?>" /></td>
+                        <th><label for="rakuten_affiliate_id">Rakuten Affiliate ID</label></th>
+                        <td>
+                            <input type="text" name="rakuten_affiliate_id" id="rakuten_affiliate_id" class="regular-text" value="<?php echo esc_attr( $rakuten_affiliate_id ); ?>" />
+                            <p class="description">楽天リンクに自動付与されるアフィリエイトID</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="amazon_tag">Amazon Associate Tag</label></th>
+                        <td>
+                            <input type="text" name="amazon_tag" id="amazon_tag" class="regular-text" value="<?php echo esc_attr( $amazon_tag ); ?>" />
+                            <p class="description">AmazonリンクにAssociate Tagを自動付与</p>
+                        </td>
                     </tr>
                 </table>
 
-                <h2>Amazon</h2>
+                <h2>Display Settings</h2>
                 <table class="form-table">
                     <tr>
-                        <th><label for="amazon_tag">Associate Tag</label></th>
-                        <td><input type="text" name="amazon_tag" id="amazon_tag" class="regular-text" value="<?php echo esc_attr( $amazon_tag ); ?>" /></td>
+                        <th><label for="shelf_color">Shelf Wood Color</label></th>
+                        <td>
+                            <input type="color" name="shelf_color" id="shelf_color" value="<?php echo esc_attr( $shelf_color ); ?>" />
+                            <span style="margin-left:8px;"><?php echo esc_html( $shelf_color ); ?></span>
+                            <p class="description">本棚の木目ベースカラー</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="shelf_rows">Shelf Rows</label></th>
+                        <td>
+                            <input type="number" name="shelf_rows" id="shelf_rows" min="1" max="10" value="<?php echo esc_attr( $shelf_rows ); ?>" style="width:80px;" />
+                            <p class="description">1棚あたりの段数（デフォルト: 2）</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <h2>Data Settings</h2>
+                <table class="form-table">
+                    <tr>
+                        <th>Sample Data</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="load_sample_data" value="1" <?php checked( $load_sample_data, '1' ); ?> />
+                                空のDBにサンプルデータを自動ロードする
+                            </label>
+                            <p class="description">無効にすると、プラグイン有効化時にサンプルデータが挿入されません</p>
+                        </td>
                     </tr>
                 </table>
 

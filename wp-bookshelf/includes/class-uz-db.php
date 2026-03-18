@@ -142,7 +142,8 @@ class UZ_Bookshelf_DB {
 
         // Auto-load sample data if tables exist but are empty
         // (handles DB volume reset while WP still considers plugin active)
-        if ( $this->is_empty() ) {
+        // Respects the 'load_sample_data' setting (defaults to enabled)
+        if ( $this->is_empty() && get_option( 'uz_bookshelf_load_sample_data', '1' ) === '1' ) {
             $this->load_sample_data( true );
         }
     }
@@ -683,7 +684,7 @@ class UZ_Bookshelf_DB {
                     'affiliateUrl' => $item['affiliate_url'] ?: '',
                     'articleId'    => $item['article_id'] ?: '',
                     'articleTitle' => $item['article_title'] ?: '',
-                    'comment'      => $item['comment'] ?: '',
+                    'comment'      => wp_kses_post( $item['comment'] ?: '' ),
                     'tags'         => $tags,
                     'type'         => $item['type'] ?: 'product',
                     'format'       => $item['format'] ?: 'standard',

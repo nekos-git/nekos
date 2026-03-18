@@ -259,6 +259,88 @@ function UzBookshelf() {
   var _activeTheme = useState(null); var activeTheme = _activeTheme[0]; var setActiveTheme = _activeTheme[1];
   var _filterByArticle = useState(null); var filterByArticle = _filterByArticle[0]; var setFilterByArticle = _filterByArticle[1];
 
+  // --- Hash routing ---
+  var updateHash = function(hash) {
+    history.pushState(null, '', hash || window.location.pathname);
+  };
+
+  useEffect(function() {
+    var applyHash = function(hash) {
+      if (!hash || hash === '#') {
+        // Default bookshelf view
+        setShowArticles(false);
+        setSelectedArticle(null);
+        setModal(null);
+        return;
+      }
+      var m;
+      if (hash === '#articles') {
+        setModal(null);
+        setShowArticles(true);
+        setSelectedArticle(null);
+        setShowFavorites(false);
+      } else if ((m = hash.match(/^#article\/(.+)$/))) {
+        var articleId = decodeURIComponent(m[1]);
+        setModal(null);
+        setShowArticles(true);
+        setShowFavorites(false);
+        // Defer setting selectedArticle until uzData is available
+        var trySetArticle = function() {
+          // Access uzData via a fresh read; but since this runs on mount,
+          // we rely on the caller or popstate re-triggering after data loads.
+          // For popstate (back/forward), data should already be loaded.
+        };
+        // Store the pending article id; we handle it via a separate effect
+        window.__uzPendingArticle = articleId;
+      } else if ((m = hash.match(/^#book\/(.+)$/))) {
+        var bookId = decodeURIComponent(m[1]);
+        window.__uzPendingBook = bookId;
+      } else if ((m = hash.match(/^#search\/(.+)$/))) {
+        var query = decodeURIComponent(m[1]);
+        setShowArticles(false);
+        setShowFavorites(false);
+        setBookSearch(query);
+      }
+    };
+
+    // Apply hash on mount
+    applyHash(window.location.hash);
+
+    var onPopState = function() {
+      applyHash(window.location.hash);
+    };
+    window.addEventListener('popstate', onPopState);
+    return function() {
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, []);
+
+  // Resolve pending article from hash once uzData is loaded
+  useEffect(function() {
+    if (!uzData) return;
+    if (window.__uzPendingArticle) {
+      var articleId = window.__uzPendingArticle;
+      window.__uzPendingArticle = null;
+      var art = uzData.articles && uzData.articles.find(function(a) { return a.id === articleId; });
+      if (art) {
+        setShowArticles(true);
+        setShowFavorites(false);
+        setSelectedArticle(art);
+      }
+    }
+    if (window.__uzPendingBook) {
+      var bookId = window.__uzPendingBook;
+      window.__uzPendingBook = null;
+      var found = null;
+      uzData.shelves.forEach(function(s) {
+        s.items.forEach(function(item) {
+          if (String(item.id) === String(bookId)) found = item;
+        });
+      });
+      if (found) setModal(found);
+    }
+  }, [uzData]);
+
   useEffect(function() { saveFavorites(favorites); }, [favorites]);
 
   var toggleFavorite = function(item) {
@@ -448,16 +530,26 @@ function UzBookshelf() {
     setBookSearch(''); setSelectedGenre(null); setSelectedArticle(null); setFilterByArticle(null);
   };
 
-  var openModal = function(item, e) { if (e) e.preventDefault(); setModal(item); };
-  var closeModal = function() { setModal(null); };
-  var openArticleDetail = function(article) { setSelectedArticle(article); };
-  var backToArticleList = function() { setSelectedArticle(null); };
-  var showArticleBooksOnShelf = function(articleId) { setShowArticles(false); setSelectedArticle(null); setFilterByArticle(articleId); };
+  var openModal = function(item, e) { if (e) e.preventDefault(); setModal(item); updateHash('#book/' + (item.id || '')); };
+  var closeModal = function() {
+    setModal(null);
+    // Restore hash based on current view
+    if (showArticles && selectedArticle) {
+      updateHash('#article/' + selectedArticle.id);
+    } else if (showArticles) {
+      updateHash('#articles');
+    } else {
+      updateHash('');
+    }
+  };
+  var openArticleDetail = function(article) { setSelectedArticle(article); updateHash('#article/' + article.id); };
+  var backToArticleList = function() { setSelectedArticle(null); updateHash('#articles'); };
+  var showArticleBooksOnShelf = function(articleId) { setShowArticles(false); setSelectedArticle(null); setFilterByArticle(articleId); updateHash(''); };
 
   var openArticleFromModal = function(articleId) {
     if (!uzData) return;
     var art = uzData.articles.find(function(a) { return a.id === articleId; });
-    if (art) { closeModal(); setShowArticles(true); setShowFavorites(false); setSelectedArticle(art); }
+    if (art) { closeModal(); setShowArticles(true); setShowFavorites(false); setSelectedArticle(art); updateHash('#article/' + art.id); }
   };
 
   var getArticleBooks = useCallback(function(articleId) {
@@ -604,7 +696,7 @@ function UzBookshelf() {
     h('button', { key: 'rak', className: 'uz-tabBtn' + (mode === 'rakuten' && !showArticles && !showFavorites ? ' active' : ''), onClick: function() { switchMode('rakuten'); } }, '楽天Books'),
   ];
   if (mode === 'uz') {
-    headerActions.push(h('button', { key: 'art', className: 'uz-tabBtn' + (showArticles ? ' active' : ''), onClick: function() { setShowArticles(!showArticles); setShowFavorites(false); } }, '記事一覧'));
+    headerActions.push(h('button', { key: 'art', className: 'uz-tabBtn' + (showArticles ? ' active' : ''), onClick: function() { var next = !showArticles; setShowArticles(next); setShowFavorites(false); if (next) { setSelectedArticle(null); updateHash('#articles'); } else { updateHash(''); } } }, '記事一覧'));
   }
   headerActions.push(
     h('button', { key: 'fav', className: 'uz-tabBtn' + (showFavorites ? ' active' : ''), onClick: function() { setShowFavorites(!showFavorites); setShowArticles(false); } },
@@ -756,6 +848,7 @@ function UzBookshelf() {
             setShowArticles(false);
             setSelectedArticle(null);
             setShelfIndex(0);
+            updateHash('');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         },
@@ -831,6 +924,7 @@ function UzBookshelf() {
             setShowArticles(false);
             setSelectedArticle(null);
             setShelfIndex(0);
+            updateHash('');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         },

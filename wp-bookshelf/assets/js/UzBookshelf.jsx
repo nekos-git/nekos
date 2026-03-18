@@ -261,6 +261,82 @@ function UzBookshelf() {
   // --- A4: 持続フィルタ（記事→棚のフィルタ） ---
   const [filterByArticle, setFilterByArticle] = React.useState(null);
 
+  // --- Hash routing ---
+  const updateHash = (hash) => {
+    history.pushState(null, '', hash || window.location.pathname);
+  };
+
+  React.useEffect(() => {
+    const applyHash = (hash) => {
+      if (!hash || hash === '#') {
+        // Default bookshelf view
+        setShowArticles(false);
+        setSelectedArticle(null);
+        setModal(null);
+        return;
+      }
+      let m;
+      if (hash === '#articles') {
+        setModal(null);
+        setShowArticles(true);
+        setSelectedArticle(null);
+        setShowFavorites(false);
+      } else if ((m = hash.match(/^#article\/(.+)$/))) {
+        const articleId = decodeURIComponent(m[1]);
+        setModal(null);
+        setShowArticles(true);
+        setShowFavorites(false);
+        // Store the pending article id; we handle it via a separate effect
+        window.__uzPendingArticle = articleId;
+      } else if ((m = hash.match(/^#book\/(.+)$/))) {
+        const bookId = decodeURIComponent(m[1]);
+        window.__uzPendingBook = bookId;
+      } else if ((m = hash.match(/^#search\/(.+)$/))) {
+        const query = decodeURIComponent(m[1]);
+        setShowArticles(false);
+        setShowFavorites(false);
+        setBookSearch(query);
+      }
+    };
+
+    // Apply hash on mount
+    applyHash(window.location.hash);
+
+    const onPopState = () => {
+      applyHash(window.location.hash);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, []);
+
+  // Resolve pending article/book from hash once uzData is loaded
+  React.useEffect(() => {
+    if (!uzData) return;
+    if (window.__uzPendingArticle) {
+      const articleId = window.__uzPendingArticle;
+      window.__uzPendingArticle = null;
+      const art = uzData.articles && uzData.articles.find(a => a.id === articleId);
+      if (art) {
+        setShowArticles(true);
+        setShowFavorites(false);
+        setSelectedArticle(art);
+      }
+    }
+    if (window.__uzPendingBook) {
+      const bookId = window.__uzPendingBook;
+      window.__uzPendingBook = null;
+      let found = null;
+      uzData.shelves.forEach(s => {
+        s.items.forEach(item => {
+          if (String(item.id) === String(bookId)) found = item;
+        });
+      });
+      if (found) setModal(found);
+    }
+  }, [uzData]);
+
   // お気に入り永続化
   React.useEffect(() => { saveFavorites(favorites); }, [favorites]);
 
@@ -429,17 +505,29 @@ function UzBookshelf() {
     setFilterByArticle(null);
   };
 
-  const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); };
-  const closeModal = () => setModal(null);
+  const openModal = (item, e) => { if (e) e.preventDefault(); setModal(item); updateHash('#book/' + (item.id || '')); };
+  const closeModal = () => {
+    setModal(null);
+    // Restore hash based on current view
+    if (showArticles && selectedArticle) {
+      updateHash('#article/' + selectedArticle.id);
+    } else if (showArticles) {
+      updateHash('#articles');
+    } else {
+      updateHash('');
+    }
+  };
 
   // A1: 記事カードクリック → 記事詳細ビューを表示
   const openArticleDetail = (article) => {
     setSelectedArticle(article);
+    updateHash('#article/' + article.id);
   };
 
   // A1: 記事詳細から一覧に戻る
   const backToArticleList = () => {
     setSelectedArticle(null);
+    updateHash('#articles');
   };
 
   // A4: 記事詳細から棚にフィルタ付きジャンプ
@@ -447,6 +535,7 @@ function UzBookshelf() {
     setShowArticles(false);
     setSelectedArticle(null);
     setFilterByArticle(articleId);
+    updateHash('');
   };
 
   // A2: モーダル内から記事詳細ビューを開く
@@ -458,6 +547,7 @@ function UzBookshelf() {
       setShowArticles(true);
       setShowFavorites(false);
       setSelectedArticle(art);
+      updateHash('#article/' + art.id);
     }
   };
 
@@ -603,7 +693,7 @@ function UzBookshelf() {
           <button className={`uz-tabBtn ${mode === 'uz' && !showArticles && !showFavorites ? 'active' : ''}`} onClick={() => { switchMode('uz'); }}>UZ セレクション</button>
           <button className={`uz-tabBtn ${mode === 'rakuten' && !showArticles && !showFavorites ? 'active' : ''}`} onClick={() => { switchMode('rakuten'); }}>楽天Books</button>
           {mode === 'uz' && (
-            <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => { setShowArticles(!showArticles); setShowFavorites(false); }}>記事一覧</button>
+            <button className={`uz-tabBtn ${showArticles ? 'active' : ''}`} onClick={() => { const next = !showArticles; setShowArticles(next); setShowFavorites(false); if (next) { setSelectedArticle(null); updateHash('#articles'); } else { updateHash(''); } }}>記事一覧</button>
           )}
           <button
             className={`uz-tabBtn ${showFavorites ? 'active' : ''}`}
@@ -721,7 +811,7 @@ function UzBookshelf() {
           {/* 本棚に戻るボタン（記事一覧） */}
           <div className="uz-backToShelf">
             <div className="uz-backToShelf__divider" />
-            <button className="uz-backToShelf__btn" onClick={() => { setShowArticles(false); setSelectedArticle(null); setShelfIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+            <button className="uz-backToShelf__btn" onClick={() => { setShowArticles(false); setSelectedArticle(null); setShelfIndex(0); updateHash(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
               <span className="uz-backToShelf__icon">📚</span>
               <span className="uz-backToShelf__text">本棚に戻る</span>
             </button>
@@ -786,7 +876,7 @@ function UzBookshelf() {
             {/* 本棚に戻るボタン */}
             <div className="uz-backToShelf">
               <div className="uz-backToShelf__divider" />
-              <button className="uz-backToShelf__btn" onClick={() => { setShowArticles(false); setSelectedArticle(null); setShelfIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+              <button className="uz-backToShelf__btn" onClick={() => { setShowArticles(false); setSelectedArticle(null); setShelfIndex(0); updateHash(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                 <span className="uz-backToShelf__icon">📚</span>
                 <span className="uz-backToShelf__text">本棚に戻る</span>
               </button>
