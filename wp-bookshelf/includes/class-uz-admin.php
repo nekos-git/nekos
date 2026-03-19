@@ -472,6 +472,9 @@ class UZ_Bookshelf_Admin {
             case 'toggle_format':
                 $this->handle_item_toggle_format();
                 break;
+            case 'toggle_type':
+                $this->handle_item_toggle_type();
+                break;
             default:
                 $this->page_items_list();
         }
@@ -489,16 +492,16 @@ class UZ_Bookshelf_Admin {
                 $selected    = isset( $_POST['item_ids'] ) ? array_map( 'absint', (array) $_POST['item_ids'] ) : array();
 
                 if ( ! empty( $selected ) ) {
-                    if ( $bulk_action === 'set_vertical' ) {
+                    if ( $bulk_action === 'set_spine' ) {
                         foreach ( $selected as $sid ) {
-                            $this->db->update_item( $sid, array( 'format' => 'vertical' ) );
+                            $this->db->update_item( $sid, array( 'type' => 'spine' ) );
                         }
-                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を縦置きに設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
-                    } elseif ( $bulk_action === 'set_standard' ) {
+                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を背表紙表示に設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                    } elseif ( $bulk_action === 'set_featured' ) {
                         foreach ( $selected as $sid ) {
-                            $this->db->update_item( $sid, array( 'format' => 'standard' ) );
+                            $this->db->update_item( $sid, array( 'type' => 'featured' ) );
                         }
-                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を通常表示に設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
+                        $bulk_msg = '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d件を表紙表示に設定しました。', 'uz-bookshelf' ), count( $selected ) ) ) . '</p></div>';
                     } elseif ( $bulk_action === 'sort_title_asc' || $bulk_action === 'sort_title_desc' || $bulk_action === 'sort_author_asc' || $bulk_action === 'sort_reverse' ) {
                         $bulk_items = array();
                         foreach ( $selected as $sid ) {
@@ -579,8 +582,8 @@ class UZ_Bookshelf_Admin {
                     <select name="bulk_action">
                         <option value=""><?php esc_html_e( '一括操作', 'uz-bookshelf' ); ?></option>
                         <optgroup label="<?php esc_attr_e( '表示形式', 'uz-bookshelf' ); ?>">
-                            <option value="set_vertical"><?php esc_html_e( '縦置きにする', 'uz-bookshelf' ); ?></option>
-                            <option value="set_standard"><?php esc_html_e( '通常表示にする', 'uz-bookshelf' ); ?></option>
+                            <option value="set_spine"><?php esc_html_e( '背表紙にする', 'uz-bookshelf' ); ?></option>
+                            <option value="set_featured"><?php esc_html_e( '表紙にする', 'uz-bookshelf' ); ?></option>
                         </optgroup>
                         <optgroup label="<?php esc_attr_e( '並べ替え', 'uz-bookshelf' ); ?>">
                             <option value="sort_title_asc"><?php esc_html_e( 'タイトル順（A→Z）', 'uz-bookshelf' ); ?></option>
@@ -614,13 +617,13 @@ class UZ_Bookshelf_Admin {
                             <tr><td colspan="9"><?php esc_html_e( 'No items found.', 'uz-bookshelf' ); ?></td></tr>
                         <?php else : ?>
                             <?php foreach ( $items as $idx => $item ) :
-                                $is_vertical = ( $item['format'] === 'vertical' );
-                                $format_label = $is_vertical ? '縦' : '横';
-                                $format_color = $is_vertical ? '#d9edf7' : '#dff0d8';
-                                $toggle_format = $is_vertical ? 'standard' : 'vertical';
+                                $is_spine = ( $item['type'] === 'spine' );
+                                $display_label = $is_spine ? '背表紙' : '表紙';
+                                $display_color = $is_spine ? '#d9edf7' : '#dff0d8';
+                                $toggle_type = $is_spine ? 'featured' : 'spine';
                                 $toggle_url = wp_nonce_url(
-                                    admin_url( 'admin.php?page=uz-bookshelf-items&action=toggle_format&id=' . $item['id'] . '&to=' . $toggle_format . ( $shelf_filter ? '&shelf_id=' . urlencode( $shelf_filter ) : '' ) ),
-                                    'uz_toggle_format_' . $item['id']
+                                    admin_url( 'admin.php?page=uz-bookshelf-items&action=toggle_type&id=' . $item['id'] . '&to=' . $toggle_type . ( $shelf_filter ? '&shelf_id=' . urlencode( $shelf_filter ) : '' ) ),
+                                    'uz_toggle_type_' . $item['id']
                                 );
                             ?>
                             <tr>
@@ -642,8 +645,8 @@ class UZ_Bookshelf_Admin {
                                 <td><?php echo esc_html( $item['author'] ); ?></td>
                                 <td><code><?php echo esc_html( $item['shelf_id'] ); ?></code></td>
                                 <td>
-                                    <a href="<?php echo esc_url( $toggle_url ); ?>" title="<?php echo esc_attr( $is_vertical ? __( '通常表示に切り替え', 'uz-bookshelf' ) : __( '縦置きに切り替え', 'uz-bookshelf' ) ); ?>" style="background:<?php echo esc_attr( $format_color ); ?>;padding:2px 6px;border-radius:3px;font-size:11px;text-decoration:none;">
-                                        <?php echo esc_html( $format_label ); ?>
+                                    <a href="<?php echo esc_url( $toggle_url ); ?>" title="<?php echo esc_attr( $is_spine ? __( '表紙表示に切り替え', 'uz-bookshelf' ) : __( '背表紙表示に切り替え', 'uz-bookshelf' ) ); ?>" style="background:<?php echo esc_attr( $display_color ); ?>;padding:2px 6px;border-radius:3px;font-size:11px;text-decoration:none;">
+                                        <?php echo esc_html( $display_label ); ?>
                                     </a>
                                 </td>
                                 <td style="white-space:nowrap;">
@@ -710,6 +713,27 @@ class UZ_Bookshelf_Admin {
         if ( $id && check_admin_referer( 'uz_toggle_format_' . $id ) ) {
             $format = in_array( $to, array( 'standard', 'vertical' ), true ) ? $to : 'standard';
             $this->db->update_item( $id, array( 'format' => $format ) );
+        }
+
+        $redirect = admin_url( 'admin.php?page=uz-bookshelf-items&msg=format_changed' );
+        if ( $shelf_id ) {
+            $redirect .= '&shelf_id=' . urlencode( $shelf_id );
+        }
+        wp_redirect( $redirect );
+        exit;
+    }
+
+    /**
+     * Toggle item type between spine/featured (背表紙/表紙)
+     */
+    private function handle_item_toggle_type() {
+        $id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+        $to = isset( $_GET['to'] ) ? sanitize_text_field( $_GET['to'] ) : 'featured';
+        $shelf_id = isset( $_GET['shelf_id'] ) ? sanitize_text_field( $_GET['shelf_id'] ) : '';
+
+        if ( $id && check_admin_referer( 'uz_toggle_type_' . $id ) ) {
+            $type = in_array( $to, array( 'spine', 'featured', 'product' ), true ) ? $to : 'featured';
+            $this->db->update_item( $id, array( 'type' => $type ) );
         }
 
         $redirect = admin_url( 'admin.php?page=uz-bookshelf-items&msg=format_changed' );

@@ -530,8 +530,6 @@ function UzBookshelf() {
   var tooltipTimeoutRef = useRef(null);
   var _bookSearch = useState(''); var bookSearch = _bookSearch[0]; var setBookSearch = _bookSearch[1];
   var _selectedGenre = useState(null); var selectedGenre = _selectedGenre[0]; var setSelectedGenre = _selectedGenre[1];
-  // 縦(spine)/横(cover) view toggle
-  var _viewMode = useState('cover'); var viewMode = _viewMode[0]; var setViewMode = _viewMode[1];
   // Drag-and-drop state (admin only)
   var _dragItem = useState(null); var dragItem = _dragItem[0]; var setDragItem = _dragItem[1];
   var _dragOverIdx = useState(null); var dragOverIdx = _dragOverIdx[0]; var setDragOverIdx = _dragOverIdx[1];
@@ -1006,14 +1004,13 @@ function UzBookshelf() {
 
   var isLoading = !uzData && !loadError;
 
-  // Helper: render a book item (face or spine)
-  function renderBookItem(item, idx, prefix, forceView) {
+  // Helper: render a book item (face or spine based on item.type)
+  function renderBookItem(item, idx, prefix) {
     var handlers = {
       onClick: function(e) { openModal(item, e); },
       onMouseEnter: function(e) { handleMouseEnter(e, item); },
       onMouseLeave: handleMouseLeave,
     };
-    var useView = forceView || viewMode;
     // Drag-and-drop attributes for admin on main shelf
     var dragProps = {};
     if (isAdmin && prefix === 'main') {
@@ -1031,14 +1028,12 @@ function UzBookshelf() {
     var wrapCls = 'uz-dnd-wrap' + (isDragOver ? ' uz-dnd-over' : '') + (isDragging ? ' uz-dnd-dragging' : '');
 
     var bookEl;
-    if (useView === 'spine') {
+    if (item.type === 'spine') {
       bookEl = h(BookSpine, Object.assign({ key: 'b', item: item, isHighlighted: false }, handlers));
+    } else if (item.type === 'featured' || item.coverUrl) {
+      bookEl = h(BookFace, Object.assign({ key: 'b', item: item, isHighlighted: false, isFav: isFavorite(item) }, handlers));
     } else {
-      if (item.type === 'featured' || item.coverUrl) {
-        bookEl = h(BookFace, Object.assign({ key: 'b', item: item, isHighlighted: false, isFav: isFavorite(item) }, handlers));
-      } else {
-        bookEl = h(BookSpine, Object.assign({ key: 'b', item: item, isHighlighted: false }, handlers));
-      }
+      bookEl = h(BookSpine, Object.assign({ key: 'b', item: item, isHighlighted: false }, handlers));
     }
     if (isAdmin && prefix === 'main') {
       return h('div', Object.assign({ key: prefix + '-' + (item.id || idx) + '-' + idx, className: wrapCls }, dragProps), bookEl);
@@ -1366,24 +1361,9 @@ function UzBookshelf() {
 
   // メイン棚表示
   if (!showArticles && !showFavorites && !searchResults && currentShelf && !isLoading) {
-    // 表示切替ボタン
-    var viewToggle = h('div', { className: 'uz-viewToggle' },
-      h('button', {
-        className: 'uz-viewToggle__btn' + (viewMode === 'spine' ? ' active' : ''),
-        onClick: function() { setViewMode('spine'); },
-        title: '背表紙表示（縦）'
-      }, '縦'),
-      h('button', {
-        className: 'uz-viewToggle__btn' + (viewMode === 'cover' ? ' active' : ''),
-        onClick: function() { setViewMode('cover'); },
-        title: 'カバー表示（横）'
-      }, '横')
-    );
-
     var shelfHeadChildren = [
       h('h2', { key: 'title', className: 'uz-shelfTitle' }, h('span', { className: 'uz-shelfIcon' }, shelfIcons[currentShelf.id] || ''), ' ' + currentShelf.title),
       h('div', { key: 'right', className: 'uz-shelfHead__right' },
-        viewToggle,
         h('div', { className: 'uz-shelfMeta' }, currentItems.length + ' items'),
         isAdmin ? h('span', { className: 'uz-adminBadge' }, 'D&D') : null
       )
