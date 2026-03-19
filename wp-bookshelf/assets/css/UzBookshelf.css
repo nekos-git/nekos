@@ -521,6 +521,42 @@
 .uz-spine2--disc .uz-spine2__bandBottom,
 .uz-spine2--disc .uz-spine2__pub { display: none; }
 
+/* === コミック/漫画スタイル === */
+.uz-spine2--comic .uz-spine2__title {
+  font-size: 8.5px; font-weight: 900; letter-spacing: .08em;
+  text-shadow: 0 0 2px rgba(0,0,0,.8), 0 1px 3px rgba(0,0,0,.6);
+  filter: drop-shadow(0 0.5px 0 rgba(255,255,255,.25));
+}
+.uz-spine2--comic .uz-spine2__bandTop { height: 4px; opacity: .7; }
+.uz-spine2--comic .uz-spine2__bandBottom { height: 3px; opacity: .5; }
+.uz-spine2--comic .uz-spine2__body {
+  box-shadow:
+    1px 0 4px rgba(0,0,0,.35),
+    2px 2px 8px rgba(0,0,0,.3),
+    inset -1px 0 8px rgba(0,0,0,.25),
+    inset 1px 0 3px rgba(255,255,255,.08);
+}
+/* 漫画の巻数表示 */
+.uz-spine2__volume {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 7px; font-weight: 900;
+  width: 12px; height: 12px;
+  border: 1px solid; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  opacity: .8;
+}
+
+/* === 出版社マッチ時の強化スタイル === */
+.uz-spine2--pub .uz-spine2__pub { opacity: .7; }
+.uz-spine2--pub .uz-spine2__bandTop { opacity: .75; }
+.uz-spine2--pub .uz-spine2__bandBottom { opacity: .5; }
+.uz-spine2--pub .uz-spine2__texture {
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,.02) 1px, rgba(0,0,0,.02) 2px),
+    repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,.015) 4px, rgba(255,255,255,.015) 5px);
+}
+
 /* ============================================================
    ハイライト
    ============================================================ */

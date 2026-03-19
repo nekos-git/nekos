@@ -36,6 +36,103 @@ function stableHash(str) {
   return Math.abs(hash);
 }
 
+// ---- 出版社背表紙カラーマッピング ----
+// 実際の文庫・単行本・コミックの背表紙色を再現
+var PUBLISHER_SPINES = {
+  // 文庫
+  '新潮文庫':     { bg: '#7B2D26', text: '#F5E6C8', accent: '#D4A853', band: '#D4A853' },
+  '講談社文庫':   { bg: '#1B4D3E', text: '#F0E8D0', accent: '#C8B87A', band: '#C8B87A' },
+  '角川文庫':     { bg: '#E8E0D0', text: '#1A1A1A', accent: '#8B0000', band: '#8B0000' },
+  '文春文庫':     { bg: '#2C1810', text: '#E8D5B0', accent: '#C8A862', band: '#C8A862' },
+  '集英社文庫':   { bg: '#1A3C5A', text: '#F0E8D0', accent: '#D4A853', band: '#D4A853' },
+  '岩波文庫':     { bg: '#F5F0E0', text: '#1A1A1A', accent: '#2B5F2B', band: '#2B5F2B' },
+  '中公文庫':     { bg: '#4A2D5A', text: '#F0E8D8', accent: '#C8A862', band: '#C8A862' },
+  '光文社文庫':   { bg: '#D4C8A0', text: '#2A1A0A', accent: '#6B4226', band: '#6B4226' },
+  'ハヤカワ文庫': { bg: '#1A1A2E', text: '#C8D8E8', accent: '#4A90D9', band: '#4A90D9' },
+  'ちくま文庫':   { bg: '#3A2A1A', text: '#E8D8C0', accent: '#B89860', band: '#B89860' },
+  '河出文庫':     { bg: '#2A3A2A', text: '#E0D8C0', accent: '#A0B870', band: '#A0B870' },
+  '創元推理文庫': { bg: '#1A2040', text: '#D0D8E8', accent: '#6080C0', band: '#6080C0' },
+  '小学館文庫':   { bg: '#8B2500', text: '#F5E8D0', accent: '#FFD700', band: '#FFD700' },
+  'PHP文庫':      { bg: '#C87832', text: '#FFFFFF', accent: '#FFE4B5', band: '#2A1A0A' },
+  // 新書
+  'PHPビジネス新書': { bg: '#C87832', text: '#FFFFFF', accent: '#FFE4B5', band: '#2A1A0A' },
+  '岩波新書':     { bg: '#C83232', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
+  '中公新書':     { bg: '#F0E8D0', text: '#1A1A1A', accent: '#1A4D7A', band: '#1A4D7A' },
+  '講談社現代新書': { bg: '#1B4D3E', text: '#F5F0E0', accent: '#C8B87A', band: '#C8B87A' },
+  '新潮新書':     { bg: '#6B2020', text: '#F5E6C8', accent: '#D4A853', band: '#D4A853' },
+  // コミック出版社
+  '集英社':       { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
+  '講談社':       { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
+  '小学館':       { bg: '#F5A623', text: '#1A1A1A', accent: '#FFFFFF', band: '#FFFFFF' },
+  'KADOKAWA':     { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
+  '角川':         { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
+  'スクウェア・エニックス': { bg: '#1A1A3A', text: '#E0E0FF', accent: '#6060FF', band: '#6060FF' },
+  'ビッグガンガン': { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0' },
+  'ガンガン':     { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0' },
+  'ジャンプコミックス': { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFFFFF' },
+  'マガジン':     { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
+  'サンデー':     { bg: '#F5A623', text: '#1A1A1A', accent: '#E02020', band: '#E02020' },
+  'ヤングジャンプ': { bg: '#1A1A1A', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
+  'モーニング':   { bg: '#003366', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
+  'アフタヌーン': { bg: '#2D5A2D', text: '#F0F0E0', accent: '#C8D880', band: '#C8D880' },
+};
+
+// 漫画タイトル別の背表紙カラー (有名タイトルはそれぞれ固有の背表紙色がある)
+var MANGA_SPINE_COLORS = {
+  'AKIRA':        { bg: '#C83030', text: '#FFFFFF', accent: '#FFD700' },
+  'ドラゴンボール': { bg: '#FF8C00', text: '#FFFFFF', accent: '#FFD700' },
+  'ONE PIECE':    { bg: '#E02020', text: '#FFD700', accent: '#FFFFFF' },
+  'ワンピース':   { bg: '#E02020', text: '#FFD700', accent: '#FFFFFF' },
+  'NARUTO':       { bg: '#FF6600', text: '#FFFFFF', accent: '#FFD700' },
+  'ナルト':       { bg: '#FF6600', text: '#FFFFFF', accent: '#FFD700' },
+  '鬼滅の刃':    { bg: '#2D0A2E', text: '#E8C8D8', accent: '#FF6090' },
+  '進撃の巨人':  { bg: '#3A3A3A', text: '#FFFFFF', accent: '#C83030' },
+  '呪術廻戦':    { bg: '#1A1A2E', text: '#C0C0FF', accent: '#6060FF' },
+  'スラムダンク':  { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700' },
+  'SLAM DUNK':    { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700' },
+  'ハンターハンター': { bg: '#2A5A2A', text: '#F0F0E0', accent: '#FFD700' },
+  'HUNTER':       { bg: '#2A5A2A', text: '#F0F0E0', accent: '#FFD700' },
+  'デスノート':   { bg: '#1A1A1A', text: '#FFFFFF', accent: '#C0C0C0' },
+  'DEATH NOTE':   { bg: '#1A1A1A', text: '#FFFFFF', accent: '#C0C0C0' },
+  '薬屋のひとりごと': { bg: '#6B2D5A', text: '#F0D8E8', accent: '#D4A0C8' },
+  '青春ブタ野郎': { bg: '#4A7DAA', text: '#F0F0FF', accent: '#FFD700' },
+  'ブルーロック':  { bg: '#003399', text: '#FFFFFF', accent: '#FFD700' },
+  'チェンソーマン': { bg: '#C83030', text: '#FFD700', accent: '#FFFFFF' },
+  'SPY×FAMILY':   { bg: '#C83050', text: '#FFFFFF', accent: '#FFD700' },
+  'スパイファミリー': { bg: '#C83050', text: '#FFFFFF', accent: '#FFD700' },
+  '推しの子':     { bg: '#FF3366', text: '#FFFFFF', accent: '#FFD700' },
+  'フリーレン':   { bg: '#4A6B8A', text: '#F0F0FF', accent: '#C8D8F0' },
+  'キングダム':   { bg: '#8B4513', text: '#FFD700', accent: '#FFFFFF' },
+  '東京リベンジャーズ': { bg: '#1A1A1A', text: '#FFFFFF', accent: '#E02020' },
+  'ベルセルク':   { bg: '#1A1010', text: '#C0B0A0', accent: '#8B0000' },
+  'BERSERK':      { bg: '#1A1010', text: '#C0B0A0', accent: '#8B0000' },
+  '1984':         { bg: '#E8E0D0', text: '#1A1A1A', accent: '#8B0000' },
+};
+
+function detectPublisher(item) {
+  var title = item.fullTitle || item.title || '';
+  var author = item.author || item.fullAuthor || '';
+  var fmt = item.format || '';
+  var text = title + ' ' + author;
+
+  // Check manga title colors first (for comic format)
+  if (fmt === 'comic') {
+    for (var mangaTitle in MANGA_SPINE_COLORS) {
+      if (title.indexOf(mangaTitle) >= 0) {
+        return { type: 'manga', colors: MANGA_SPINE_COLORS[mangaTitle], name: mangaTitle };
+      }
+    }
+  }
+
+  // Check publisher from fullTitle or author field
+  for (var pub in PUBLISHER_SPINES) {
+    if (text.indexOf(pub) >= 0) {
+      return { type: 'publisher', colors: PUBLISHER_SPINES[pub], name: pub };
+    }
+  }
+  return null;
+}
+
 function spineColorFromTitle(title) {
   var hash = stableHash(title);
   var hue = hash % 360;
@@ -44,11 +141,31 @@ function spineColorFromTitle(title) {
   return { h: hue, s: s, l: l, css: 'hsl(' + hue + ' ' + s + '% ' + l + '%)' };
 }
 
-function spineGradient(title) {
+function spineGradient(title, pubColors) {
+  if (pubColors) {
+    var bg = pubColors.bg;
+    return 'linear-gradient(135deg, ' + lightenHex(bg, 15) + ' 0%, ' + bg + ' 50%, ' + darkenHex(bg, 12) + ' 100%)';
+  }
   var c = spineColorFromTitle(title);
   var light = 'hsl(' + c.h + ' ' + c.s + '% ' + (c.l + 12) + '%)';
   var dark = 'hsl(' + c.h + ' ' + c.s + '% ' + (c.l - 8) + '%)';
   return 'linear-gradient(135deg, ' + light + ' 0%, ' + c.css + ' 50%, ' + dark + ' 100%)';
+}
+
+function lightenHex(hex, pct) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.min(255, r + Math.round((255-r)*pct/100));
+  g = Math.min(255, g + Math.round((255-g)*pct/100));
+  b = Math.min(255, b + Math.round((255-b)*pct/100));
+  return '#' + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function darkenHex(hex, pct) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.max(0, Math.round(r*(1-pct/100)));
+  g = Math.max(0, Math.round(g*(1-pct/100)));
+  b = Math.max(0, Math.round(b*(1-pct/100)));
+  return '#' + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 
 function truncate(str, len) {
@@ -185,12 +302,25 @@ var BookFace = React.memo(function(props) {
 // ============================================================
 // 背表紙コンポーネント — リアル質感
 // ============================================================
-function spineDecor(title) {
+function spineDecor(title, item) {
   var hash = stableHash(title);
   var variant = hash % 5;
-  var c = spineColorFromTitle(title);
-  var gold = 'hsl(' + (40 + (hash % 20)) + ' ' + (50 + (hash % 20)) + '% ' + (55 + (hash % 15)) + '%)';
-  return { variant: variant, gold: gold };
+  var pub = item ? detectPublisher(item) : null;
+  var gold, textColor, bandColor, pubName;
+
+  if (pub) {
+    gold = pub.colors.accent;
+    textColor = pub.colors.text;
+    bandColor = pub.colors.band || pub.colors.accent;
+    pubName = pub.name;
+  } else {
+    var c = spineColorFromTitle(title);
+    gold = 'hsl(' + (40 + (hash % 20)) + ' ' + (50 + (hash % 20)) + '% ' + (55 + (hash % 15)) + '%)';
+    textColor = gold;
+    bandColor = gold;
+    pubName = null;
+  }
+  return { variant: variant, gold: gold, textColor: textColor, bandColor: bandColor, pub: pub, pubName: pubName };
 }
 
 var BookSpine = React.memo(function(props) {
@@ -198,19 +328,63 @@ var BookSpine = React.memo(function(props) {
   var onClick = props.onClick, onMouseEnter = props.onMouseEnter, onMouseLeave = props.onMouseLeave;
   var dim = getBookDimensions(item);
   var isDisc = dim.format === 'disc' || dim.format === 'poster';
-  var thickness = isDisc ? 8 : dim.thickness;
-  var decor = spineDecor(item.fullTitle || item.title);
+  var isComic = dim.format === 'comic';
+  var thickness = isDisc ? 8 : (isComic ? 14 + (stableHash(item.title || '') % 8) : dim.thickness);
+  var decor = spineDecor(item.fullTitle || item.title, item);
   var title = item.fullTitle || item.title || '';
   var author = item.fullAuthor || item.author || '';
   var maxTitleChars = Math.floor(dim.height / 10);
   var maxAuthorChars = Math.floor(dim.height / 16);
-  var cls = 'uz-spine2 uz-spine2--v' + decor.variant + (isHighlighted ? ' uz-highlight' : '') + (isDisc ? ' uz-spine2--disc' : '');
+  var cls = 'uz-spine2 uz-spine2--v' + decor.variant
+    + (isHighlighted ? ' uz-highlight' : '')
+    + (isDisc ? ' uz-spine2--disc' : '')
+    + (isComic ? ' uz-spine2--comic' : '')
+    + (decor.pub ? ' uz-spine2--pub' : '');
+
+  // 短いタイトル表示 (漫画は巻数を省略してタイトルだけ)
+  var displayTitle = title;
+  if (isComic) {
+    displayTitle = title.replace(/\s*[\(（].*?[\)）]\s*/g, '').replace(/\s*\d+巻?\s*$/, '');
+    maxTitleChars = Math.floor(dim.height / 9);
+  }
 
   var textChildren = [
-    h('span', { key: 't', className: 'uz-spine2__title', style: { color: decor.gold } }, truncate(title, maxTitleChars))
+    h('span', { key: 't', className: 'uz-spine2__title', style: { color: decor.textColor } }, truncate(displayTitle, maxTitleChars))
   ];
-  if (author) {
+  if (author && !isComic) {
     textChildren.push(h('span', { key: 'a', className: 'uz-spine2__author' }, truncate(author, maxAuthorChars)));
+  }
+
+  var bgGradient = spineGradient(title, decor.pub ? decor.pub.colors : null);
+
+  // 出版社マーク: 出版社名の頭文字、または著者の頭文字
+  var pubChar = '';
+  if (decor.pubName) {
+    pubChar = decor.pubName.charAt(0);
+  } else {
+    pubChar = (author || title).charAt(0);
+  }
+
+  var bodyChildren = [
+    h('div', { key: 'tex', className: 'uz-spine2__texture' }),
+    h('div', { key: 'bt', className: 'uz-spine2__bandTop', style: { background: decor.bandColor } }),
+    h('div', { key: 'txt', className: 'uz-spine2__text' }, textChildren),
+    h('div', { key: 'bb', className: 'uz-spine2__bandBottom', style: { background: decor.bandColor } }),
+    h('div', { key: 'pub', className: 'uz-spine2__pub', style: { borderColor: decor.gold } },
+      h('span', { style: { color: decor.gold } }, pubChar)
+    ),
+    h('div', { key: 'edge', className: 'uz-spine2__edge' }),
+    h('div', { key: 'gloss', className: 'uz-spine2__gloss' })
+  ];
+
+  // 漫画: 巻数表示
+  if (isComic) {
+    var volMatch = title.match(/(\d+)\s*巻/);
+    if (volMatch) {
+      bodyChildren.splice(4, 0,
+        h('div', { key: 'vol', className: 'uz-spine2__volume', style: { color: decor.gold, borderColor: decor.gold } }, volMatch[1])
+      );
+    }
   }
 
   return h('a', {
@@ -218,17 +392,7 @@ var BookSpine = React.memo(function(props) {
     onClick: onClick, onMouseEnter: onMouseEnter, onMouseLeave: onMouseLeave,
     style: { width: thickness, height: dim.height }
   },
-    h('div', { className: 'uz-spine2__body', style: { background: spineGradient(title) } },
-      h('div', { className: 'uz-spine2__texture' }),
-      h('div', { className: 'uz-spine2__bandTop', style: { background: decor.gold } }),
-      h('div', { className: 'uz-spine2__text' }, textChildren),
-      h('div', { className: 'uz-spine2__bandBottom', style: { background: decor.gold } }),
-      h('div', { className: 'uz-spine2__pub', style: { borderColor: decor.gold } },
-        h('span', { style: { color: decor.gold } }, (author || title).charAt(0))
-      ),
-      h('div', { className: 'uz-spine2__edge' }),
-      h('div', { className: 'uz-spine2__gloss' })
-    )
+    h('div', { className: 'uz-spine2__body', style: { background: bgGradient } }, bodyChildren)
   );
 });
 
