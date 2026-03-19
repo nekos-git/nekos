@@ -37,45 +37,157 @@ function stableHash(str) {
 }
 
 // ---- 出版社背表紙カラーマッピング ----
-// 実際の文庫・単行本・コミックの背表紙色を再現
-var PUBLISHER_SPINES = {
-  // 文庫
-  '新潮文庫':     { bg: '#7B2D26', text: '#F5E6C8', accent: '#D4A853', band: '#D4A853' },
-  '講談社文庫':   { bg: '#1B4D3E', text: '#F0E8D0', accent: '#C8B87A', band: '#C8B87A' },
-  '角川文庫':     { bg: '#E8E0D0', text: '#1A1A1A', accent: '#8B0000', band: '#8B0000' },
-  '文春文庫':     { bg: '#2C1810', text: '#E8D5B0', accent: '#C8A862', band: '#C8A862' },
-  '集英社文庫':   { bg: '#1A3C5A', text: '#F0E8D0', accent: '#D4A853', band: '#D4A853' },
-  '岩波文庫':     { bg: '#F5F0E0', text: '#1A1A1A', accent: '#2B5F2B', band: '#2B5F2B' },
-  '中公文庫':     { bg: '#4A2D5A', text: '#F0E8D8', accent: '#C8A862', band: '#C8A862' },
-  '光文社文庫':   { bg: '#D4C8A0', text: '#2A1A0A', accent: '#6B4226', band: '#6B4226' },
-  'ハヤカワ文庫': { bg: '#1A1A2E', text: '#C8D8E8', accent: '#4A90D9', band: '#4A90D9' },
-  'ちくま文庫':   { bg: '#3A2A1A', text: '#E8D8C0', accent: '#B89860', band: '#B89860' },
-  '河出文庫':     { bg: '#2A3A2A', text: '#E0D8C0', accent: '#A0B870', band: '#A0B870' },
-  '創元推理文庫': { bg: '#1A2040', text: '#D0D8E8', accent: '#6080C0', band: '#6080C0' },
-  '小学館文庫':   { bg: '#8B2500', text: '#F5E8D0', accent: '#FFD700', band: '#FFD700' },
-  'PHP文庫':      { bg: '#C87832', text: '#FFFFFF', accent: '#FFE4B5', band: '#2A1A0A' },
-  // 新書
-  'PHPビジネス新書': { bg: '#C87832', text: '#FFFFFF', accent: '#FFE4B5', band: '#2A1A0A' },
-  '岩波新書':     { bg: '#C83232', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
-  '中公新書':     { bg: '#F0E8D0', text: '#1A1A1A', accent: '#1A4D7A', band: '#1A4D7A' },
-  '講談社現代新書': { bg: '#1B4D3E', text: '#F5F0E0', accent: '#C8B87A', band: '#C8B87A' },
-  '新潮新書':     { bg: '#6B2020', text: '#F5E6C8', accent: '#D4A853', band: '#D4A853' },
-  // コミック出版社
-  '集英社':       { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
-  '講談社':       { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
-  '小学館':       { bg: '#F5A623', text: '#1A1A1A', accent: '#FFFFFF', band: '#FFFFFF' },
-  'KADOKAWA':     { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
-  '角川':         { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
-  'スクウェア・エニックス': { bg: '#1A1A3A', text: '#E0E0FF', accent: '#6060FF', band: '#6060FF' },
-  'ビッグガンガン': { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0' },
-  'ガンガン':     { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0' },
-  'ジャンプコミックス': { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFFFFF' },
-  'マガジン':     { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
-  'サンデー':     { bg: '#F5A623', text: '#1A1A1A', accent: '#E02020', band: '#E02020' },
-  'ヤングジャンプ': { bg: '#1A1A1A', text: '#FFFFFF', accent: '#E02020', band: '#E02020' },
-  'モーニング':   { bg: '#003366', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700' },
-  'アフタヌーン': { bg: '#2D5A2D', text: '#F0F0E0', accent: '#C8D880', band: '#C8D880' },
+// 調査に基づく実際の文庫背表紙色
+// 多くの文庫は著者ごとに背表紙色が異なる → パレットから著者名ハッシュで選択
+
+// 講談社文庫: 著者が10色から選ぶ
+var KODANSHA_PALETTE = [
+  { bg: '#8B6544', text: '#F5F0E0' },  // 茶
+  { bg: '#E8A0B0', text: '#2A1A1A' },  // 桃
+  { bg: '#C83232', text: '#F5F0E0' },  // 朱
+  { bg: '#8C8C8C', text: '#F5F0E0' },  // 灰
+  { bg: '#6EB0D4', text: '#1A1A1A' },  // 空
+  { bg: '#9B7EB4', text: '#F5F0E0' },  // 藤
+  { bg: '#3A8C5C', text: '#F5F0E0' },  // 緑
+  { bg: '#A0C850', text: '#1A1A1A' },  // 若草
+  { bg: '#E8B830', text: '#1A1A1A' },  // 山吹
+  { bg: '#E88C28', text: '#F5F0E0' },  // 橙
+];
+
+// 岩波文庫: ジャンル別帯色 (ベースはクリーム色)
+var IWANAMI_BANDS = {
+  'default': '#2858A0',  // 青=思想・哲学
+  '哲学': '#2858A0', '思想': '#2858A0', '宗教': '#2858A0',
+  '科学': '#2858A0', '芸術': '#2858A0',
+  '古典': '#D4B828', '万葉': '#D4B828', '源氏': '#D4B828',  // 黄=日本古典
+  '近代': '#2D8C4E', '現代': '#2D8C4E',  // 緑=日本近現代文学
+  '海外': '#C83232', '翻訳': '#C83232', '外国': '#C83232',  // 赤=外国文学
+  '法': '#F0EDE0', '経済': '#F0EDE0', '社会': '#F0EDE0',   // 白=社会科学
 };
+
+// 創元推理文庫: 属性別色分け
+var SOGEN_PALETTE = [
+  { bg: '#D4789A', text: '#1A1A1A' },  // ピンク (女性作家)
+  { bg: '#8B6544', text: '#F5F0E0' },  // 茶 (英国)
+  { bg: '#3A8C5C', text: '#F5F0E0' },  // 緑 (本格・ユーモア)
+  { bg: '#2858A0', text: '#F5F0E0' },  // 青 (ハードボイルド)
+  { bg: '#D4B828', text: '#1A1A1A' },  // 黄 (日本)
+  { bg: '#8C8C8C', text: '#F5F0E0' },  // 灰 (ファンタジー・ホラー)
+];
+
+// 出版社固有の設定
+var PUBLISHER_SPINES = {
+  // --- 文庫 (著者別パレット方式) ---
+  '新潮文庫':     { palette: 'author', base: '#F5F0E0', textDark: '#2C1A0A', logo: '葡' },
+  '講談社文庫':   { palette: 'kodansha', logo: '講' },
+  '文春文庫':     { palette: 'author_bold', base: '#F5F0E0', textDark: '#1A1A1A', logo: '文' },
+  '集英社文庫':   { palette: 'author_bold', base: '#F5F0E0', textDark: '#1A1A1A', logo: '集' },
+  '光文社文庫':   { palette: 'author', base: '#F5F0E0', textDark: '#1A1A1A', logo: '光' },
+  '小学館文庫':   { palette: 'author', base: '#F5F0E0', textDark: '#1A1A1A', logo: '小' },
+  '角川文庫':     { palette: 'author', base: '#E8967A', textDark: '#1A1A1A', logo: '角' },
+  // --- 文庫 (統一色方式) ---
+  'ちくま文庫':   { bg: '#C8B896', text: '#2C1A0A', accent: '#8B7A5A', band: '#A09070', logo: '筑' },
+  '河出文庫':     { bg: '#E8D050', text: '#1A1A1A', accent: '#8B7A20', band: '#C8B030', logo: '河' },
+  'ハヤカワ文庫': { bg: '#4A7CA0', text: '#F0F0FF', accent: '#D47828', band: '#D47828', logo: 'H' },
+  '岩波文庫':     { palette: 'iwanami', base: '#F2EDDF', textDark: '#1A1A1A', logo: '岩' },
+  '創元推理文庫': { palette: 'sogen', logo: '創' },
+  '中公文庫':     { palette: 'author', base: '#F0E8D8', textDark: '#1A1A1A', logo: '中' },
+  'PHP文庫':      { bg: '#F5ECD0', text: '#1A1A1A', accent: '#C83232', band: '#C83232', logo: 'P' },
+  // --- 新書 ---
+  'PHPビジネス新書': { bg: '#F5ECD0', text: '#1A1A1A', accent: '#C83232', band: '#C83232', logo: 'P' },
+  '岩波新書':     { bg: '#C83232', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700', logo: '岩' },
+  '中公新書':     { bg: '#F0E8D0', text: '#1A1A1A', accent: '#1A4D7A', band: '#1A4D7A', logo: '中' },
+  '講談社現代新書': { bg: '#E88C28', text: '#F5F0E0', accent: '#F5F0E0', band: '#FFFFFF', logo: '講' },
+  '新潮新書':     { bg: '#F5F0E0', text: '#2C1A0A', accent: '#6B3B2A', band: '#6B3B2A', logo: '葡' },
+  // --- コミック出版社 ---
+  '集英社':       { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700', logo: '集' },
+  '講談社':       { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700', logo: '講' },
+  '小学館':       { bg: '#F5A623', text: '#1A1A1A', accent: '#FFFFFF', band: '#FFFFFF', logo: '小' },
+  'KADOKAWA':     { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020', logo: 'K' },
+  '角川':         { bg: '#2D2D2D', text: '#FFFFFF', accent: '#E02020', band: '#E02020', logo: '角' },
+  'スクウェア・エニックス': { bg: '#1A1A3A', text: '#E0E0FF', accent: '#6060FF', band: '#6060FF', logo: 'S' },
+  'ビッグガンガン': { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0', logo: 'G' },
+  'ガンガン':     { bg: '#2A1A3A', text: '#E8D0FF', accent: '#9060D0', band: '#9060D0', logo: 'G' },
+  'ジャンプコミックス': { bg: '#E02020', text: '#FFFFFF', accent: '#FFD700', band: '#FFFFFF', logo: 'J' },
+  'マガジン':     { bg: '#005BAC', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700', logo: 'M' },
+  'サンデー':     { bg: '#F5A623', text: '#1A1A1A', accent: '#E02020', band: '#E02020', logo: 'S' },
+  'ヤングジャンプ': { bg: '#1A1A1A', text: '#FFFFFF', accent: '#E02020', band: '#E02020', logo: 'Y' },
+  'モーニング':   { bg: '#003366', text: '#FFFFFF', accent: '#FFD700', band: '#FFD700', logo: 'M' },
+  'アフタヌーン': { bg: '#2D5A2D', text: '#F0F0E0', accent: '#C8D880', band: '#C8D880', logo: 'A' },
+};
+
+// 著者別の背表紙カラーパレット (新潮/文春/集英社系で著者ごとに異なる色)
+var AUTHOR_PALETTE = [
+  '#6B2D3B', '#8C8C8C', '#E8740C', '#1B2A5C', '#3A7A4A',
+  '#A0522D', '#4A6B8A', '#8B6544', '#C87856', '#5A5A7A',
+  '#2D6B4A', '#9B4D4D', '#D4A040', '#4A8B6A', '#7B4D6A',
+];
+
+// 文春/集英社の大胆な色パレット
+var AUTHOR_BOLD_PALETTE = [
+  '#E8C820', '#7C7C7C', '#D48CA0', '#2858A0', '#C83232',
+  '#3A8C5C', '#E88C28', '#6B2D5A', '#4A7CA0', '#8B4513',
+  '#D4789A', '#1B4D3E', '#9B7EB4', '#C87856', '#2D8C4E',
+];
+
+// 著者名パレットから色を選択
+function getAuthorColor(authorName, palette) {
+  var hash = stableHash(authorName || 'unknown');
+  return palette[hash % palette.length];
+}
+
+// 出版社情報を解決して最終的な背表紙色を返す
+function resolvePublisherColors(pubConfig, item) {
+  var author = item.fullAuthor || item.author || item.title || '';
+
+  // 固定色方式
+  if (pubConfig.bg) {
+    return { bg: pubConfig.bg, text: pubConfig.text, accent: pubConfig.accent, band: pubConfig.band, logo: pubConfig.logo };
+  }
+
+  // 講談社文庫10色パレット
+  if (pubConfig.palette === 'kodansha') {
+    var kIdx = stableHash(author) % KODANSHA_PALETTE.length;
+    var k = KODANSHA_PALETTE[kIdx];
+    return { bg: k.bg, text: k.text, accent: k.text, band: k.text, logo: pubConfig.logo };
+  }
+
+  // 岩波文庫 (クリーム地 + ジャンル帯色)
+  if (pubConfig.palette === 'iwanami') {
+    var bandColor = IWANAMI_BANDS['default'];
+    var title = item.fullTitle || item.title || '';
+    for (var kw in IWANAMI_BANDS) {
+      if (kw !== 'default' && title.indexOf(kw) >= 0) { bandColor = IWANAMI_BANDS[kw]; break; }
+    }
+    return { bg: pubConfig.base, text: pubConfig.textDark, accent: bandColor, band: bandColor, logo: pubConfig.logo };
+  }
+
+  // 創元推理文庫
+  if (pubConfig.palette === 'sogen') {
+    var sIdx = stableHash(author) % SOGEN_PALETTE.length;
+    var s = SOGEN_PALETTE[sIdx];
+    return { bg: s.bg, text: s.text, accent: s.text, band: s.text, logo: pubConfig.logo };
+  }
+
+  // 著者別パレット (新潮/角川/中公/光文社/小学館)
+  if (pubConfig.palette === 'author') {
+    var aBg = getAuthorColor(author, AUTHOR_PALETTE);
+    return { bg: aBg, text: '#F5F0E0', accent: '#D4B070', band: '#D4B070', logo: pubConfig.logo };
+  }
+
+  // 著者別大胆パレット (文春/集英社)
+  if (pubConfig.palette === 'author_bold') {
+    var bBg = getAuthorColor(author, AUTHOR_BOLD_PALETTE);
+    // 明るい背景色なら暗いテキスト、暗い背景色なら明るいテキスト
+    var r = parseInt(bBg.slice(1,3),16), g = parseInt(bBg.slice(3,5),16), b = parseInt(bBg.slice(5,7),16);
+    var lum = (r*299 + g*587 + b*114) / 1000;
+    var tColor = lum > 140 ? '#1A1A1A' : '#F5F0E0';
+    return { bg: bBg, text: tColor, accent: tColor, band: tColor, logo: pubConfig.logo };
+  }
+
+  // fallback
+  return { bg: pubConfig.base || '#F5F0E0', text: pubConfig.textDark || '#1A1A1A', accent: '#8B7A5A', band: '#8B7A5A', logo: pubConfig.logo };
+}
 
 // 漫画タイトル別の背表紙カラー (有名タイトルはそれぞれ固有の背表紙色がある)
 var MANGA_SPINE_COLORS = {
@@ -127,7 +239,8 @@ function detectPublisher(item) {
   // Check publisher from fullTitle or author field
   for (var pub in PUBLISHER_SPINES) {
     if (text.indexOf(pub) >= 0) {
-      return { type: 'publisher', colors: PUBLISHER_SPINES[pub], name: pub };
+      var resolved = resolvePublisherColors(PUBLISHER_SPINES[pub], item);
+      return { type: 'publisher', colors: resolved, name: pub };
     }
   }
   return null;
@@ -357,9 +470,11 @@ var BookSpine = React.memo(function(props) {
 
   var bgGradient = spineGradient(title, decor.pub ? decor.pub.colors : null);
 
-  // 出版社マーク: 出版社名の頭文字、または著者の頭文字
+  // 出版社マーク: logo文字 > 出版社名の頭文字 > 著者の頭文字
   var pubChar = '';
-  if (decor.pubName) {
+  if (decor.pub && decor.pub.colors && decor.pub.colors.logo) {
+    pubChar = decor.pub.colors.logo;
+  } else if (decor.pubName) {
     pubChar = decor.pubName.charAt(0);
   } else {
     pubChar = (author || title).charAt(0);
