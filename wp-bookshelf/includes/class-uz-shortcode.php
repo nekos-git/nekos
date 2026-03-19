@@ -143,6 +143,9 @@ class UZ_Bookshelf_Shortcode {
             'coversBase' => $this->plugin_url . 'assets/covers/',
             'shelfColor' => get_option( 'uz_bookshelf_shelf_color', '#5a3d25' ),
             'shelfRows'  => (int) get_option( 'uz_bookshelf_shelf_rows', 2 ),
+            'isAdmin'    => current_user_can( 'manage_options' ),
+            'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+            'sortNonce'  => wp_create_nonce( 'uz_inline_sort' ),
         ) );
 
         // Mount React app after scripts load

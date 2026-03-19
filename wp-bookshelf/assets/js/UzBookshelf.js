@@ -251,6 +251,12 @@ function UzBookshelf() {
   var tooltipTimeoutRef = useRef(null);
   var _bookSearch = useState(''); var bookSearch = _bookSearch[0]; var setBookSearch = _bookSearch[1];
   var _selectedGenre = useState(null); var selectedGenre = _selectedGenre[0]; var setSelectedGenre = _selectedGenre[1];
+  // 縦(spine)/横(cover) view toggle
+  var _viewMode = useState('cover'); var viewMode = _viewMode[0]; var setViewMode = _viewMode[1];
+  // Drag-and-drop state (admin only)
+  var _dragItem = useState(null); var dragItem = _dragItem[0]; var setDragItem = _dragItem[1];
+  var _dragOverIdx = useState(null); var dragOverIdx = _dragOverIdx[0]; var setDragOverIdx = _dragOverIdx[1];
+  var isAdmin = !!_uzConfig.isAdmin;
   var _loadError = useState(null); var loadError = _loadError[0]; var setLoadError = _loadError[1];
   var _favorites = useState(loadFavorites); var favorites = _favorites[0]; var setFavorites = _favorites[1];
   var _showFavorites = useState(false); var showFavorites = _showFavorites[0]; var setShowFavorites = _showFavorites[1];
@@ -546,6 +552,55 @@ function UzBookshelf() {
   var backToArticleList = function() { setSelectedArticle(null); updateHash('#articles'); };
   var showArticleBooksOnShelf = function(articleId) { setShowArticles(false); setSelectedArticle(null); setFilterByArticle(articleId); updateHash(''); };
 
+  // --- Drag-and-drop reorder (admin only) ---
+  var handleDragStart = function(idx, e) {
+    if (!isAdmin) return;
+    setDragItem(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', idx);
+  };
+  var handleDragOver = function(idx, e) {
+    if (!isAdmin || dragItem === null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIdx(idx);
+  };
+  var handleDragLeave = function() { setDragOverIdx(null); };
+  var handleDrop = function(idx, e) {
+    e.preventDefault();
+    if (!isAdmin || dragItem === null || dragItem === idx) { setDragItem(null); setDragOverIdx(null); return; }
+    // Reorder currentItems
+    var items = currentItems.slice();
+    var moved = items.splice(dragItem, 1)[0];
+    items.splice(idx, 0, moved);
+    // Build new order and save via AJAX
+    var order = items.map(function(item, i) { return { id: item.id, sort_order: i + 1 }; });
+    // Update local data immediately
+    if (uzData && currentShelf) {
+      var newShelves = uzData.shelves.map(function(s) {
+        if (s.id !== currentShelf.id) return s;
+        var newItems = items.map(function(item, i) { return Object.assign({}, item, { sortOrder: i + 1 }); });
+        return Object.assign({}, s, { items: newItems });
+      });
+      setUzData(Object.assign({}, uzData, { shelves: newShelves }));
+    }
+    // Save to server
+    var formData = new FormData();
+    formData.append('action', 'uz_bulk_reorder');
+    formData.append('_wpnonce', _uzConfig.sortNonce || '');
+    order.forEach(function(entry, i) {
+      formData.append('order[' + i + '][id]', entry.id);
+      formData.append('order[' + i + '][sort_order]', entry.sort_order);
+    });
+    fetch(_uzConfig.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', body: formData })
+      .then(function(r) { return r.json(); })
+      .then(function(res) { if (!res.success) console.error('Reorder failed:', res); })
+      .catch(function(err) { console.error('Reorder error:', err); });
+    setDragItem(null);
+    setDragOverIdx(null);
+  };
+  var handleDragEnd = function() { setDragItem(null); setDragOverIdx(null); };
+
   var openArticleFromModal = function(articleId) {
     if (!uzData) return;
     var art = uzData.articles.find(function(a) { return a.id === articleId; });
@@ -673,16 +728,43 @@ function UzBookshelf() {
   var isLoading = !uzData && !loadError;
 
   // Helper: render a book item (face or spine)
-  function renderBookItem(item, idx, prefix) {
+  function renderBookItem(item, idx, prefix, forceView) {
     var handlers = {
       onClick: function(e) { openModal(item, e); },
       onMouseEnter: function(e) { handleMouseEnter(e, item); },
       onMouseLeave: handleMouseLeave,
     };
-    if (item.type === 'featured') {
-      return h(BookFace, Object.assign({ key: prefix + '-' + (item.id || idx) + '-' + idx, item: item, isHighlighted: false, isFav: isFavorite(item) }, handlers));
+    var useView = forceView || viewMode;
+    // Drag-and-drop attributes for admin on main shelf
+    var dragProps = {};
+    if (isAdmin && prefix === 'main') {
+      dragProps = {
+        draggable: true,
+        onDragStart: function(e) { handleDragStart(idx, e); },
+        onDragOver: function(e) { handleDragOver(idx, e); },
+        onDragLeave: handleDragLeave,
+        onDrop: function(e) { handleDrop(idx, e); },
+        onDragEnd: handleDragEnd,
+      };
     }
-    return h(BookSpine, Object.assign({ key: prefix + '-' + (item.id || idx) + '-' + idx, item: item, isHighlighted: false }, handlers));
+    var isDragOver = isAdmin && prefix === 'main' && dragOverIdx === idx;
+    var isDragging = isAdmin && prefix === 'main' && dragItem === idx;
+    var wrapCls = 'uz-dnd-wrap' + (isDragOver ? ' uz-dnd-over' : '') + (isDragging ? ' uz-dnd-dragging' : '');
+
+    var bookEl;
+    if (useView === 'spine') {
+      bookEl = h(BookSpine, Object.assign({ key: 'b', item: item, isHighlighted: false }, handlers));
+    } else {
+      if (item.type === 'featured' || item.coverUrl) {
+        bookEl = h(BookFace, Object.assign({ key: 'b', item: item, isHighlighted: false, isFav: isFavorite(item) }, handlers));
+      } else {
+        bookEl = h(BookSpine, Object.assign({ key: 'b', item: item, isHighlighted: false }, handlers));
+      }
+    }
+    if (isAdmin && prefix === 'main') {
+      return h('div', Object.assign({ key: prefix + '-' + (item.id || idx) + '-' + idx, className: wrapCls }, dragProps), bookEl);
+    }
+    return React.cloneElement(bookEl, { key: prefix + '-' + (item.id || idx) + '-' + idx });
   }
 
   // ============================================================
@@ -1005,13 +1087,33 @@ function UzBookshelf() {
 
   // メイン棚表示
   if (!showArticles && !showFavorites && !searchResults && currentShelf && !isLoading) {
+    // 表示切替ボタン
+    var viewToggle = h('div', { className: 'uz-viewToggle' },
+      h('button', {
+        className: 'uz-viewToggle__btn' + (viewMode === 'spine' ? ' active' : ''),
+        onClick: function() { setViewMode('spine'); },
+        title: '背表紙表示（縦）'
+      }, '縦'),
+      h('button', {
+        className: 'uz-viewToggle__btn' + (viewMode === 'cover' ? ' active' : ''),
+        onClick: function() { setViewMode('cover'); },
+        title: 'カバー表示（横）'
+      }, '横')
+    );
+
+    var shelfHeadChildren = [
+      h('h2', { key: 'title', className: 'uz-shelfTitle' }, h('span', { className: 'uz-shelfIcon' }, shelfIcons[currentShelf.id] || ''), ' ' + currentShelf.title),
+      h('div', { key: 'right', className: 'uz-shelfHead__right' },
+        viewToggle,
+        h('div', { className: 'uz-shelfMeta' }, currentItems.length + ' items'),
+        isAdmin ? h('span', { className: 'uz-adminBadge' }, 'D&D') : null
+      )
+    ];
+
     children.push(
       h('div', { key: 'shelf', className: 'uz-singleShelf' },
         h('section', { className: 'uz-shelf uz-shelf--' + currentShelf.id },
-          h('div', { className: 'uz-shelfHead' },
-            h('h2', { className: 'uz-shelfTitle' }, h('span', { className: 'uz-shelfIcon' }, shelfIcons[currentShelf.id] || ''), ' ' + currentShelf.title),
-            h('div', { className: 'uz-shelfMeta' }, currentItems.length + ' items')
-          ),
+          h('div', { className: 'uz-shelfHead' }, shelfHeadChildren),
           h('div', { className: 'uz-rack' },
             h('div', { className: 'uz-plank', 'aria-hidden': 'true' }),
             h('div', { className: 'uz-mixedRow' },
