@@ -39,7 +39,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
+    gap: 3px;
+    padding: 4px 10px;
     height: 32px;
     border: 1px solid #c3c4c7;
     border-radius: 4px;
@@ -47,6 +48,9 @@
     color: #646970;
     text-decoration: none;
     transition: all 0.15s;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
 }
 .uz-view-toggle:hover {
     color: #2271b1;
@@ -150,42 +154,101 @@
 }
 
 /* =========================================================================
-   Shelf Items - List View (Table) Drag & Drop
+   Shelf Items - Spine (背表紙) View
    ========================================================================= */
 
-.uz-drag-handle {
+.uz-spine-shelf {
+    position: relative;
+    padding: 0 0 8px;
+}
+
+.uz-spine-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    padding: 12px 8px 0;
+    min-height: 140px;
+}
+
+.uz-spine-book {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px 3px 3px 2px;
     cursor: grab;
-    color: #c3c4c7;
-    text-align: center;
-    width: 20px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.3), inset -1px 0 0 rgba(255,255,255,0.1);
+    flex-shrink: 0;
 }
-.uz-drag-handle:hover {
-    color: #2271b1;
+.uz-spine-book:hover {
+    transform: translateY(-6px);
+    box-shadow: 2px 4px 8px rgba(0,0,0,0.3), inset -1px 0 0 rgba(255,255,255,0.1);
+    z-index: 5;
 }
-.uz-drag-handle .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+.uz-spine-book::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px 0 0 2px;
 }
 
-.uz-sortable-placeholder-row {
-    background: #e8f0fe !important;
-    border: 2px dashed #2271b1 !important;
+.uz-spine-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    color: rgba(255,255,255,0.9);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    padding: 6px 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-height: calc(100% - 12px);
+    letter-spacing: 0.5px;
 }
-.uz-sortable-placeholder-row td {
-    visibility: hidden;
+.uz-spine-label:hover {
+    color: #fff;
 }
 
-.uz-items-table tbody tr.ui-sortable-helper {
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.uz-spine-cb {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 3;
+}
+.uz-spine-book:hover .uz-spine-cb,
+.uz-spine-cb:checked {
+    opacity: 1;
+}
+
+.uz-spine-shelf-board {
+    height: 10px;
+    background: linear-gradient(180deg, #8B6914 0%, #A0822A 40%, #6B5210 100%);
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    margin: 0 4px;
+}
+
+/* Spine sortable placeholder */
+.uz-sortable-placeholder-spine {
+    border: 2px dashed rgba(255,255,255,0.6);
     border-radius: 2px;
+    background: rgba(34,113,177,0.2);
 }
 
-.uz-sort-cell {
-    font-size: 11px;
-    color: #646970;
-    text-align: center;
+.uz-spine-book.ui-sortable-helper {
+    transform: translateY(-10px) rotate(2deg);
+    box-shadow: 4px 8px 16px rgba(0,0,0,0.4);
+    z-index: 100;
 }
 
 /* =========================================================================
