@@ -30,3 +30,299 @@
     color: #646970;
     font-size: 13px;
 }
+
+/* =========================================================================
+   Shelf Items - View Toggle
+   ========================================================================= */
+
+.uz-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    color: #646970;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.uz-view-toggle:hover {
+    color: #2271b1;
+    border-color: #2271b1;
+}
+.uz-view-toggle.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+.uz-view-toggle .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* =========================================================================
+   Shelf Items - Bulk Actions Bar
+   ========================================================================= */
+
+.uz-bulk-bar {
+    background: #f0f0f1;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-radius: 4px;
+}
+
+/* =========================================================================
+   Shelf Items - Shelf Group
+   ========================================================================= */
+
+.uz-shelf-group {
+    margin-bottom: 24px;
+}
+
+.uz-shelf-group-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 16px 0 8px;
+    padding: 8px 12px;
+    background: #f6f7f7;
+    border-left: 4px solid #2271b1;
+    border-radius: 0 4px 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.uz-shelf-group-title .dashicons {
+    color: #2271b1;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.uz-shelf-count {
+    font-weight: 400;
+    color: #646970;
+    font-size: 12px;
+}
+
+/* Saving states */
+.uz-shelf-group-title.uz-saving {
+    background: #fff8e1;
+    border-left-color: #dba617;
+}
+.uz-shelf-group-title.uz-saving::after {
+    content: '保存中...';
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #996800;
+}
+.uz-shelf-group-title.uz-saved {
+    background: #edf7ed;
+    border-left-color: #00a32a;
+}
+.uz-shelf-group-title.uz-saved::after {
+    content: '保存しました';
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #00a32a;
+}
+.uz-shelf-group-title.uz-save-error {
+    background: #fcf0f1;
+    border-left-color: #d63638;
+}
+.uz-shelf-group-title.uz-save-error::after {
+    content: 'エラー';
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #d63638;
+}
+
+/* =========================================================================
+   Shelf Items - List View (Table) Drag & Drop
+   ========================================================================= */
+
+.uz-drag-handle {
+    cursor: grab;
+    color: #c3c4c7;
+    text-align: center;
+    width: 20px;
+}
+.uz-drag-handle:hover {
+    color: #2271b1;
+}
+.uz-drag-handle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.uz-sortable-placeholder-row {
+    background: #e8f0fe !important;
+    border: 2px dashed #2271b1 !important;
+}
+.uz-sortable-placeholder-row td {
+    visibility: hidden;
+}
+
+.uz-items-table tbody tr.ui-sortable-helper {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 2px;
+}
+
+.uz-sort-cell {
+    font-size: 11px;
+    color: #646970;
+    text-align: center;
+}
+
+/* =========================================================================
+   Shelf Items - Grid View
+   ========================================================================= */
+
+.uz-items-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.uz-grid-item {
+    position: relative;
+    width: 130px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s, transform 0.15s;
+}
+.uz-grid-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+}
+
+.uz-grid-drag-handle {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.85);
+    border-radius: 4px;
+    cursor: grab;
+    color: #646970;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+}
+.uz-grid-item:hover .uz-grid-drag-handle {
+    opacity: 1;
+}
+.uz-grid-drag-handle:hover {
+    color: #2271b1;
+    background: rgba(255,255,255,0.95);
+}
+.uz-grid-drag-handle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.uz-grid-cb {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.uz-grid-item:hover .uz-grid-cb,
+.uz-grid-cb:checked {
+    opacity: 1;
+}
+
+.uz-grid-cover {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f6f7f7;
+    overflow: hidden;
+}
+.uz-grid-cover img {
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+}
+.uz-grid-cover.is-vertical img {
+    transform: rotate(-90deg);
+    max-width: 160px;
+    max-height: 130px;
+}
+.uz-no-cover {
+    color: #999;
+    font-size: 11px;
+    text-align: center;
+    padding: 8px;
+}
+
+.uz-grid-info {
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.uz-grid-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d2327;
+    text-decoration: none;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.uz-grid-title:hover {
+    color: #2271b1;
+}
+.uz-grid-author {
+    font-size: 11px;
+    color: #646970;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.uz-grid-order {
+    font-size: 10px;
+    color: #a7aaad;
+}
+
+/* Grid sortable placeholder */
+.uz-sortable-placeholder-grid {
+    border: 2px dashed #2271b1;
+    border-radius: 6px;
+    background: #e8f0fe;
+}
+
+.uz-grid-item.ui-sortable-helper {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: rotate(2deg);
+    z-index: 100;
+}
